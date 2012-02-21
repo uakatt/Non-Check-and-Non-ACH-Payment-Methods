@@ -1,0 +1,14 @@
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml	(revision 11055)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml	(revision 11056)
+@@ -74,9 +74,7 @@
+         <bean parent="MaintainableFieldDefinition" p:name="offsetUsingClearingAccount"/>
+         <bean parent="MaintainableFieldDefinition" p:name="displayOnDisbursementVoucherDocument"/>
+         <bean parent="MaintainableFieldDefinition" p:name="displayOnVendorDocument"/>
+-        <!-- 
+         <bean parent="MaintainableFieldDefinition" p:name="active"/>
+-         -->
+       </list>
+     </property>
+   </bean>

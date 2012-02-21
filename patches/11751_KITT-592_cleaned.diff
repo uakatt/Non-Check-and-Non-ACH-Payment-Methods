@@ -1,0 +1,15 @@
+Index: work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetailExtension.xml
+===================================================================
+--- work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetailExtension.xml	(revision 11750)
++++ work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetailExtension.xml	(revision 11751)
+@@ -88,8 +88,8 @@
+ 	<bean id="VendorDetailExtension-defaultB2BPaymentMethodCode-parentBean" abstract="true"
+ 		parent="PaymentMethod-paymentMethodCode">
+ 		<property name="name" value="defaultB2BPaymentMethodCode" />
+-		<property name="label" value="Default B2B Payment Method" />
+-		<property name="shortLabel" value="Dflt B2B Pmt Mthd" />
++		<property name="label" value="Default Payment Method" />
++		<property name="shortLabel" value="Dflt Pmt Mthd" />
+ 		<property name="control" ref="PaymentMethodsForVendorSelectControl" />
+ 	</bean>
+ 	<!--  END MOD -->

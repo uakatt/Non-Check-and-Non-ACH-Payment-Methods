@@ -1,0 +1,13 @@
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java	(revision 7219)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java	(revision 7220)
+@@ -151,7 +151,7 @@
+             generateClearingAccountOffsetEntries(pm, document, sequenceHelper);
+         }
+         
+-        if ( !pm.isProcessedUsingPdp() && !pm.isInterdepartmentalPayment() ) {
++        if ( !pm.isProcessedUsingPdp() && StringUtils.isNotBlank( bankCode ) ) {
+             generateDocumentBankOffsetEntries(document,bankCode,bankCodePropertyName,documentTypeCode, sequenceHelper);
+         }
+         

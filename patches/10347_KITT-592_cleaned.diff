@@ -1,0 +1,1505 @@
+Index: work/src/arizona-ApplicationResources.properties
+===================================================================
+--- work/src/arizona-ApplicationResources.properties	(revision 10346)
++++ work/src/arizona-ApplicationResources.properties	(revision 10347)
+@@ -27,6 +27,37 @@
+ message.return.noteTextIntro=Return To Reconciler reason -
+ error.document.return.reasonRequired=A reason is required in order to return the pCard back to Reconciler.  Click the no button to CANCEL the return to Reconciler action.
+ 
++# Payment Method Document - KITT-592
++error.document.paymentmethod.effectivedate.inpast=The dates for new charts must be tomorrow or later.  (Can't retroactively change today's payment method information.)
++error.document.paymentmethod.fee.chart.required=When the fee indicator is set, the fee income chart is required.
++error.document.paymentmethod.fee.account.required=When the fee indicator is set, the fee income account is required.
++error.document.paymentmethod.fee.incobj.required=When the fee indicator is set, the fee income object is required.
++error.document.paymentmethod.fee.expobj.required=When the fee indicator is set, the fee expense object is required.
++error.document.paymentmethod.fee.amount.required=When the fee indicator is set, the fee amount is required.
++error.document.paymentmethod.clearing.chart.required=When the clearing account indicator is set, the clearing account chart is required.
++error.document.paymentmethod.clearing.account.required=When the clearing account indicator is set, the clearing account is required.
++error.document.paymentmethod.clearing.object.required=When the clearing account indicator is set, the clearing object code is required.
++
++warning.document.paymentmethod.fee.chart.notrequired=When the fee indicator is not set, there is no need to fill in the fee income chart.
++warning.document.paymentmethod.fee.account.notrequired=When the fee indicator is not set, there is no need to fill in the fee income account.
++warning.document.paymentmethod.fee.incobj.notrequired=When the fee indicator is not set, there is no need to fill in the fee income object.
++warning.document.paymentmethod.fee.expobj.notrequired=When the fee indicator is not set, there is no need to fill in the fee expense object.
++warning.document.paymentmethod.fee.amount.notrequired=When the fee indicator is not set, there is no need to fill in the fee amount.
++
++warning.document.paymentmethod.clearing.chart.notrequired=When the clearing indicator is not set, there is no need to fill in the clearing account chart.
++warning.document.paymentmethod.clearing.account.notrequired=When the clearing indicator is not set, there is no need to fill in the clearing account.
++warning.document.paymentmethod.clearing.object.notrequired=When the clearing indicator is not set, there is no need to fill in the clearing object code.
++
++error.document.paymentmethod.flagrequired=At least one of the {0}, {1}, and {2} flags must be checked on a payment method.
++error.document.paymentmethod.not.pdp.and.interdept=A payment method may not be both interdepartmental and processed by PDP.
++error.document.paymentmethod.no.bank.when.interdept=A bank code may not be entered when the payment method is an interdepartmental charge.
++
++# Additional DV document messages - KITT-592
++error.document.disbursementvoucher.bank.required=A bank code is required for payment method {0}.
++warning.document.disbursementvoucher.bank.not.required=Bank codes are not required on payment method {0}, the entered value has been removed.
++
++error.document.creditmemo.paymentmethodcode.mustmatchpreq=When creating a credit memo from a payment request, the payment method codes must match. ({0})
++
+ # Prevent Cardholder Self Reconciliation - KITT-909
+ warning.document.procurementcardholderdetail.cardholder.last.active=Cardholder is the only active member of the selected PCard Reconciler workgroup.
+ 
+Index: work/src/edu/arizona/kfs/fp/businessobject/PaymentMethodChart.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/businessobject/PaymentMethodChart.java	(revision 0)
++++ work/src/edu/arizona/kfs/fp/businessobject/PaymentMethodChart.java	(revision 10347)
+@@ -0,0 +1,265 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.fp.businessobject;
++
++import java.util.LinkedHashMap;
++
++import org.kuali.kfs.coa.businessobject.Account;
++import org.kuali.kfs.coa.businessobject.Chart;
++import org.kuali.kfs.coa.businessobject.ObjectCodeCurrent;
++import org.kuali.rice.kns.bo.Inactivateable;
++import org.kuali.rice.kns.bo.PersistableBusinessObjectBase;
++import org.kuali.rice.kns.util.KualiDecimal;
++
++public class PaymentMethodChart extends PersistableBusinessObjectBase implements Inactivateable {
++
++    protected String paymentMethodCode;
++    protected String chartOfAccountsCode;
++    protected java.sql.Date effectiveDate;
++
++    protected String feeIncomeChartOfAccountsCode;
++    protected String feeIncomeAccountNumber;
++    protected String feeIncomeFinancialObjectCode;
++    protected String feeExpenseFinancialObjectCode;
++    protected KualiDecimal feeAmount;
++
++    protected String clearingChartOfAccountsCode;
++    protected String clearingAccountNumber;
++    protected String clearingFinancialObjectCode;
++
++    protected boolean active = true;    
++
++    protected Chart chartOfAccounts;
++    
++    protected Chart feeIncomeChartOfAccounts;
++    protected Account feeIncomeAccount;
++    protected ObjectCodeCurrent feeIncomeFinancialObject;
++    protected ObjectCodeCurrent feeExpenseFinancialObject;
++    
++    protected Chart clearingChartOfAccounts;
++    protected Account clearingAccount;
++    protected ObjectCodeCurrent clearingFinancialObject;
++    
++    @SuppressWarnings("unchecked")
++    @Override
++    protected LinkedHashMap toStringMapper() {
++        LinkedHashMap<String, Object> lhm = new LinkedHashMap<String, Object>();
++        lhm.put("paymentMethodCode", paymentMethodCode);
++        lhm.put("chartOfAccountsCode", chartOfAccountsCode);
++        lhm.put("effectiveDate", effectiveDate);
++        return lhm;
++    }
++
++
++    public String getPaymentMethodCode() {
++        return paymentMethodCode;
++    }
++
++
++    public void setPaymentMethodCode(String paymentMethodCode) {
++        this.paymentMethodCode = paymentMethodCode;
++    }
++
++
++    public String getChartOfAccountsCode() {
++        return chartOfAccountsCode;
++    }
++
++
++    public void setChartOfAccountsCode(String chartOfAccountsCode) {
++        this.chartOfAccountsCode = chartOfAccountsCode;
++    }
++
++
++    public java.sql.Date getEffectiveDate() {
++        return effectiveDate;
++    }
++
++
++    public void setEffectiveDate(java.sql.Date effectiveDate) {
++        this.effectiveDate = effectiveDate;
++    }
++
++
++    public String getFeeIncomeChartOfAccountsCode() {
++        return feeIncomeChartOfAccountsCode;
++    }
++
++
++    public void setFeeIncomeChartOfAccountsCode(String feeIncomeChartOfAccountsCode) {
++        this.feeIncomeChartOfAccountsCode = feeIncomeChartOfAccountsCode;
++    }
++
++
++    public String getFeeIncomeAccountNumber() {
++        return feeIncomeAccountNumber;
++    }
++
++
++    public void setFeeIncomeAccountNumber(String feeIncomeAccountNumber) {
++        this.feeIncomeAccountNumber = feeIncomeAccountNumber;
++    }
++
++
++    public String getFeeIncomeFinancialObjectCode() {
++        return feeIncomeFinancialObjectCode;
++    }
++
++
++    public void setFeeIncomeFinancialObjectCode(String feeIncomeFinancialObjectCode) {
++        this.feeIncomeFinancialObjectCode = feeIncomeFinancialObjectCode;
++    }
++
++
++    public String getFeeExpenseFinancialObjectCode() {
++        return feeExpenseFinancialObjectCode;
++    }
++
++
++    public void setFeeExpenseFinancialObjectCode(String feeExpenseFinancialObjectCode) {
++        this.feeExpenseFinancialObjectCode = feeExpenseFinancialObjectCode;
++    }
++
++
++    public KualiDecimal getFeeAmount() {
++        return feeAmount;
++    }
++
++
++    public void setFeeAmount(KualiDecimal feeAmount) {
++        this.feeAmount = feeAmount;
++    }
++
++
++    public String getClearingChartOfAccountsCode() {
++        return clearingChartOfAccountsCode;
++    }
++
++
++    public void setClearingChartOfAccountsCode(String clearingChartOfAccountsCode) {
++        this.clearingChartOfAccountsCode = clearingChartOfAccountsCode;
++    }
++
++
++    public String getClearingAccountNumber() {
++        return clearingAccountNumber;
++    }
++
++
++    public void setClearingAccountNumber(String clearingAccountNumber) {
++        this.clearingAccountNumber = clearingAccountNumber;
++    }
++
++
++    public String getClearingFinancialObjectCode() {
++        return clearingFinancialObjectCode;
++    }
++
++
++    public void setClearingFinancialObjectCode(String clearingFinancialObjectCode) {
++        this.clearingFinancialObjectCode = clearingFinancialObjectCode;
++    }
++
++
++    public boolean isActive() {
++        return active;
++    }
++
++
++    public void setActive(boolean active) {
++        this.active = active;
++    }
++
++
++    public Chart getChartOfAccounts() {
++        return chartOfAccounts;
++    }
++
++
++    public void setChartOfAccounts(Chart chartOfAccounts) {
++        this.chartOfAccounts = chartOfAccounts;
++    }
++
++
++    public Chart getFeeIncomeChartOfAccounts() {
++        return feeIncomeChartOfAccounts;
++    }
++
++
++    public void setFeeIncomeChartOfAccounts(Chart feeIncomeChartOfAccounts) {
++        this.feeIncomeChartOfAccounts = feeIncomeChartOfAccounts;
++    }
++
++
++    public Account getFeeIncomeAccount() {
++        return feeIncomeAccount;
++    }
++
++
++    public void setFeeIncomeAccount(Account feeIncomeAccount) {
++        this.feeIncomeAccount = feeIncomeAccount;
++    }
++
++
++    public ObjectCodeCurrent getFeeIncomeFinancialObject() {
++        return feeIncomeFinancialObject;
++    }
++
++
++    public void setFeeIncomeFinancialObject(ObjectCodeCurrent feeIncomeFinancialObject) {
++        this.feeIncomeFinancialObject = feeIncomeFinancialObject;
++    }
++
++
++    public ObjectCodeCurrent getFeeExpenseFinancialObject() {
++        return feeExpenseFinancialObject;
++    }
++
++
++    public void setFeeExpenseFinancialObject(ObjectCodeCurrent feeExpenseFinancialObject) {
++        this.feeExpenseFinancialObject = feeExpenseFinancialObject;
++    }
++
++
++    public Chart getClearingChartOfAccounts() {
++        return clearingChartOfAccounts;
++    }
++
++
++    public void setClearingChartOfAccounts(Chart clearingChartOfAccounts) {
++        this.clearingChartOfAccounts = clearingChartOfAccounts;
++    }
++
++
++    public Account getClearingAccount() {
++        return clearingAccount;
++    }
++
++
++    public void setClearingAccount(Account clearingAccount) {
++        this.clearingAccount = clearingAccount;
++    }
++
++
++    public ObjectCodeCurrent getClearingFinancialObject() {
++        return clearingFinancialObject;
++    }
++
++
++    public void setClearingFinancialObject(ObjectCodeCurrent clearingFinancialObject) {
++        this.clearingFinancialObject = clearingFinancialObject;
++    }
++}
+Index: work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinder.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinder.java	(revision 0)
++++ work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinder.java	(revision 10347)
+@@ -0,0 +1,69 @@
++/*
++ * Copyright 2007 The Kuali Foundation
++ * 
++ * Licensed under the Educational Community License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl2.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.fp.businessobject.options;
++
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.rice.core.util.KeyLabelPair;
++import org.kuali.rice.kns.lookup.keyvalues.KeyValuesBase;
++import org.kuali.rice.kns.service.BusinessObjectService;
++
++import edu.arizona.kfs.fp.businessobject.PaymentMethod;
++
++/**
++ * This class returns list of payment method key value pairs.
++ * 
++ * Customization for UA: addition of "A" type for credit card payments.
++ * 
++ * @author jonathan
++ * @see org.kuali.kfs.fp.businessobject.options.PaymentMethodValuesFinder
++ */
++public class PaymentMethodValuesFinder extends KeyValuesBase {
++    private static BusinessObjectService businessObjectService;
++    static private Map<String,String> filterCriteria = new HashMap<String, String>();
++    static {
++        filterCriteria.put("active", "Y");
++    }
++    
++    /*
++     * @see org.kuali.keyvalues.KeyValuesFinder#getKeyValues()
++     */
++    public List<KeyLabelPair> getKeyValues() {
++        Collection<PaymentMethod> paymentMethods = getBusinessObjectService().findMatching(PaymentMethod.class, getFilterCriteria());
++        List<KeyLabelPair> labels = new ArrayList<KeyLabelPair>( paymentMethods.size() );       
++        for ( PaymentMethod pm : paymentMethods ) {
++            labels.add(new KeyLabelPair(pm.getPaymentMethodCode(), pm.getPaymentMethodCode() + " - " + pm.getPaymentMethodName()));
++        }
++        return labels;
++    }
++
++    protected BusinessObjectService getBusinessObjectService() {
++        if ( businessObjectService == null ) {
++            businessObjectService = SpringContext.getBean(BusinessObjectService.class);
++        }
++        return businessObjectService;
++    }
++    
++    protected Map<String,String> getFilterCriteria() {
++        return filterCriteria;
++    }
++    
++}
+Index: work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java	(revision 0)
++++ work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java	(revision 10347)
+@@ -0,0 +1,48 @@
++/*
++ * Copyright 2007 The Kuali Foundation
++ * 
++ * Licensed under the Educational Community License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl2.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.fp.businessobject.options;
++
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.rice.core.util.KeyLabelPair;
++import org.kuali.rice.kns.lookup.keyvalues.KeyValuesBase;
++import org.kuali.rice.kns.service.BusinessObjectService;
++
++import edu.arizona.kfs.fp.businessobject.PaymentMethod;
++
++/**
++ * This class returns list of payment method key value pairs.
++ * 
++ * Customization for UA: addition of "A" type for credit card payments.
++ * 
++ * @author jonathan
++ * @see org.kuali.kfs.fp.businessobject.options.PaymentMethodValuesFinder
++ */
++public class PaymentMethodsForDVValuesFinder extends PaymentMethodValuesFinder {
++    static private Map<String,String> filterCriteria = new HashMap<String, String>();
++    static {
++        filterCriteria.put("active", "Y");
++        filterCriteria.put("displayOnDisbursementVoucherDocument", "Y");
++    }    
++    protected Map<String,String> getFilterCriteria() {
++        return filterCriteria;
++    }
++}
+Index: work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForVendorValuesFinder.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForVendorValuesFinder.java	(revision 0)
++++ work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForVendorValuesFinder.java	(revision 10347)
+@@ -0,0 +1,49 @@
++/*
++ * Copyright 2007 The Kuali Foundation
++ * 
++ * Licensed under the Educational Community License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl2.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.fp.businessobject.options;
++
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.rice.core.util.KeyLabelPair;
++import org.kuali.rice.kns.lookup.keyvalues.KeyValuesBase;
++import org.kuali.rice.kns.service.BusinessObjectService;
++
++import edu.arizona.kfs.fp.businessobject.PaymentMethod;
++
++/**
++ * This class returns list of payment method key value pairs.
++ * 
++ * Customization for UA: addition of "A" type for credit card payments.
++ * 
++ * @author jonathan
++ * @see org.kuali.kfs.fp.businessobject.options.PaymentMethodValuesFinder
++ */
++public class PaymentMethodsForVendorValuesFinder extends PaymentMethodValuesFinder {
++    static private Map<String,String> filterCriteria = new HashMap<String, String>();
++    static {
++        filterCriteria.put("active", "Y");
++        filterCriteria.put("displayOnVendorDocument", "Y");
++    }
++    
++    protected Map<String,String> getFilterCriteria() {
++        return filterCriteria;
++    }    
++}
+Index: work/src/edu/arizona/kfs/fp/businessobject/PaymentMethod.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/businessobject/PaymentMethod.java	(revision 0)
++++ work/src/edu/arizona/kfs/fp/businessobject/PaymentMethod.java	(revision 10347)
+@@ -0,0 +1,176 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.fp.businessobject;
++
++import java.util.LinkedHashMap;
++import java.util.List;
++
++import org.kuali.kfs.sys.businessobject.Bank;
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.rice.kns.bo.Inactivateable;
++import org.kuali.rice.kns.bo.PersistableBusinessObjectBase;
++import org.kuali.rice.kns.service.DateTimeService;
++import org.kuali.rice.kns.util.ObjectUtils;
++import org.kuali.rice.kns.util.TypedArrayList;
++
++public class PaymentMethod extends PersistableBusinessObjectBase implements Inactivateable {
++
++    protected String paymentMethodCode;
++    protected String paymentMethodName;
++    protected String bankCode;
++    protected boolean assessedFees;
++    protected boolean processedUsingPdp;
++    protected boolean interdepartmentalPayment;
++    protected boolean offsetUsingClearingAccount;
++    protected boolean displayOnDisbursementVoucherDocument;
++    protected boolean displayOnVendorDocument;
++    protected boolean active = true;
++    
++    protected List<PaymentMethodChart> paymentMethodCharts = new TypedArrayList(PaymentMethodChart.class);
++    
++    protected Bank bank;
++    
++    @SuppressWarnings("unchecked")
++    @Override
++    protected LinkedHashMap toStringMapper() {
++        LinkedHashMap<String, String> lhm = new LinkedHashMap<String, String>();
++        lhm.put("paymentMethodCode", paymentMethodCode);
++        lhm.put("paymentMethodName", paymentMethodName);
++        return lhm;
++    }
++
++    public String getPaymentMethodCode() {
++        return paymentMethodCode;
++    }
++
++    public void setPaymentMethodCode(String paymentMethodCode) {
++        this.paymentMethodCode = paymentMethodCode;
++    }
++
++    public String getPaymentMethodName() {
++        return paymentMethodName;
++    }
++
++    public void setPaymentMethodName(String paymentMethodName) {
++        this.paymentMethodName = paymentMethodName;
++    }
++
++    public String getBankCode() {
++        return bankCode;
++    }
++
++    public void setBankCode(String bankCode) {
++        this.bankCode = bankCode;
++    }
++
++    public boolean isAssessedFees() {
++        return assessedFees;
++    }
++
++    public void setAssessedFees(boolean assesedFees) {
++        this.assessedFees = assesedFees;
++    }
++
++    public boolean isProcessedUsingPdp() {
++        return processedUsingPdp;
++    }
++
++    public void setProcessedUsingPdp(boolean processedUsingPdp) {
++        this.processedUsingPdp = processedUsingPdp;
++    }
++
++    public boolean isInterdepartmentalPayment() {
++        return interdepartmentalPayment;
++    }
++
++    public void setInterdepartmentalPayment(boolean interdepartmentalPayment) {
++        this.interdepartmentalPayment = interdepartmentalPayment;
++    }
++
++    public boolean isOffsetUsingClearingAccount() {
++        return offsetUsingClearingAccount;
++    }
++
++    public void setOffsetUsingClearingAccount(boolean offsetUsingClearingAccount) {
++        this.offsetUsingClearingAccount = offsetUsingClearingAccount;
++    }
++
++    public boolean isActive() {
++        return active;
++    }
++
++    public void setActive(boolean active) {
++        this.active = active;
++    }
++
++    public List<PaymentMethodChart> getPaymentMethodCharts() {
++        return paymentMethodCharts;
++    }
++
++    public void setPaymentMethodCharts(List<PaymentMethodChart> paymentMethodCharts) {
++        this.paymentMethodCharts = paymentMethodCharts;
++    }
++
++    public Bank getBank() {
++        return bank;
++    }
++
++    public void setBank(Bank bank) {
++        this.bank = bank;
++    }
++
++    /**
++     * Returns the PaymentMethodChart record applicable for the given chart and transaction date.
++     * 
++     * @param chartOfAccountsCode
++     * @param transDate The date of the transaction.  Used for comparing to the effective date on the records.  If null, the current date will be pulled from the DateTimeService.
++     * @return Applicable PaymentMethodChart object.  <b>null</b> if none is found.
++     */
++    public PaymentMethodChart getPaymentMethodChartInfo( String chartOfAccountsCode, java.sql.Date transDate ) {
++        if ( transDate == null ) {
++            transDate = SpringContext.getBean(DateTimeService.class).getCurrentSqlDate();
++        }
++        if ( ObjectUtils.isNotNull(getPaymentMethodCharts()) && chartOfAccountsCode != null ) {
++            // pull the first one matching the chart where the date is before/equal to today
++            // the ORM mapping ensures that these are retrieved in reverse date order,
++            // so the first one found will be the effective entry
++            for ( PaymentMethodChart pmc : getPaymentMethodCharts() ) {
++                if ( pmc.getChartOfAccountsCode().equals(chartOfAccountsCode)
++                        && transDate.after(pmc.getEffectiveDate()) ) {
++                    return pmc;
++                }
++            }
++        }
++        return null;
++    }
++
++    public boolean isDisplayOnDisbursementVoucherDocument() {
++        return displayOnDisbursementVoucherDocument;
++    }
++
++    public void setDisplayOnDisbursementVoucherDocument(boolean displayOnDisbursementVoucherDocument) {
++        this.displayOnDisbursementVoucherDocument = displayOnDisbursementVoucherDocument;
++    }
++
++    public boolean isDisplayOnVendorDocument() {
++        return displayOnVendorDocument;
++    }
++
++    public void setDisplayOnVendorDocument(boolean displayOnVendorDocument) {
++        this.displayOnVendorDocument = displayOnVendorDocument;
++    }
++    
++}
+Index: work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethodChart.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethodChart.xml	(revision 0)
++++ work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethodChart.xml	(revision 10347)
+@@ -0,0 +1,113 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++	xmlns:p="http://www.springframework.org/schema/p"
++	xsi:schemaLocation="http://www.springframework.org/schema/beans         http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
++
++	<bean id="PaymentMethodChart" parent="PaymentMethodChart-parentBean" />
++
++	<bean id="PaymentMethodChart-parentBean" abstract="true" parent="BusinessObjectEntry">
++		<property name="businessObjectClass" value="edu.arizona.kfs.fp.businessobject.PaymentMethodChart" />
++		<property name="objectLabel" value="Payment Method" />
++		<property name="attributes">
++			<list>
++				<ref bean="PaymentMethodChart-paymentMethodCode" />
++				<ref bean="PaymentMethodChart-chartOfAccountsCode" />
++				<ref bean="PaymentMethodChart-effectiveDate" />
++				<ref bean="PaymentMethodChart-feeIncomeChartOfAccountsCode" />
++				<ref bean="PaymentMethodChart-feeIncomeAccountNumber" />
++				<ref bean="PaymentMethodChart-feeIncomeFinancialObjectCode" />
++				<ref bean="PaymentMethodChart-feeExpenseFinancialObjectCode" />
++				<ref bean="PaymentMethodChart-feeAmount" />
++				<ref bean="PaymentMethodChart-clearingChartOfAccountsCode" />
++				<ref bean="PaymentMethodChart-clearingAccountNumber" />
++				<ref bean="PaymentMethodChart-clearingFinancialObjectCode" />
++				<ref bean="PaymentMethodChart-active" />
++			</list>
++		</property>
++	</bean>
++
++	<!-- Attribute Definitions -->
++
++	<bean id="PaymentMethodChart-paymentMethodCode" parent="PaymentMethodChart-paymentMethodCode-parentBean" />
++	<bean id="PaymentMethodChart-paymentMethodCode-parentBean" abstract="true" parent="PaymentMethod-paymentMethodCode" />
++
++	<bean id="PaymentMethodChart-chartOfAccountsCode" parent="PaymentMethodChart-chartOfAccountsCode-parentBean" />
++	<bean id="PaymentMethodChart-chartOfAccountsCode-parentBean" abstract="true" parent="Chart-chartOfAccountsCode" />
++
++	<bean id="PaymentMethodChart-effectiveDate" parent="PaymentMethodChart-effectiveDate-parentBean" />
++	<bean id="PaymentMethodChart-effectiveDate-parentBean" abstract="true" parent="GenericAttributes-genericDate">
++		<property name="name" value="effectiveDate" />
++		<property name="label" value="Effective Date" />
++		<property name="shortLabel" value="EffDate" />
++	</bean>
++
++	<bean id="PaymentMethodChart-feeIncomeChartOfAccountsCode" parent="PaymentMethodChart-feeIncomeChartOfAccountsCode-parentBean" />
++	<bean id="PaymentMethodChart-feeIncomeChartOfAccountsCode-parentBean" abstract="true" parent="Chart-chartOfAccountsCode">
++		<property name="name" value="feeIncomeChartOfAccountsCode" />
++		<property name="label" value="Fee Chart Code" />
++		<property name="shortLabel" value="FeeChart" />
++		<property name="required" value="false" />
++	</bean>
++
++	<bean id="PaymentMethodChart-feeIncomeAccountNumber" parent="PaymentMethodChart-feeIncomeAccountNumber-parentBean" />
++	<bean id="PaymentMethodChart-feeIncomeAccountNumber-parentBean" abstract="true" parent="Account-accountNumber">
++		<property name="name" value="feeIncomeAccountNumber" />
++		<property name="label" value="Fee Account Number" />
++		<property name="shortLabel" value="FeeAcct" />
++		<property name="required" value="false" />
++	</bean>
++
++	<bean id="PaymentMethodChart-feeIncomeFinancialObjectCode" parent="PaymentMethodChart-feeIncomeFinancialObjectCode-parentBean" />
++	<bean id="PaymentMethodChart-feeIncomeFinancialObjectCode-parentBean" abstract="true" parent="ObjectCode-financialObjectCode">
++		<property name="name" value="feeIncomeFinancialObjectCode" />
++		<property name="label" value="Fee Income Object Code" />
++		<property name="shortLabel" value="FeeIncObj" />
++		<property name="required" value="false" />
++	</bean>
++
++	<bean id="PaymentMethodChart-feeExpenseFinancialObjectCode" parent="PaymentMethodChart-feeExpenseFinancialObjectCode-parentBean" />
++	<bean id="PaymentMethodChart-feeExpenseFinancialObjectCode-parentBean" abstract="true" parent="ObjectCode-financialObjectCode">
++		<property name="name" value="feeExpenseFinancialObjectCode" />
++		<property name="label" value="Departmental Fee Expense Object Code" />
++		<property name="shortLabel" value="FeeExpObj" />
++		<property name="required" value="false" />
++	</bean>
++
++	<bean id="PaymentMethodChart-feeAmount" parent="PaymentMethodChart-feeAmount-parentBean" />
++	<bean id="PaymentMethodChart-feeAmount-parentBean" abstract="true" parent="GenericAttributes-genericAmount">
++		<property name="name" value="feeAmount" />
++		<property name="label" value="Fee Amount" />
++		<property name="shortLabel" value="FeeAmt" />
++		<property name="required" value="false" />
++	</bean>
++
++	<bean id="PaymentMethodChart-clearingChartOfAccountsCode" parent="PaymentMethodChart-clearingChartOfAccountsCode-parentBean" />
++	<bean id="PaymentMethodChart-clearingChartOfAccountsCode-parentBean" abstract="true" parent="Chart-chartOfAccountsCode">
++		<property name="name" value="clearingChartOfAccountsCode" />
++		<property name="label" value="Clearing Chart Code" />
++		<property name="shortLabel" value="ClrChart" />
++		<property name="required" value="false" />
++	</bean>
++
++	<bean id="PaymentMethodChart-clearingAccountNumber" parent="PaymentMethodChart-clearingAccountNumber-parentBean" />
++	<bean id="PaymentMethodChart-clearingAccountNumber-parentBean" abstract="true" parent="Account-accountNumber">
++		<property name="name" value="clearingAccountNumber" />
++		<property name="label" value="Clearing Account Number" />
++		<property name="shortLabel" value="ClrAcct" />
++		<property name="required" value="false" />
++	</bean>
++
++	<bean id="PaymentMethodChart-clearingFinancialObjectCode" parent="PaymentMethodChart-clearingFinancialObjectCode-parentBean" />
++	<bean id="PaymentMethodChart-clearingFinancialObjectCode-parentBean" abstract="true" parent="ObjectCode-financialObjectCode">
++		<property name="name" value="clearingFinancialObjectCode" />
++		<property name="label" value="Clearing Object Code" />
++		<property name="shortLabel" value="ClrObj" />
++		<property name="required" value="false" />
++	</bean>
++
++	<bean id="PaymentMethodChart-active" parent="PaymentMethodChart-active-parentBean" />
++	<bean id="PaymentMethodChart-active-parentBean" abstract="true" parent="GenericAttributes-activeIndicator">
++		<property name="name" value="active" />
++	</bean>
++
++</beans>
+Index: work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml	(revision 0)
++++ work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml	(revision 10347)
+@@ -0,0 +1,231 @@
++<?xml version="1.0" encoding="UTF-8"?><beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p" xsi:schemaLocation="http://www.springframework.org/schema/beans         http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
++
++  <bean id="PaymentMethod" parent="PaymentMethod-parentBean"/>
++
++  <bean id="PaymentMethod-parentBean" abstract="true" parent="BusinessObjectEntry">
++    <property name="businessObjectClass" value="edu.arizona.kfs.fp.businessobject.PaymentMethod"/>
++    <property name="inquiryDefinition" ref="PaymentMethod-inquiryDefinition" />
++    <property name="lookupDefinition" ref="PaymentMethod-lookupDefinition" />
++    <property name="titleAttribute" value="paymentMethodCode"/>
++    <property name="objectLabel" value="Payment Method"/>
++    <property name="attributes">
++      <list>
++        <ref bean="PaymentMethod-paymentMethodCode"/>
++        <ref bean="PaymentMethod-paymentMethodName"/>
++        <ref bean="PaymentMethod-bankCode"/>
++        <ref bean="PaymentMethod-assessedFees"/>
++        <ref bean="PaymentMethod-processedUsingPdp"/>
++        <ref bean="PaymentMethod-interdepartmentalPayment"/>
++        <ref bean="PaymentMethod-offsetUsingClearingAccount"/>
++        <ref bean="PaymentMethod-displayOnDisbursementVoucherDocument"/>
++        <ref bean="PaymentMethod-displayOnVendorDocument"/>
++        <ref bean="PaymentMethod-active"/>
++      </list>
++    </property>
++  </bean>
++
++<!-- Attribute Definitions -->
++
++	<!--
++		New singleton for the payment method values finder, can be referenced
++		by all uses.
++	-->
++	<bean name="PaymentMethodSelectControl" parent="SelectControlDefinition"
++		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodValuesFinder" />
++		
++	<bean name="PaymentMethodsForDVSelectControl" parent="SelectControlDefinition"
++		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodsForDVValuesFinder" />
++
++	<bean name="PaymentMethodsForVendorSelectControl" parent="SelectControlDefinition"
++		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodsForVendorValuesFinder" />
++
++  <bean id="PaymentMethodAttribute-SelectControl" parent="PaymentMethod-paymentMethodCode" p:control-ref="PaymentMethodSelectControl" />
++
++  <bean id="PaymentMethod-paymentMethodCode" parent="PaymentMethod-paymentMethodCode-parentBean"/>
++  <bean id="PaymentMethod-paymentMethodCode-parentBean" abstract="true" parent="AttributeDefinition">
++    <property name="name" value="paymentMethodCode"/>
++    <property name="forceUppercase" value="true"/>
++    <property name="label" value="Payment Method Code"/>
++    <property name="shortLabel" value="PmtMthCd"/>
++    <property name="maxLength" value="1"/>
++    <property name="required" value="true"/>
++    <property name="validationPattern">
++      <bean parent="AlphaValidationPattern" />
++    </property>
++    <property name="control">
++      <bean parent="TextControlDefinition" p:size="2" />
++    </property>
++  </bean>
++
++  <bean id="PaymentMethod-paymentMethodName" parent="PaymentMethod-paymentMethodName-parentBean"/>
++  <bean id="PaymentMethod-paymentMethodName-parentBean" abstract="true" parent="AttributeDefinition">
++    <property name="name" value="paymentMethodName"/>
++    <property name="forceUppercase" value="false"/>
++    <property name="label" value="Payment Method Description"/>
++    <property name="shortLabel" value="PmtMthDesc"/>
++    <property name="maxLength" value="40"/>
++    <property name="required" value="true"/>
++    <property name="validationPattern">
++      <bean parent="AnyCharacterValidationPattern" p:allowWhitespace="true" />
++    </property>
++    <property name="control">
++      <bean parent="TextControlDefinition" p:size="40" />
++    </property>
++  </bean>
++
++  <bean id="PaymentMethod-bankCode" parent="PaymentMethod-bankCode-parentBean"/>
++  <bean id="PaymentMethod-bankCode-parentBean" abstract="true" parent="Bank-bankCode">
++    <property name="required" value="false"/>
++  </bean>
++
++  <bean id="PaymentMethod-assessedFees" parent="PaymentMethod-assessedFees-parentBean"/>
++  <bean id="PaymentMethod-assessedFees-parentBean" abstract="true" parent="GenericAttributes-genericBoolean">
++    <property name="name" value="assessedFees"/>
++    <property name="label" value="Fee Indicator"/>
++    <property name="shortLabel" value="FeeInd"/>
++  </bean>
++
++  <bean id="PaymentMethod-processedUsingPdp" parent="PaymentMethod-processedUsingPdp-parentBean"/>
++  <bean id="PaymentMethod-processedUsingPdp-parentBean" abstract="true" parent="GenericAttributes-genericBoolean">
++    <property name="name" value="processedUsingPdp"/>
++    <property name="label" value="PDP Indicator"/>
++    <property name="shortLabel" value="PDPInd"/>
++  </bean>
++
++  <bean id="PaymentMethod-interdepartmentalPayment" parent="PaymentMethod-interdepartmentalPayment-parentBean"/>
++  <bean id="PaymentMethod-interdepartmentalPayment-parentBean" abstract="true" parent="GenericAttributes-genericBoolean">
++    <property name="name" value="interdepartmentalPayment"/>
++    <property name="label" value="Interdepartmental Payment Indicator"/>
++    <property name="shortLabel" value="IntDptPmtInd"/>
++  </bean>
++
++  <bean id="PaymentMethod-offsetUsingClearingAccount" parent="PaymentMethod-offsetUsingClearingAccount-parentBean"/>
++  <bean id="PaymentMethod-offsetUsingClearingAccount-parentBean" abstract="true" parent="GenericAttributes-genericBoolean">
++    <property name="name" value="offsetUsingClearingAccount"/>
++    <property name="label" value="Clearing Account Indicator"/>
++    <property name="shortLabel" value="ClrAcctInd"/>
++  </bean>
++
++  <bean id="PaymentMethod-displayOnDisbursementVoucherDocument" parent="PaymentMethod-displayOnDisbursementVoucherDocument-parentBean"/>
++  <bean id="PaymentMethod-displayOnDisbursementVoucherDocument-parentBean" abstract="true" parent="GenericAttributes-genericBoolean">
++    <property name="name" value="displayOnDisbursementVoucherDocument"/>
++    <property name="label" value="Display on DV?"/>
++    <property name="shortLabel" value="On DV?"/>
++  </bean>
++
++  <bean id="PaymentMethod-displayOnVendorDocument" parent="PaymentMethod-displayOnVendorDocument-parentBean"/>
++  <bean id="PaymentMethod-displayOnVendorDocument-parentBean" abstract="true" parent="GenericAttributes-genericBoolean">
++    <property name="name" value="displayOnVendorDocument"/>
++    <property name="label" value="Display on Vendor Doc?"/>
++    <property name="shortLabel" value="Vendor Doc?"/>
++  </bean>
++
++  <bean id="PaymentMethod-active" parent="PaymentMethod-active-parentBean"/>
++  <bean id="PaymentMethod-active-parentBean" abstract="true" parent="GenericAttributes-activeIndicator">
++    <property name="name" value="active"/>
++  </bean>
++
++  <bean id="PaymentMethod-lookupDefinition" parent="PaymentMethod-lookupDefinition-parentBean"/>
++  <bean id="PaymentMethod-lookupDefinition-parentBean" abstract="true" parent="LookupDefinition">
++    <property name="title" value="Payment Method Lookup"/>    
++    <property name="defaultSort">
++      <bean parent="SortDefinition">
++        <property name="attributeNames">
++          <list>
++            <value>paymentMethodCode</value>
++          </list>
++        </property>
++      </bean>
++    </property>
++    <property name="lookupFields">
++      <list>
++        <bean parent="FieldDefinition" p:attributeName="paymentMethodCode"/>
++        <bean parent="FieldDefinition" p:attributeName="paymentMethodName"/>
++        <bean parent="FieldDefinition" p:attributeName="bankCode"/>
++        <bean parent="FieldDefinition" p:attributeName="assessedFees"/>
++        <bean parent="FieldDefinition" p:attributeName="processedUsingPdp"/>
++        <bean parent="FieldDefinition" p:attributeName="interdepartmentalPayment"/>
++        <bean parent="FieldDefinition" p:attributeName="offsetUsingClearingAccount"/>
++        <bean parent="FieldDefinition" p:attributeName="displayOnDisbursementVoucherDocument"/>
++        <bean parent="FieldDefinition" p:attributeName="displayOnVendorDocument"/>
++        <bean parent="FieldDefinition" p:attributeName="active"/>
++      </list>
++    </property>
++    <property name="resultFields">
++      <list>
++        <bean parent="FieldDefinition" p:attributeName="paymentMethodCode"/>
++        <bean parent="FieldDefinition" p:attributeName="paymentMethodName"/>
++        <bean parent="FieldDefinition" p:attributeName="bankCode"/>
++        <bean parent="FieldDefinition" p:attributeName="assessedFees"/>
++        <bean parent="FieldDefinition" p:attributeName="processedUsingPdp"/>
++        <bean parent="FieldDefinition" p:attributeName="interdepartmentalPayment"/>
++        <bean parent="FieldDefinition" p:attributeName="offsetUsingClearingAccount"/>
++        <bean parent="FieldDefinition" p:attributeName="displayOnDisbursementVoucherDocument"/>
++        <bean parent="FieldDefinition" p:attributeName="displayOnVendorDocument"/>
++        <bean parent="FieldDefinition" p:attributeName="active"/>
++      </list>
++    </property>
++  </bean>
++
++  <bean id="PaymentMethod-inquiryDefinition" parent="PaymentMethod-inquiryDefinition-parentBean"/>
++  <bean id="PaymentMethod-inquiryDefinition-parentBean" abstract="true" parent="InquiryDefinition">
++    <property name="title" value="Payment Method Inquiry"/>
++    <property name="inquirySections">
++      <list>
++        <bean parent="InquirySectionDefinition">
++          <property name="title" value="Payment Method"/>
++          <property name="numberOfColumns" value="1"/>
++          <property name="inquiryFields">
++            <list>
++		        <bean parent="FieldDefinition" p:attributeName="paymentMethodCode" p:noInquiry="true" />
++		        <bean parent="FieldDefinition" p:attributeName="paymentMethodName"/>
++		        <bean parent="FieldDefinition" p:attributeName="bankCode"/>
++		        <bean parent="FieldDefinition" p:attributeName="assessedFees"/>
++		        <bean parent="FieldDefinition" p:attributeName="processedUsingPdp"/>
++		        <bean parent="FieldDefinition" p:attributeName="interdepartmentalPayment"/>
++		        <bean parent="FieldDefinition" p:attributeName="offsetUsingClearingAccount"/>
++		        <bean parent="FieldDefinition" p:attributeName="displayOnDisbursementVoucherDocument"/>
++		        <bean parent="FieldDefinition" p:attributeName="displayOnVendorDocument"/>
++		        <bean parent="FieldDefinition" p:attributeName="active"/>
++            </list>
++          </property>
++        </bean>
++        <bean parent="InquirySectionDefinition">
++          <property name="title" value="Payment Method Charts"/>
++          <property name="inquiryFields">
++           	<list>
++		        <bean parent="InquiryCollectionDefinition">
++		          <property name="attributeName" value="paymentMethodCharts"/>
++		          <property name="businessObjectClass" value="edu.arizona.kfs.fp.businessobject.PaymentMethodChart"/>
++		          <property name="numberOfColumns" value="1"/>
++                  <property name="summaryTitle" value="Chart/Eff. Date"/>
++		          <property name="summaryFields">
++		            <list>
++		              <bean parent="FieldDefinition" p:attributeName="chartOfAccountsCode"/>
++		              <bean parent="FieldDefinition" p:attributeName="effectiveDate"/>
++		            </list>
++		          </property>
++		          <property name="inquiryFields">
++		            <list>
++		              <bean parent="FieldDefinition" p:attributeName="chartOfAccountsCode"/>
++		              <bean parent="FieldDefinition" p:attributeName="effectiveDate"/>
++		              <bean parent="FieldDefinition" p:attributeName="feeIncomeChartOfAccountsCode"/>
++		              <bean parent="FieldDefinition" p:attributeName="feeIncomeAccountNumber"/>
++		              <bean parent="FieldDefinition" p:attributeName="feeIncomeFinancialObjectCode"/>
++		              <bean parent="FieldDefinition" p:attributeName="feeExpenseFinancialObjectCode"/>
++		              <bean parent="FieldDefinition" p:attributeName="feeAmount"/>
++		              <bean parent="FieldDefinition" p:attributeName="clearingChartOfAccountsCode"/>
++		              <bean parent="FieldDefinition" p:attributeName="clearingAccountNumber"/>
++		              <bean parent="FieldDefinition" p:attributeName="clearingFinancialObjectCode"/>
++		              <bean parent="FieldDefinition" p:attributeName="active"/>
++		            </list>
++		          </property>
++		        </bean>
++	        </list>
++          </property>
++        </bean>
++      </list>
++    </property>
++  </bean>
++
++</beans>
+Index: work/src/edu/arizona/kfs/fp/ojb-fp.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/ojb-fp.xml	(revision 10346)
++++ work/src/edu/arizona/kfs/fp/ojb-fp.xml	(revision 10347)
+@@ -594,6 +594,76 @@
+     <field-descriptor name="itemTotal" column="ITEM_TOTAL" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion" />        
+ </class-descriptor>
+ 
++<!-- Payment Method Descriptors - MOD-PA2000-01 -->
++<class-descriptor class="edu.arizona.kfs.fp.businessobject.PaymentMethod" table="FP_PMT_MTHD_T">
++    <field-descriptor name="paymentMethodCode"          column="PMT_MTHD_CD" jdbc-type="VARCHAR" primarykey="true" index="true" />
++    <field-descriptor name="objectId"                   column="OBJ_ID" jdbc-type="VARCHAR" index="true" />
++    <field-descriptor name="versionNumber"              column="VER_NBR" jdbc-type="BIGINT" locking="true" />
++    <field-descriptor name="paymentMethodName"          column="pmt_mthd_nm" jdbc-type="VARCHAR" />
++    <field-descriptor name="bankCode"                   column="bnk_cd" jdbc-type="VARCHAR" />
++    <field-descriptor name="assessedFees"               column="fee_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++    <field-descriptor name="processedUsingPdp"          column="pdp_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++    <field-descriptor name="interdepartmentalPayment"   column="interdept_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++    <field-descriptor name="offsetUsingClearingAccount" column="clr_acct_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++    <field-descriptor name="displayOnDisbursementVoucherDocument" column="dv_display_ind"     jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++    <field-descriptor name="displayOnVendorDocument"              column="vendor_display_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++    <field-descriptor name="active"                     column="active_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++    <reference-descriptor name="bank" class-ref="org.kuali.kfs.sys.businessobject.Bank" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++        <foreignkey field-ref="bankCode" />
++    </reference-descriptor>
++    <collection-descriptor name="paymentMethodCharts" proxy="true" element-class-ref="edu.arizona.kfs.fp.businessobject.PaymentMethodChart" 
++    		collection-class="org.apache.ojb.broker.util.collections.ManageableArrayList" auto-retrieve="true" auto-update="object" auto-delete="object">
++        <orderby name="effectiveDate" sort="DESC" />
++        <inverse-foreignkey field-ref="paymentMethodCode" />
++    </collection-descriptor>   
++</class-descriptor>
++
++<class-descriptor class="edu.arizona.kfs.fp.businessobject.PaymentMethodChart" table="FP_PMT_MTHD_CHART_T">
++    <field-descriptor name="paymentMethodCode"             column="PMT_MTHD_CD" jdbc-type="VARCHAR" primarykey="true" />
++    <field-descriptor name="chartOfAccountsCode"           column="fin_coa_cd" jdbc-type="VARCHAR" primarykey="true" />
++    <field-descriptor name="effectiveDate"                 column="eff_dt" jdbc-type="DATE" primarykey="true" />
++    <field-descriptor name="objectId"                      column="OBJ_ID" jdbc-type="VARCHAR" index="true" />
++    <field-descriptor name="versionNumber"                 column="VER_NBR" jdbc-type="BIGINT" locking="true" />
++    <field-descriptor name="feeIncomeChartOfAccountsCode"  column="fee_inc_fin_coa_cd" jdbc-type="VARCHAR" />
++    <field-descriptor name="feeIncomeAccountNumber"        column="fee_inc_account_nbr" jdbc-type="VARCHAR" />
++    <field-descriptor name="feeIncomeFinancialObjectCode"  column="fee_inc_obj_cd" jdbc-type="VARCHAR" />
++    <field-descriptor name="feeExpenseFinancialObjectCode" column="fee_exp_obj_cd" jdbc-type="VARCHAR" />
++    <field-descriptor name="feeAmount"                     column="fee_amt" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion" />
++    <field-descriptor name="clearingChartOfAccountsCode"   column="clr_fin_coa_cd" jdbc-type="VARCHAR" />
++    <field-descriptor name="clearingAccountNumber"         column="clr_account_nbr" jdbc-type="VARCHAR" />
++    <field-descriptor name="clearingFinancialObjectCode"   column="clr_obj_cd" jdbc-type="VARCHAR" />
++    <field-descriptor name="active"                        column="active_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++    <reference-descriptor name="chartOfAccounts" class-ref="org.kuali.kfs.coa.businessobject.Chart" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++        <foreignkey field-ref="chartOfAccountsCode" />
++    </reference-descriptor>
++    <reference-descriptor name="feeIncomeChartOfAccounts" class-ref="org.kuali.kfs.coa.businessobject.Chart" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++        <foreignkey field-ref="feeIncomeChartOfAccountsCode" />
++    </reference-descriptor>
++    <reference-descriptor name="feeExpenseFinancialObject" class-ref="org.kuali.kfs.coa.businessobject.ObjectCodeCurrent" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++        <foreignkey field-ref="chartOfAccountsCode" />
++        <foreignkey field-ref="feeExpenseFinancialObjectCode" />
++    </reference-descriptor>
++    <reference-descriptor name="feeIncomeFinancialObject" class-ref="org.kuali.kfs.coa.businessobject.ObjectCodeCurrent" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++        <foreignkey field-ref="feeIncomeChartOfAccountsCode" />
++        <foreignkey field-ref="feeIncomeFinancialObjectCode" />
++    </reference-descriptor>
++    <reference-descriptor name="feeIncomeAccount" class-ref="org.kuali.kfs.coa.businessobject.Account" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++        <foreignkey field-ref="feeIncomeChartOfAccountsCode" />
++        <foreignkey field-ref="feeIncomeAccountNumber" />
++    </reference-descriptor>
++    <reference-descriptor name="clearingChartOfAccounts" class-ref="org.kuali.kfs.coa.businessobject.Chart" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++        <foreignkey field-ref="clearingChartOfAccountsCode" />
++    </reference-descriptor>
++    <reference-descriptor name="clearingAccount" class-ref="org.kuali.kfs.coa.businessobject.Account" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++        <foreignkey field-ref="clearingChartOfAccountsCode" />
++        <foreignkey field-ref="clearingAccountNumber" />
++    </reference-descriptor>
++    <reference-descriptor name="clearingFinancialObject" class-ref="org.kuali.kfs.coa.businessobject.ObjectCodeCurrent" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++        <foreignkey field-ref="clearingChartOfAccountsCode" />
++        <foreignkey field-ref="clearingFinancialObjectCode" />
++    </reference-descriptor>
++</class-descriptor>
++<!-- END MOD -->
+ <class-descriptor class="edu.arizona.kfs.fp.businessobject.ProcurementCardTranShipSvc" table="FP_PRCRMNT_TRN_SHIP_T">
+     <field-descriptor name="transactionSequenceRowNumber" column="TRN_SEQ_ROW_NBR" jdbc-type="INTEGER" primarykey="true" index="true" />
+     <field-descriptor name="sequenceRowNumber" column="SEQ_ROW_NBR" jdbc-type="INTEGER" primarykey="true" index="true" autoincrement="true" sequence-name="FP_PRCRMNT_TRN_SHIP_SEQ" />
+Index: work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml	(revision 0)
++++ work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml	(revision 10347)
+@@ -0,0 +1,129 @@
++<?xml version="1.0" encoding="UTF-8"?><beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p" xmlns:dd="http://rice.kuali.org/dd" xsi:schemaLocation="http://www.springframework.org/schema/beans         http://www.springframework.org/schema/beans/spring-beans-2.0.xsd         http://rice.kuali.org/dd         http://rice.kuali.org/dd/dd.xsd">
++<!--
++ Copyright 2007-2009 The Kuali Foundation
++ 
++ Licensed under the Educational Community License, Version 2.0 (the "License");
++ you may not use this file except in compliance with the License.
++ You may obtain a copy of the License at
++ 
++ http://www.opensource.org/licenses/ecl2.php
++ 
++ Unless required by applicable law or agreed to in writing, software
++ distributed under the License is distributed on an "AS IS" BASIS,
++ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ See the License for the specific language governing permissions and
++ limitations under the License.
++-->
++
++  <bean id="PaymentMethodMaintenanceDocument" parent="PaymentMethodMaintenanceDocument-parentBean"/>
++  <bean id="PaymentMethodMaintenanceDocument-parentBean" abstract="true" parent="MaintenanceDocumentEntry">
++    <property name="businessObjectClass" value="edu.arizona.kfs.fp.businessobject.PaymentMethod"/>
++    <property name="maintainableClass" value="org.kuali.kfs.sys.document.FinancialSystemMaintainable"/>
++    <property name="maintainableSections">
++      <list>
++        <ref bean="PaymentMethodMaintenanceDocument-Main"/>
++        <ref bean="PaymentMethodMaintenanceDocument-Charts"/>
++      </list>
++    </property>
++    <property name="lockingKeys">
++      <list>
++        <value>paymentMethodCode</value>
++      </list>
++    </property>
++    <property name="documentTypeName" value="PMCD"/>
++    <property name="defaultExistenceChecks">
++      <list>
++        <bean parent="ReferenceDefinition" p:attributeName="bank" p:attributeToHighlightOnFail="bankCode"/>
++        <bean parent="ReferenceDefinition" p:collection="paymentMethodCharts" p:attributeName="chartOfAccounts" p:attributeToHighlightOnFail="chartOfAccountsCode"/>
++        <bean parent="ReferenceDefinition" p:collection="paymentMethodCharts" p:attributeName="feeIncomeChartOfAccounts" p:attributeToHighlightOnFail="feeIncomeChartOfAccountsCode"/>
++        <bean parent="ReferenceDefinition" p:collection="paymentMethodCharts" p:attributeName="feeIncomeAccount" p:attributeToHighlightOnFail="feeIncomeAccountNumber"/>
++        <bean parent="ReferenceDefinition" p:collection="paymentMethodCharts" p:attributeName="feeIncomeFinancialObject" p:attributeToHighlightOnFail="feeIncomeFinancialObjectCode"/>
++        <bean parent="ReferenceDefinition" p:collection="paymentMethodCharts" p:attributeName="feeExpenseFinancialObject" p:attributeToHighlightOnFail="feeExpenseFinancialObjectCode"/>
++        <bean parent="ReferenceDefinition" p:collection="paymentMethodCharts" p:attributeName="clearingChartOfAccounts" p:attributeToHighlightOnFail="clearingChartOfAccountsCode"/>
++        <bean parent="ReferenceDefinition" p:collection="paymentMethodCharts" p:attributeName="clearingAccount" p:attributeToHighlightOnFail="clearingAccountNumber"/>
++        <bean parent="ReferenceDefinition" p:collection="paymentMethodCharts" p:attributeName="clearingFinancialObject" p:attributeToHighlightOnFail="clearingFinancialObjectCode"/>
++      </list>
++    </property>
++    <property name="documentAuthorizerClass" value="org.kuali.kfs.sys.document.authorization.FinancialSystemMaintenanceDocumentAuthorizerBase"/>
++    <property name="businessRulesClass" value="edu.arizona.kfs.fp.document.validation.impl.PaymentMethodRule"/>
++    <!-- 
++    <property name="documentPresentationControllerClass" value=""/>
++    <property name="promptBeforeValidationClass" value="edu.arizona.kfs.fp.document.validation.impl.PaymentMethodPromptBeforeValidation"/>
++     -->
++    <property name="workflowAttributes">
++    	<ref bean="PaymentMethodMaintenanceDocument-workflowAttributes"/>
++    </property>
++    
++  </bean>
++
++<!-- Maintenance Section Definitions -->
++
++
++  <bean id="PaymentMethodMaintenanceDocument-Main" parent="PaymentMethodMaintenanceDocument-Main-parentBean"/>
++  <bean id="PaymentMethodMaintenanceDocument-Main-parentBean" abstract="true" parent="MaintainableSectionDefinition">
++    <property name="id" value="Main"/>
++    <property name="title" value="Payment Method"/>
++    <property name="maintainableItems">
++      <list>
++        <bean parent="MaintainableFieldDefinition" p:name="paymentMethodCode"/>
++        <bean parent="MaintainableFieldDefinition" p:name="paymentMethodName"/>
++        <bean parent="MaintainableFieldDefinition" p:name="bankCode"/>
++        <bean parent="MaintainableFieldDefinition" p:name="assessedFees"/>
++        <bean parent="MaintainableFieldDefinition" p:name="processedUsingPdp"/>
++        <bean parent="MaintainableFieldDefinition" p:name="interdepartmentalPayment"/>
++        <bean parent="MaintainableFieldDefinition" p:name="offsetUsingClearingAccount"/>
++        <!-- 
++        <bean parent="MaintainableFieldDefinition" p:name="active"/>
++         -->
++      </list>
++    </property>
++  </bean>
++  
++  <bean id="PaymentMethodMaintenanceDocument-Charts" parent="PaymentMethodMaintenanceDocument-Charts-parentBean"/>
++  <bean id="PaymentMethodMaintenanceDocument-Charts-parentBean" abstract="true" parent="MaintainableSectionDefinition">
++    <property name="id" value="Charts"/>
++    <property name="title" value="Payment Method Chart Information"/>
++    <property name="maintainableItems">
++      <list>
++        <bean parent="MaintainableCollectionDefinition">
++          <property name="name" value="paymentMethodCharts"/>
++          <property name="businessObjectClass" value="edu.arizona.kfs.fp.businessobject.PaymentMethodChart"/>
++          <property name="summaryTitle" value="Chart/Eff. Date"/>
++          <property name="summaryFields">
++            <list>
++              <bean parent="MaintainableFieldDefinition" p:name="chartOfAccountsCode"/>
++              <bean parent="MaintainableFieldDefinition" p:name="effectiveDate" />
++            </list>
++          </property>
++          <property name="maintainableFields">
++            <list>
++              <bean parent="MaintainableFieldDefinition" p:name="chartOfAccountsCode" p:required="true"/>
++              <bean parent="MaintainableFieldDefinition" p:name="effectiveDate" p:required="true"/>
++              <!-- 
++              <bean parent="MaintainableFieldDefinition" p:name="active"/>
++               -->
++              <!-- 
++	          <bean parent="MaintainableSubSectionHeaderDefinition" p:name="Payment Method Fee Information"/>
++	           -->
++              <bean parent="MaintainableFieldDefinition" p:name="feeIncomeChartOfAccountsCode" p:readOnlyAfterAdd="true" />
++              <bean parent="MaintainableFieldDefinition" p:name="feeIncomeAccountNumber" p:readOnlyAfterAdd="true" />
++              <bean parent="MaintainableFieldDefinition" p:name="feeIncomeFinancialObjectCode" p:readOnlyAfterAdd="true" />
++              <bean parent="MaintainableFieldDefinition" p:name="feeExpenseFinancialObjectCode" p:readOnlyAfterAdd="true" />
++              <bean parent="MaintainableFieldDefinition" p:name="feeAmount" p:readOnlyAfterAdd="true" />
++              <!-- 
++	          <bean parent="MaintainableSubSectionHeaderDefinition" p:name="Clearing Account"/>
++	           -->
++              <bean parent="MaintainableFieldDefinition" p:name="clearingChartOfAccountsCode" p:readOnlyAfterAdd="true" />
++              <bean parent="MaintainableFieldDefinition" p:name="clearingAccountNumber" p:readOnlyAfterAdd="true" />
++              <bean parent="MaintainableFieldDefinition" p:name="clearingFinancialObjectCode" p:readOnlyAfterAdd="true" />
++            </list>
++          </property>
++        </bean>
++      </list>
++    </property>
++  </bean>
++
++    <!-- workflow attributes for routing -->
++    <bean id="PaymentMethodMaintenanceDocument-workflowAttributes" parent="WorkflowAttributes"/>
++    	  	  
++</beans>
+Index: work/src/edu/arizona/kfs/fp/document/validation/impl/PaymentMethodRule.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/document/validation/impl/PaymentMethodRule.java	(revision 0)
++++ work/src/edu/arizona/kfs/fp/document/validation/impl/PaymentMethodRule.java	(revision 10347)
+@@ -0,0 +1,206 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.fp.document.validation.impl;
++
++import org.apache.commons.lang.StringUtils;
++import org.kuali.kfs.sys.KFSConstants;
++import org.kuali.kfs.sys.document.validation.impl.KfsMaintenanceDocumentRuleBase;
++import org.kuali.rice.kns.bo.PersistableBusinessObject;
++import org.kuali.rice.kns.document.MaintenanceDocument;
++import org.kuali.rice.kns.util.GlobalVariables;
++
++import edu.arizona.kfs.fp.businessobject.PaymentMethod;
++import edu.arizona.kfs.fp.businessobject.PaymentMethodChart;
++
++public class PaymentMethodRule extends KfsMaintenanceDocumentRuleBase {
++
++    protected static final String ERROR_NO_BANK_WHEN_INTERDEPT = "error.document.paymentmethod.no.bank.when.interdept";
++    protected static final String ERROR_NOT_PDP_AND_INTERDEPT = "error.document.paymentmethod.not.pdp.and.interdept";
++    protected static final String ERROR_FLAGREQUIRED = "error.document.paymentmethod.flagrequired";
++    protected static final String WARNING_CLEARING_OBJECT_NOTREQUIRED = "warning.document.paymentmethod.clearing.object.notrequired";
++    protected static final String WARNING_CLEARING_ACCOUNT_NOTREQUIRED = "warning.document.paymentmethod.clearing.account.notrequired";
++    protected static final String WARNING_CLEARING_CHART_NOTREQUIRED = "warning.document.paymentmethod.clearing.chart.notrequired";
++    protected static final String ERROR_CLEARING_OBJECT_REQUIRED = "error.document.paymentmethod.clearing.object.required";
++    protected static final String ERROR_CLEARING_ACCOUNT_REQUIRED = "error.document.paymentmethod.clearing.account.required";
++    protected static final String ERROR_CLEARING_CHART_REQUIRED = "error.document.paymentmethod.clearing.chart.required";
++    protected static final String ERROR_EFFECTIVEDATE_INPAST = "error.document.paymentmethod.effectivedate.inpast";
++    protected static final String WARNING_FEE_AMOUNT_NOTREQUIRED = "warning.document.paymentmethod.fee.amount.notrequired";
++    protected static final String WARNING_FEE_EXPOBJ_NOTREQUIRED = "warning.document.paymentmethod.fee.expobj.notrequired";
++    protected static final String WARNING_FEE_INCOBJ_NOTREQUIRED = "warning.document.paymentmethod.fee.incobj.notrequired";
++    protected static final String WARNING_FEE_ACCOUNT_NOTREQUIRED = "warning.document.paymentmethod.fee.account.notrequired";
++    protected static final String WARNING_FEE_CHART_NOTREQUIRED = "warning.document.paymentmethod.fee.chart.notrequired";
++    protected static final String ERROR_FEE_AMOUNT_REQUIRED = "error.document.paymentmethod.fee.amount.required";
++    protected static final String ERROR_FEE_EXPOBJ_REQUIRED = "error.document.paymentmethod.fee.expobj.required";
++    protected static final String ERROR_FEE_INCOBJ_REQUIRED = "error.document.paymentmethod.fee.incobj.required";
++    protected static final String ERROR_FEE_ACCOUNT_REQUIRED = "error.document.paymentmethod.fee.account.required";
++    protected static final String ERROR_FEE_CHART_REQUIRED = "error.document.paymentmethod.fee.chart.required";
++
++    @Override
++    protected boolean processCustomRouteDocumentBusinessRules(MaintenanceDocument document) {
++        boolean continueRouting = super.processCustomRouteDocumentBusinessRules(document);
++        PaymentMethod paymentMethod = (PaymentMethod)document.getNewMaintainableObject().getBusinessObject();
++        // checks on the main record
++        GlobalVariables.getMessageMap().clearErrorPath();
++        GlobalVariables.getMessageMap().addToErrorPath("document.newMaintainableObject");
++        
++        continueRouting &= sanityCheckFlags( paymentMethod );
++        continueRouting &= checkNeedForBankCode(paymentMethod);
++        
++        // checks on the chart records
++        for ( int i = 0; i < paymentMethod.getPaymentMethodCharts().size(); i++ ) {
++            GlobalVariables.getMessageMap().addToErrorPath("paymentMethodCharts["+i+"]");
++            PaymentMethodChart paymentMethodChart = paymentMethod.getPaymentMethodCharts().get(i);
++            if ( paymentMethodChart.isNewCollectionRecord() ) {
++                continueRouting &= isNewEffectiveDateInFuture( paymentMethod.getPaymentMethodCharts().get(i) );
++                continueRouting &= checkFeeInformation( paymentMethod, paymentMethod.getPaymentMethodCharts().get(i) );
++                continueRouting &= checkClearingAccountInformation( paymentMethod, paymentMethod.getPaymentMethodCharts().get(i) );
++            }
++            
++            GlobalVariables.getMessageMap().removeFromErrorPath("paymentMethodCharts["+i+"]");
++        }
++        GlobalVariables.getMessageMap().removeFromErrorPath("document.newMaintainableObject");
++        
++        return continueRouting;
++    }
++    
++    protected boolean isNewEffectiveDateInFuture( PaymentMethodChart paymentMethodChart ) {        
++        // check if new, if so, they must have a future date
++        if ( paymentMethodChart.getEffectiveDate() != null ) {
++            if ( paymentMethodChart.getEffectiveDate().before( getDateTimeService().getCurrentDate() ) ) {
++                GlobalVariables.getMessageMap().putError("effectiveDate", ERROR_EFFECTIVEDATE_INPAST, (String[])null);            
++                return false;
++            }
++        }
++        return true;
++    }
++    
++    protected boolean checkFeeInformation( PaymentMethod paymentMethod, PaymentMethodChart paymentMethodChart ) {
++        boolean continueRouting = true;
++        if ( paymentMethod.isAssessedFees() ) {
++            if ( StringUtils.isEmpty( paymentMethodChart.getFeeIncomeChartOfAccountsCode() ) ) {
++                GlobalVariables.getMessageMap().putError("feeIncomeChartOfAccountsCode", ERROR_FEE_CHART_REQUIRED, (String[])null);
++                continueRouting = false;
++            }
++            if ( StringUtils.isEmpty( paymentMethodChart.getFeeIncomeAccountNumber() ) ) {
++                GlobalVariables.getMessageMap().putError("feeIncomeAccountNumber", ERROR_FEE_ACCOUNT_REQUIRED, (String[])null);
++                continueRouting = false;
++            }
++            if ( StringUtils.isEmpty( paymentMethodChart.getFeeIncomeFinancialObjectCode() ) ) {
++                GlobalVariables.getMessageMap().putError("feeIncomeFinancialObjectCode", ERROR_FEE_INCOBJ_REQUIRED, (String[])null);
++                continueRouting = false;
++            }
++            if ( StringUtils.isEmpty( paymentMethodChart.getFeeExpenseFinancialObjectCode() ) ) {
++                GlobalVariables.getMessageMap().putError("feeExpenseFinancialObjectCode", ERROR_FEE_EXPOBJ_REQUIRED, (String[])null);
++                continueRouting = false;
++            }
++            if ( StringUtils.isEmpty( paymentMethodChart.getFeeIncomeChartOfAccountsCode() ) ) {
++                GlobalVariables.getMessageMap().putError("feeAmount", ERROR_FEE_AMOUNT_REQUIRED, (String[])null);
++                continueRouting = false;
++            }
++        } else {
++            if ( StringUtils.isNotEmpty( paymentMethodChart.getFeeIncomeChartOfAccountsCode() ) ) {
++                GlobalVariables.getMessageMap().putWarning("feeIncomeChartOfAccountsCode", WARNING_FEE_CHART_NOTREQUIRED, (String[])null);
++            }
++            if ( StringUtils.isNotEmpty( paymentMethodChart.getFeeIncomeAccountNumber() ) ) {
++                GlobalVariables.getMessageMap().putWarning("feeIncomeAccountNumber", WARNING_FEE_ACCOUNT_NOTREQUIRED, (String[])null);
++            }
++            if ( StringUtils.isNotEmpty( paymentMethodChart.getFeeIncomeFinancialObjectCode() ) ) {
++                GlobalVariables.getMessageMap().putWarning("feeIncomeFinancialObjectCode", WARNING_FEE_INCOBJ_NOTREQUIRED, (String[])null);
++            }
++            if ( StringUtils.isNotEmpty( paymentMethodChart.getFeeExpenseFinancialObjectCode() ) ) {
++                GlobalVariables.getMessageMap().putWarning("feeExpenseFinancialObjectCode", WARNING_FEE_EXPOBJ_NOTREQUIRED, (String[])null);
++            }
++            if ( StringUtils.isNotEmpty( paymentMethodChart.getFeeIncomeChartOfAccountsCode() ) ) {
++                GlobalVariables.getMessageMap().putWarning("feeAmount", WARNING_FEE_AMOUNT_NOTREQUIRED, (String[])null);
++            }
++        }        
++        return continueRouting;
++    }
++
++    protected boolean checkClearingAccountInformation( PaymentMethod paymentMethod, PaymentMethodChart paymentMethodChart ) {
++        boolean continueRouting = true;
++        if ( paymentMethod.isOffsetUsingClearingAccount() ) {
++            if ( StringUtils.isEmpty( paymentMethodChart.getClearingChartOfAccountsCode() ) ) {
++                GlobalVariables.getMessageMap().putError("clearingChartOfAccountsCode", ERROR_CLEARING_CHART_REQUIRED, (String[])null);
++                continueRouting = false;
++            }
++            if ( StringUtils.isEmpty( paymentMethodChart.getClearingAccountNumber() ) ) {
++                GlobalVariables.getMessageMap().putError("clearingAccountNumber", ERROR_CLEARING_ACCOUNT_REQUIRED, (String[])null);
++                continueRouting = false;
++            }
++            if ( StringUtils.isEmpty( paymentMethodChart.getClearingFinancialObjectCode() ) ) {
++                GlobalVariables.getMessageMap().putError("clearingFinancialObjectCode", ERROR_CLEARING_OBJECT_REQUIRED, (String[])null);
++                continueRouting = false;
++            }
++        } else {
++            if ( StringUtils.isNotEmpty( paymentMethodChart.getClearingChartOfAccountsCode() ) ) {
++                GlobalVariables.getMessageMap().putWarning("clearingChartOfAccountsCode", WARNING_CLEARING_CHART_NOTREQUIRED, (String[])null);
++            }
++            if ( StringUtils.isNotEmpty( paymentMethodChart.getClearingAccountNumber() ) ) {
++                GlobalVariables.getMessageMap().putWarning("clearingAccountNumber", WARNING_CLEARING_ACCOUNT_NOTREQUIRED, (String[])null);
++            }
++            if ( StringUtils.isNotEmpty( paymentMethodChart.getClearingFinancialObjectCode() ) ) {
++                GlobalVariables.getMessageMap().putWarning("clearingFinancialObjectCode", WARNING_CLEARING_OBJECT_NOTREQUIRED, (String[])null);
++            }
++        }        
++        return continueRouting;
++    }
++    
++    @Override
++    public boolean processCustomAddCollectionLineBusinessRules(MaintenanceDocument document, String collectionName, PersistableBusinessObject line) {
++        boolean continueAddingLine = true;
++        GlobalVariables.getMessageMap().clearErrorPath();
++        GlobalVariables.getMessageMap().addToErrorPath("document.newMaintainableObject");
++        if ( line instanceof PaymentMethodChart ) {
++            GlobalVariables.getMessageMap().addToErrorPath(KFSConstants.MAINTENANCE_ADD_PREFIX + collectionName );
++            
++            continueAddingLine &= isNewEffectiveDateInFuture( ((PaymentMethodChart)line) );
++            continueAddingLine &= checkFeeInformation( (PaymentMethod)document.getNewMaintainableObject().getBusinessObject(), (PaymentMethodChart)line );
++            continueAddingLine &= checkClearingAccountInformation( (PaymentMethod)document.getNewMaintainableObject().getBusinessObject(), (PaymentMethodChart)line );
++            
++            GlobalVariables.getMessageMap().removeFromErrorPath(KFSConstants.MAINTENANCE_ADD_PREFIX + collectionName );
++        }
++        GlobalVariables.getMessageMap().removeFromErrorPath("document.newMaintainableObject");
++        return continueAddingLine;
++    }
++    
++    protected boolean sanityCheckFlags( PaymentMethod paymentMethod ) {
++        // ensure at least one of the following flags is set
++        if ( !paymentMethod.isProcessedUsingPdp() 
++                && !paymentMethod.isInterdepartmentalPayment()
++                && !paymentMethod.isOffsetUsingClearingAccount() ) {
++            GlobalVariables.getMessageMap().putError("processedUsingPdp",ERROR_FLAGREQUIRED,
++                    getDdService().getAttributeLabel(PaymentMethod.class, "processedUsingPdp"),
++                    getDdService().getAttributeLabel(PaymentMethod.class, "interdepartmentalPayment"),
++                    getDdService().getAttributeLabel(PaymentMethod.class, "offsetUsingClearingAccount"));
++            return false;
++        // the PDP and interdepartmental flags can not both be set
++        } else if ( paymentMethod.isProcessedUsingPdp() && paymentMethod.isInterdepartmentalPayment() ) {
++            GlobalVariables.getMessageMap().putError("processedUsingPdp",ERROR_NOT_PDP_AND_INTERDEPT,(String[])null);
++            return false;
++        }
++        return true;
++    }
++    
++    protected boolean checkNeedForBankCode( PaymentMethod paymentMethod ) {
++        // when interdepartmental, it doesn't make sense to have a bank code
++        if ( paymentMethod.isInterdepartmentalPayment() && StringUtils.isNotBlank(paymentMethod.getBankCode()) ) {
++            GlobalVariables.getMessageMap().putError("bankCode",ERROR_NO_BANK_WHEN_INTERDEPT,(String[])null);
++            return false;
++        }
++        return true;
++    }
++}
+Index: work/src/edu/arizona/kfs/fp/document/workflow/PaymentMethodMaintenanceDocument.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/document/workflow/PaymentMethodMaintenanceDocument.xml	(revision 0)
++++ work/src/edu/arizona/kfs/fp/document/workflow/PaymentMethodMaintenanceDocument.xml	(revision 10347)
+@@ -0,0 +1,26 @@
++<?xml version='1.0' encoding='UTF-8'?> 
++<!--
++ Copyright 2008-2009 The Kuali Foundation
++ 
++ Licensed under the Educational Community License, Version 2.0 (the "License");
++ you may not use this file except in compliance with the License.
++ You may obtain a copy of the License at
++ 
++ http://www.opensource.org/licenses/ecl2.php
++ 
++ Unless required by applicable law or agreed to in writing, software
++ distributed under the License is distributed on an "AS IS" BASIS,
++ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ See the License for the specific language governing permissions and
++ limitations under the License.
++-->
++<data xmlns="ns:workflow" xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ns:workflow resource:WorkflowData">
++  <documentTypes xmlns="ns:workflow/DocumentType" xsi:schemaLocation="ns:workflow/DocumentType resource:DocumentType">
++    <documentType>
++      <name>PMCD</name>
++      <label>Payment Method</label>
++      <parent>FPSM</parent>
++      <active>true</active>
++    </documentType>
++  </documentTypes>
++</data>
+Index: work/web-root/WEB-INF/tags/portal/channel/maintenance/financialProcessing.tag
+===================================================================
+--- work/web-root/WEB-INF/tags/portal/channel/maintenance/financialProcessing.tag	(revision 10346)
++++ work/web-root/WEB-INF/tags/portal/channel/maintenance/financialProcessing.tag	(revision 10347)
+@@ -28,10 +28,14 @@
+         <li><portal:portalLink displayTitle="true" title="Disbursement Voucher Travel Expense Type" url="kr/lookup.do?methodToCall=start&businessObjectClassName=org.kuali.kfs.fp.businessobject.TravelExpenseTypeCode&docFormKey=88888888&returnLocation=${ConfigProperties.application.url}/portal.do&hideReturnLink=true" /></li>
+         <li><portal:portalLink displayTitle="true" title="Disbursement Voucher Travel Mileage Rate" url="kr/lookup.do?methodToCall=start&businessObjectClassName=org.kuali.kfs.fp.businessobject.TravelMileageRate&docFormKey=88888888&returnLocation=${ConfigProperties.application.url}/portal.do&hideReturnLink=true" /></li>
+         <li><portal:portalLink displayTitle="true" title="Disbursement Voucher Travel Per Diem" url="kr/lookup.do?methodToCall=start&businessObjectClassName=org.kuali.kfs.fp.businessobject.TravelPerDiem&docFormKey=88888888&returnLocation=${ConfigProperties.application.url}/portal.do&hideReturnLink=true" /></li>
+-        <li><portal:portalLink displayTitle="true" title="Disbursement Voucher Wire Charge" url="kr/lookup.do?methodToCall=start&businessObjectClassName=org.kuali.kfs.fp.businessobject.WireCharge&docFormKey=88888888&returnLocation=${ConfigProperties.application.url}/portal.do&hideReturnLink=true" /></li>        
++        <%-- KITT-592 payment method replaces the wire charge table
++        <li><portal:portalLink displayTitle="true" title="Disbursement Voucher Wire Charge (to be retired)" url="kr/lookup.do?methodToCall=start&businessObjectClassName=org.kuali.kfs.fp.businessobject.WireCharge&docFormKey=88888888&returnLocation=${ConfigProperties.application.url}/portal.do&hideReturnLink=true" /></li>
++        --%>        
+ 		<li><portal:portalLink displayTitle="true" title="Fiscal Year Function Control" url="kr/lookup.do?methodToCall=start&businessObjectClassName=org.kuali.kfs.fp.businessobject.FiscalYearFunctionControl&docFormKey=88888888&returnLocation=${ConfigProperties.application.url}/portal.do&hideReturnLink=true" /></li>				
+ 		<li><portal:portalLink displayTitle="true" title="Function Control Code" url="kr/lookup.do?methodToCall=start&businessObjectClassName=org.kuali.kfs.fp.businessobject.FunctionControlCode&docFormKey=88888888&returnLocation=${ConfigProperties.application.url}/portal.do&hideReturnLink=true" /></li>				
+         <li><portal:portalLink displayTitle="true" title="Non-Resident Alien Tax Percent" url="kr/lookup.do?methodToCall=start&businessObjectClassName=org.kuali.kfs.fp.businessobject.NonResidentAlienTaxPercent&docFormKey=88888888&returnLocation=${ConfigProperties.application.url}/portal.do&hideReturnLink=true" /></li>
++        <%-- MOD-PA2000-01 KITT-592 --%>
++        <li><portal:portalLink displayTitle="true" title="Payment Method" url="kr/lookup.do?methodToCall=start&businessObjectClassName=edu.arizona.kfs.fp.businessobject.PaymentMethod&docFormKey=88888888&returnLocation=${ConfigProperties.application.url}/portal.do&hideReturnLink=true" /></li>        
+         <%-- KITT-236 --%>
+         <li><portal:portalLink displayTitle="true" title="Procurement Cardholder" url="kr/lookup.do?methodToCall=start&businessObjectClassName=com.rsmart.kuali.kfs.fp.businessobject.ProcurementCardHolderDetail&docFormKey=88888888&returnLocation=${ConfigProperties.application.url}/portal.do&hideReturnLink=true" /></li>
+    </ul>

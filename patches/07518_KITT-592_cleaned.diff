@@ -1,0 +1,2022 @@
+Index: build/project/xsd/purap/uaElectronicInvoice.xsd
+===================================================================
+--- build/project/xsd/purap/uaElectronicInvoice.xsd	(revision 0)
++++ build/project/xsd/purap/uaElectronicInvoice.xsd	(revision 7518)
+@@ -0,0 +1,867 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++ Copyright 2008-2009 The Kuali Foundation
++ 
++ Licensed under the Educational Community License, Version 2.0 (the "License");
++ you may not use this file except in compliance with the License.
++ You may obtain a copy of the License at
++ 
++ http://www.opensource.org/licenses/ecl2.php
++ 
++ Unless required by applicable law or agreed to in writing, software
++ distributed under the License is distributed on an "AS IS" BASIS,
++ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ See the License for the specific language governing permissions and
++ limitations under the License.
++-->
++    
++<xsd:schema elementFormDefault="qualified"
++		    targetNamespace="http://www.kuali.org/kfs/purap/electronicInvoice"
++		    xmlns="http://www.kuali.org/kfs/purap/electronicInvoice" 
++		    xmlns:purap="http://www.kuali.org/kfs/purap/types"
++		    xmlns:kfs="http://www.kuali.org/kfs/sys/types"
++		    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
++
++  <xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="@externalizable.static.content.url@/xsd/sys/xml.xsd"/>
++  <xsd:import namespace="http://www.kuali.org/kfs/purap/types" schemaLocation="@externalizable.static.content.url@/xsd/purap/purapTypes.xsd" />
++  <xsd:import namespace="http://www.kuali.org/kfs/sys/types" schemaLocation="@externalizable.static.content.url@/xsd/sys/types.xsd" />
++
++  <xsd:element name="Credential">
++  	<xsd:complexType>
++  		<xsd:sequence>
++  			<xsd:element name="Identity" type="purap:dunsNumberType" />
++  			<xsd:element name="SharedSecret" minOccurs="0" maxOccurs="1" type="xsd:string" /> <!-- Not used -->
++  		</xsd:sequence>
++  		<xsd:attribute name="domain" type="purap:domainType" use="required" />
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="Name">
++  	<xsd:complexType>
++  		<xsd:simpleContent>
++  			<xsd:extension base="purap:twoHundredCharsType"> <!--  since barnesandnoble.xml contains empty name in contact, we need minLen=0 insteadof 1 -->
++  				<xsd:attribute ref="xml:lang" use="required" />
++  			</xsd:extension>
++  		</xsd:simpleContent>
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="Description">
++  	<xsd:complexType>
++  		<xsd:simpleContent>
++  			<xsd:extension base="purap:eInvoiceDescriptionType">
++  				<xsd:attribute ref="xml:lang" use="required" />
++  			</xsd:extension>
++  		</xsd:simpleContent>
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="Email">
++  	<xsd:complexType>
++  		<xsd:simpleContent>
++  			<xsd:extension base="kfs:emailType">
++  				<xsd:attribute name="name" type="kfs:oneToFiftyCharType" />
++  			</xsd:extension>
++  		</xsd:simpleContent>
++  	</xsd:complexType>
++  </xsd:element>
++  
++  <xsd:element name="PostalAddress">
++  	<xsd:complexType>
++  		<xsd:sequence>
++  			<xsd:element name="DeliverTo" type="kfs:zeroToFiftyFiveCharType" minOccurs="0" maxOccurs="unbounded"/>
++  			<xsd:element name="Street" type="purap:addressType" maxOccurs="unbounded" />
++  			<xsd:element name="City" type="purap:addressType" />
++  			<xsd:element name="State" type="purap:addressType" />
++  			<xsd:element name="PostalCode" type="purap:postalCodeType" />
++  			<xsd:element name="Country">
++  				<xsd:complexType>
++  					<xsd:simpleContent>
++  						<xsd:extension base="purap:addressType">
++  							<xsd:attribute name="isoCountryCode" type="purap:countryCodeType" use="required" />
++  						</xsd:extension>
++  					</xsd:simpleContent>
++  				</xsd:complexType>
++  			</xsd:element>
++  		</xsd:sequence>
++  		<xsd:attribute name="name" type="kfs:oneToFiftyCharType" use="optional" />
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="Phone">
++  	<xsd:complexType>
++  		<xsd:sequence>
++  			<xsd:element name="TelephoneNumber">
++  				<xsd:complexType>
++  					<xsd:sequence>
++  						<xsd:element name="CountryCode">
++  							<xsd:complexType>
++  								<xsd:simpleContent>
++  									<xsd:extension base="purap:addressType">
++  										<xsd:attribute name="isoCountryCode" type="kfs:oneToFourCharType" /> <!-- It's national prefix, not iso Country Code -->
++  									</xsd:extension>
++  								</xsd:simpleContent>
++  							</xsd:complexType>
++  						</xsd:element>
++  						<xsd:element name="AreaOrCityCode" type="kfs:oneToFourCharType" />
++  						<xsd:element name="Number" type="kfs:oneToTwentyCharType" />
++  					</xsd:sequence>
++  				</xsd:complexType>
++  			</xsd:element>
++  		</xsd:sequence>
++  		<xsd:attribute name="name" type="kfs:oneToFiftyCharType" />
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="Fax">
++  	<xsd:complexType>
++  		<xsd:sequence>
++  			<xsd:element name="TelephoneNumber">
++  				<xsd:complexType>
++  					<xsd:sequence>
++  						<xsd:element name="CountryCode">
++  							<xsd:complexType>
++  								<xsd:simpleContent>
++  									<xsd:extension base="purap:addressType">
++  										<xsd:attribute name="isoCountryCode" type="kfs:oneToFourCharType" /> <!-- It's national prefix, not iso Country Code -->
++  									</xsd:extension>
++  								</xsd:simpleContent>
++  							</xsd:complexType>
++  						</xsd:element>
++  						<xsd:element name="AreaOrCityCode" type="kfs:oneToFourCharType" />
++  						<xsd:element name="Number" type="kfs:oneToTwentyCharType" />
++  					</xsd:sequence>
++  				</xsd:complexType>
++  			</xsd:element>
++  		</xsd:sequence>
++  		<xsd:attribute name="name" type="kfs:oneToFiftyCharType" />
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="URL">
++  	<xsd:complexType>
++  		<xsd:simpleContent>
++  			<xsd:extension base="kfs:zeroToNinetyCharType">
++  				<xsd:attribute name="name" type="kfs:oneToFiftyCharType" />
++  			</xsd:extension>
++  		</xsd:simpleContent>
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="Contact">
++  	<xsd:complexType>
++  		<xsd:sequence>
++  			<xsd:element ref="Name" />
++  			<xsd:element ref="PostalAddress" minOccurs="0" maxOccurs="unbounded" />
++  			<xsd:element ref="Email" minOccurs="0" maxOccurs="unbounded" />
++  			<xsd:element ref="Phone" minOccurs="0" maxOccurs="unbounded" />
++  			<xsd:element ref="Fax" minOccurs="0" maxOccurs="unbounded" />
++  			<xsd:element ref="URL" minOccurs="0" maxOccurs="unbounded" />
++  		</xsd:sequence>
++  		<xsd:attribute name="role" type="kfs:oneToTwentyCharType" use="required" />
++  		<xsd:attribute name="addressID" type="kfs:zeroToTwentyCharType" use="optional" />
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="Extrinsic">
++  	<xsd:complexType>
++  		<xsd:simpleContent>
++  			<xsd:extension base="kfs:zeroToNinetyCharType"> <!-- It may have CDATA also -->
++  				<xsd:attribute name="name" type="kfs:zeroToFiftyFiveCharType" />
++  			</xsd:extension>
++  		</xsd:simpleContent>
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="Comments"> <!-- Not used -->
++  	<xsd:complexType>
++  		<xsd:simpleContent>
++  			<xsd:extension base="xsd:string">
++  				<xsd:attribute ref="xml:lang" use="optional" />
++  			</xsd:extension>
++  		</xsd:simpleContent>
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="Money" default="0">
++  	<xsd:complexType>
++  		<xsd:simpleContent>
++  			<xsd:extension base="xsd:string"> <!-- since cdw3.xml contains 3703.7400000000002, declaring as string insteadof kfs:amountType -->
++  				<xsd:attribute name="currency" type="purap:currencyType" use="required" />
++  			</xsd:extension>
++  		</xsd:simpleContent>
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="UnitPrice">
++  	<xsd:complexType>
++  		<xsd:sequence>
++  			<xsd:element ref="Money" />
++  		</xsd:sequence>
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="Tax">
++  	<xsd:complexType>
++  		<xsd:sequence>
++  			<xsd:element ref="Money" />
++  			<xsd:element ref="Description" />
++  			<xsd:element name="TaxDetail" minOccurs="0" maxOccurs="unbounded">
++  				<xsd:complexType>
++  					<xsd:sequence>
++  						<xsd:element name="TaxableAmount" minOccurs="0">
++  							<xsd:complexType>
++  								<xsd:sequence>
++  									<xsd:element ref="Money" />
++  								</xsd:sequence>
++  							</xsd:complexType>
++  						</xsd:element>
++  						<xsd:element name="TaxAmount">
++  							<xsd:complexType>
++  								<xsd:sequence>
++  									<xsd:element ref="Money" />
++  								</xsd:sequence>
++  							</xsd:complexType>
++  						</xsd:element>
++  						<xsd:element name="TaxLocation" minOccurs="0"> <!--  Not Used -->
++  							<xsd:complexType>
++  								<xsd:simpleContent>
++  									<xsd:extension base="xsd:string">
++  										<xsd:attribute ref="xml:lang" use="required" />
++  									</xsd:extension>
++  								</xsd:simpleContent>
++  							</xsd:complexType>
++  						</xsd:element>
++  						<xsd:element ref="Description" minOccurs="0" />
++  					</xsd:sequence>
++  					<xsd:attribute name="purpose" type="kfs:oneToFiftyCharType" use="optional" />
++  					<xsd:attribute name="category" type="kfs:oneToFiftyCharType" use="required" />
++  					<xsd:attribute name="percentageRate" type="xsd:decimal" use="optional" />
++  				</xsd:complexType>
++  			</xsd:element>
++  		</xsd:sequence>
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="OrderReference">
++  	<xsd:complexType>
++  		<xsd:sequence>
++  			<!--  In DTD, it's a required element, changing it to optional because of cdw.xml -->
++  			<xsd:element name="DocumentReference" minOccurs="0" maxOccurs="1">
++  				<xsd:complexType>
++  					<xsd:simpleContent>
++  						<xsd:extension base="purap:idType">
++  							<xsd:attribute name="payloadID" type="purap:idType" />
++  						</xsd:extension>
++  					</xsd:simpleContent>
++  				</xsd:complexType>
++  			</xsd:element>
++  		</xsd:sequence>
++  		<xsd:attribute name="orderID" type="purap:idType" use="optional" />
++  		<xsd:attribute name="orderDate" type="purap:dateStringType" use="optional" />
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="MasterAgreementReference">
++  	<xsd:complexType>
++  		<xsd:simpleContent>
++  			<xsd:extension base="xsd:string">
++  				<xsd:attribute name="agreementID" type="purap:idType" use="optional" />
++  				<xsd:attribute name="agreementDate" type="purap:dateStringType" use="optional" />
++  			</xsd:extension>
++  		</xsd:simpleContent>
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="MasterAgreementIDInfo">
++  	<xsd:complexType>
++  		<xsd:simpleContent>
++  			<xsd:extension base="xsd:string">
++  				<xsd:attribute name="agreementID" type="purap:idType" use="required" />
++  				<xsd:attribute name="agreementDate" type="purap:dateStringType" use="optional" />
++  			</xsd:extension>
++  		</xsd:simpleContent>
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="OrderIDInfo">
++  	<xsd:complexType>
++  		<xsd:simpleContent>
++  			<xsd:extension base="xsd:string">
++  				<xsd:attribute name="orderID" type="purap:idType" use="required" />
++  				<xsd:attribute name="orderDate" type="purap:dateStringType" use="optional" />
++  			</xsd:extension>
++  		</xsd:simpleContent>
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="SupplierOrderInfo">
++  	<xsd:complexType>
++  		<xsd:simpleContent>
++  			<xsd:extension base="xsd:string">
++  				<xsd:attribute name="orderID" type="purap:idType" use="required" />
++  			</xsd:extension>
++  		</xsd:simpleContent>
++  	</xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="InvoiceDetailShipping">
++       	<xsd:complexType>
++       		<xsd:sequence>
++       			<!-- Contact should be min=2, but changing it to 1 because fisher xml files contains only one  -->
++       			<xsd:element ref="Contact" minOccurs="1" maxOccurs="unbounded"/>
++       			<xsd:choice minOccurs="0">
++	       			<xsd:element name="CarrierIdentifier" minOccurs="0">  <!-- Not found in vendor xml -->
++	       				<xsd:complexType>
++	       					<xsd:attribute name="domain" type="xsd:string" use="required" />
++	       				</xsd:complexType>
++	       			</xsd:element>
++	       			<xsd:element name="ShipmentIdentifier" type="xsd:string" minOccurs="0"/>	<!-- Not found in vendor xml -->
++       			</xsd:choice>
++       			<xsd:element name="DocumentReference" minOccurs="0"> <!-- Not found in vendor xml -->
++       				<xsd:complexType>
++       					<xsd:simpleContent>
++       						<xsd:extension base="xsd:string">
++       							<xsd:attribute name="payloadID" type="xsd:string" use="required" />
++       						</xsd:extension>
++       					</xsd:simpleContent>
++       				</xsd:complexType>
++       			</xsd:element>
++       		</xsd:sequence>
++       		<xsd:attribute name="shippingDate" type="purap:dateStringType" use="optional" />
++       	</xsd:complexType>
++  </xsd:element>
++    
++  <xsd:element name="GrossAmount">
++     <xsd:complexType>
++       <xsd:sequence>
++         <xsd:element ref="Money"/>
++       </xsd:sequence>
++     </xsd:complexType>
++  </xsd:element>  
++	
++  <xsd:element name="NetAmount">
++    <xsd:complexType>
++      <xsd:sequence>
++        <xsd:element ref="Money"/>
++      </xsd:sequence>
++    </xsd:complexType>
++  </xsd:element>
++                                
++  <xsd:element name="InvoiceDetailDiscount">
++     <xsd:complexType>
++       <xsd:sequence>
++         <xsd:element ref="Money"/>
++       </xsd:sequence>
++       <xsd:attribute name="percentageRate" type="xsd:decimal" use="optional" default="0"/>
++     </xsd:complexType>
++  </xsd:element>
++
++  <xsd:element name="InvoiceDetailItem">
++  	<xsd:complexType>
++  		<xsd:sequence>
++  			<xsd:element name="UnitOfMeasure" type="purap:uomType" />
++  			<xsd:element ref="UnitPrice" />
++  			
++  			<xsd:element name="InvoiceDetailItemReference">
++  				<xsd:complexType>
++  					<xsd:sequence>
++  					
++  						<xsd:element name="ItemID" minOccurs="0">
++  							<xsd:complexType>
++  								<xsd:sequence>
++  									<xsd:element name="SupplierPartID" type="purap:catalogNumberType" />
++  									<xsd:element name="SupplierPartAuxiliaryID" type="purap:auxiliaryIDType" minOccurs="0"/>
++  								</xsd:sequence>
++  							</xsd:complexType>
++  						</xsd:element>
++  						
++  						<xsd:element ref="Description" minOccurs="0" />
++  						
++  						<xsd:choice minOccurs="0">
++  							<xsd:sequence>
++  								<xsd:element name="ManufacturerPartID" type="purap:hundredCharsType" />
++  								<xsd:element name="ManufacturerName">
++  									<xsd:complexType>
++  										<xsd:simpleContent>
++  											<xsd:extension base="purap:hundredCharsType">
++  												<xsd:attribute ref="xml:lang" use="optional" />
++  											</xsd:extension>
++  										</xsd:simpleContent>
++  									</xsd:complexType>
++  								</xsd:element>
++  							</xsd:sequence>
++  						</xsd:choice>
++  						
++  						<xsd:element name="Country" minOccurs="0">
++  							<xsd:complexType>
++  								<xsd:simpleContent>
++  									<xsd:extension base="purap:addressType">
++  										<xsd:attribute name="isoCountryCode" type="kfs:oneToFourCharType" use="required" />
++  									</xsd:extension>
++  								</xsd:simpleContent>
++  							</xsd:complexType>
++  						</xsd:element>
++  						<xsd:element name="SerialNumber" type="xsd:string" minOccurs="0" maxOccurs="unbounded" /> <!-- Not found in vendor file -->
++  					</xsd:sequence>
++  					<xsd:attribute name="lineNumber" type="xsd:unsignedByte" use="required" />
++  					<xsd:attribute name="serialNumber" type="xsd:string" use="optional" /> <!-- Not found in vendor file -->
++  				</xsd:complexType>
++  			</xsd:element> <!-- InvoiceDetailItemReference -->
++  			
++  			<xsd:element name="SubtotalAmount" minOccurs="0">
++  				<xsd:complexType>
++  					<xsd:sequence>
++  						<xsd:element ref="Money" />
++  					</xsd:sequence>
++  				</xsd:complexType>
++  			</xsd:element>
++
++  			<!-- Added minOccurs and maxOccurs (maxOccurs should be unbound but epic parser supports only one!!!)-->
++  			<xsd:element ref="Tax" minOccurs="0" />
++
++  			<xsd:element name="InvoiceDetailLineSpecialHandling" minOccurs="0">
++  				<xsd:complexType>
++  					<xsd:sequence>
++  						<xsd:element ref="Money" />
++  					</xsd:sequence>
++  				</xsd:complexType>
++  			</xsd:element>
++  			
++  			<xsd:element name="InvoiceDetailLineShipping" minOccurs="0">
++  				<xsd:complexType>
++  					<xsd:sequence>
++  						<!-- minOccurs should be 1, but in sample data file there are no entries for it,
++  							but in dtd, it's maxOccurs/minOccurs=1. Becuase of the sample data file,
++  							i'm changing the minOccurs to ZERO-->
++  						<xsd:element ref="InvoiceDetailShipping" minOccurs="0" />
++  						<xsd:element ref="Money" />
++  					</xsd:sequence>
++  				</xsd:complexType>
++  			</xsd:element>
++  			
++  			<xsd:element ref="GrossAmount" minOccurs="0" />
++  			<xsd:element ref="InvoiceDetailDiscount" minOccurs="0" />
++  			<xsd:element ref="NetAmount" minOccurs="0" />
++  			
++  			<!-- Distribution not used in EPIC -->
++  			<!-- <xsd:element name="Distribution" minOccurs="0" maxOccurs="unbounded">
++  				<xsd:complexType>
++  					<xsd:sequence>
++  						<xsd:element name="Accounting">
++  							<xsd:complexType>
++  								<xsd:sequence>
++  									<xsd:element name="AccountingSegment">
++  										<xsd:complexType>
++  											<xsd:sequence>
++  												<xsd:element ref="Name" />
++  												<xsd:element ref="Description" />
++  											</xsd:sequence>
++  											<xsd:attribute name="id" type="xsd:string" />
++  										</xsd:complexType>
++  									</xsd:element>
++  								</xsd:sequence>
++  								<xsd:attribute name="name" type="xsd:string" />
++  							</xsd:complexType>
++  						</xsd:element>
++  						<xsd:element name="Charge">
++  							<xsd:complexType>
++  								<xsd:sequence>
++  									<xsd:element ref="Money" />
++  								</xsd:sequence>
++  							</xsd:complexType>
++  						</xsd:element>
++  					</xsd:sequence>
++  				</xsd:complexType>
++  			</xsd:element> -->
++  			
++  			<xsd:element ref="Comments" minOccurs="0" />
++  			<xsd:element ref="Extrinsic" minOccurs="0" maxOccurs="unbounded" />
++  		</xsd:sequence>
++  		<xsd:attribute name="invoiceLineNumber" type="xsd:unsignedByte" use="required" />
++  		<xsd:attribute name="quantity" type="xsd:decimal" use="required" />
++  	</xsd:complexType>
++  </xsd:element>   <!-- InvoiceDetailItem -->
++
++  <xsd:element name="InvoiceDetailServiceItem">
++  	<xsd:complexType>
++  		<xsd:sequence>
++  			<xsd:element name="InvoiceDetailServiceItemReference"> <!--  Not found in vendor xml -->
++  				<xsd:complexType>
++  					<xsd:sequence>
++  						<xsd:element name="Classification" minOccurs="0" maxOccurs="unbounded">
++  							<xsd:complexType>
++  								<xsd:attribute name="domain" type="kfs:oneToTenCharType" use="required" />
++  							</xsd:complexType>
++  						</xsd:element>
++  						<xsd:element name="ItemID" minOccurs="0" maxOccurs="1">
++  							<xsd:complexType>
++  								<xsd:sequence>
++  									<xsd:element name="SupplierPartID" type="purap:catalogNumberType" />
++  									<xsd:element name="SupplierPartAuxiliaryID" type="purap:auxiliaryIDType" minOccurs="0" maxOccurs="1" />
++  								</xsd:sequence>
++  							</xsd:complexType>
++  						</xsd:element><!-- ItemID -->
++  						<xsd:element ref="Description" minOccurs="0" />
++  					</xsd:sequence>
++  					<xsd:attribute name="lineNumber" type="xsd:unsignedByte" use="optional" />
++  				</xsd:complexType>
++  			</xsd:element><!-- InvoiceDetailServiceItemReference -->
++
++  			<xsd:element name="SubtotalAmount">
++  				<xsd:complexType>
++  					<xsd:sequence>
++  						<xsd:element ref="Money" />
++  					</xsd:sequence>
++  				</xsd:complexType>
++  			</xsd:element>
++
++  			<xsd:choice minOccurs="0">
++  				<xsd:sequence>
++  					<xsd:element name="UnitRate">
++  						<xsd:complexType>
++  							<xsd:sequence>
++  								<xsd:element ref="Money" />
++  								<xsd:element name="UnitOfMeasure" type="purap:uomType" />
++  								<xsd:element name="TermReference" minOccurs="0">
++  									<xsd:complexType>
++  										<xsd:attribute name="termName" type="kfs:oneToTwentyCharType" use="required" />
++  										<xsd:attribute name="term" type="kfs:oneToTenCharType" use="required" />
++  									</xsd:complexType>
++  								</xsd:element>
++  							</xsd:sequence>
++  						</xsd:complexType>
++  					</xsd:element><!-- UnitRate -->
++  				</xsd:sequence>
++  				<xsd:sequence>
++  					<xsd:element name="UnitOfMeasure" type="purap:uomType" />
++  					<xsd:element ref="UnitPrice" />
++  				</xsd:sequence>
++  			</xsd:choice>
++
++  			<xsd:element ref="Tax" minOccurs="0" />
++  			<xsd:element ref="GrossAmount" minOccurs="0" />
++  			<xsd:element ref="InvoiceDetailDiscount" minOccurs="0" />
++  			<xsd:element ref="NetAmount" minOccurs="0" />
++  			<xsd:element ref="Comments" minOccurs="0" />
++  			<xsd:element ref="Extrinsic" minOccurs="0" maxOccurs="unbounded"/>
++
++  		</xsd:sequence>
++  		
++  		<xsd:attribute name="invoiceLineNumber" type="xsd:unsignedByte" use="required" />
++  		<xsd:attribute name="quantity" type="xsd:unsignedByte" use="optional" />
++  		<xsd:attribute name="referenceDate" type="xsd:date" use="optional" />
++  		<xsd:attribute name="inspectionDate" type="xsd:date" use="optional" />
++  		
++  	</xsd:complexType>
++  </xsd:element>  <!-- InvoiceDetailServiceItem -->
++  
++
++
++  <xsd:element name="cXML">
++    <xsd:complexType>
++      <xsd:sequence>
++        <xsd:element name="Header">
++          <xsd:complexType>
++            <xsd:sequence>
++              <xsd:element name="From">
++                <xsd:complexType>
++                  <xsd:sequence>
++                    <xsd:element ref="Credential"/>
++                  </xsd:sequence>
++                </xsd:complexType>
++              </xsd:element>
++              <xsd:element name="To">
++                <xsd:complexType>
++                  <xsd:sequence>
++                    <xsd:element ref="Credential"/>
++                  </xsd:sequence>
++                </xsd:complexType>
++              </xsd:element>
++              <xsd:element name="Sender">
++                <xsd:complexType>
++                  <xsd:sequence>
++                    <xsd:element ref="Credential"/>
++                    <xsd:element name="UserAgent" type="kfs:zeroToFiftyFiveCharType" />
++                  </xsd:sequence>
++                </xsd:complexType>
++              </xsd:element>
++            </xsd:sequence>
++          </xsd:complexType>
++        </xsd:element>
++        <xsd:element name="Request">
++          <xsd:complexType>
++            <xsd:sequence>
++              <xsd:element name="InvoiceDetailRequest">
++                <xsd:complexType>
++                  <xsd:sequence>
++                    <xsd:element name="InvoiceDetailRequestHeader">
++                      <xsd:complexType>
++                        <xsd:sequence>
++                          <xsd:element name="InvoiceDetailHeaderIndicator">
++                            <xsd:complexType>
++                              <xsd:simpleContent>
++                                <xsd:extension base="purap:emptyType">
++                                  <xsd:attribute name="isHeaderInvoice" use="optional">
++                                  	<xsd:simpleType>
++										<xsd:restriction base="xsd:string">
++											<xsd:enumeration value="yes"/>
++	   									</xsd:restriction>
++  									</xsd:simpleType>
++  								  </xsd:attribute>	
++                                  <xsd:attribute name="isVatRecoverable" use="optional">
++                                  	<xsd:simpleType>
++										<xsd:restriction base="xsd:string">
++											<xsd:enumeration value="yes"/>
++	   									</xsd:restriction>
++  									</xsd:simpleType>
++  								  </xsd:attribute>	
++                                </xsd:extension>
++                              </xsd:simpleContent>
++                            </xsd:complexType>
++                          </xsd:element>
++                          <xsd:element name="InvoiceDetailLineIndicator">
++                            <xsd:complexType>
++                              <xsd:simpleContent>
++                                <xsd:extension base="purap:emptyType">
++                                  <xsd:attribute name="isTaxInLine" use="optional">
++                                  	<xsd:simpleType>
++										<xsd:restriction base="xsd:string">
++											<xsd:enumeration value="yes"/>
++	   									</xsd:restriction>
++  									</xsd:simpleType>
++  								  </xsd:attribute>	
++                                  <xsd:attribute name="isSpecialHandlingInLine" use="optional">
++                                  	<xsd:simpleType>
++										<xsd:restriction base="xsd:string">
++											<xsd:enumeration value="yes"/>
++	   									</xsd:restriction>
++  									</xsd:simpleType>
++  								  </xsd:attribute>	
++                                  <xsd:attribute name="isShippingInLine" use="optional">
++                                  	<xsd:simpleType>
++										<xsd:restriction base="xsd:string">
++											<xsd:enumeration value="yes"/>
++	   									</xsd:restriction>
++  									</xsd:simpleType>
++  								  </xsd:attribute>	
++                                  <xsd:attribute name="isDiscountInLine" use="optional" >
++                                  	<xsd:simpleType>
++										<xsd:restriction base="xsd:string">
++											<xsd:enumeration value="yes"/>
++	   									</xsd:restriction>
++  									</xsd:simpleType>
++  								  </xsd:attribute>	
++                                  <xsd:attribute name="isAccountingInLine" use="optional">
++                                  	<xsd:simpleType>
++										<xsd:restriction base="xsd:string">
++											<xsd:enumeration value="yes"/>
++	   									</xsd:restriction>
++  									</xsd:simpleType>
++  								  </xsd:attribute>	
++                                </xsd:extension>
++                              </xsd:simpleContent>
++                            </xsd:complexType>
++                          </xsd:element>
++                          <xsd:element name="InvoicePartner" minOccurs="0" maxOccurs="unbounded" >
++                            <xsd:complexType>
++                              <xsd:sequence>
++                              	<!-- Contact should be allowed only once, but EPIC parser is supporting
++                              	more than one, that's why chaged the maxOccurs -->
++                                <xsd:element ref="Contact" maxOccurs="unbounded"/>
++                                <xsd:element name="IdReference" minOccurs="0">
++                                  <xsd:complexType>
++                                    <xsd:sequence>
++                                      <xsd:element name="Creator" type="kfs:zeroToTwentyCharType" minOccurs="0" />
++                                      <xsd:element ref="Description" minOccurs="0"/>
++                                    </xsd:sequence>
++                                    <xsd:attribute name="domain" type="kfs:zeroToTwentyCharType" use="required" />
++                                    <xsd:attribute name="identifier" type="kfs:zeroToTwentyCharType" use="required" />
++                                  </xsd:complexType>
++                                </xsd:element>
++                              </xsd:sequence>
++                            </xsd:complexType>
++                          </xsd:element>
++                          
++                          <!-- Two elements DocumentReference and InvoiceIDInfo not used in EPIC -->
++                          
++                          <xsd:element ref="InvoiceDetailShipping" minOccurs="0"/>
++
++                          <!-- This is not used in EPIC -->
++						  <xsd:choice minOccurs="0" maxOccurs="unbounded">
++	                          <xsd:element name="InvoiceDetailPaymentTerm">
++	                            <xsd:complexType>
++	                              <xsd:attribute name="payInNumberOfDays" type="xsd:unsignedInt" use="required" />
++	                              <xsd:attribute name="percentageRate" type="xsd:decimal" use="required" />
++	                            </xsd:complexType>
++	                          </xsd:element>
++	                          <xsd:element name="PaymentTerm">
++	                            <xsd:complexType>
++	                              <xsd:attribute name="payInNumberOfDays" type="xsd:unsignedInt" use="required" />
++	                            </xsd:complexType>
++	                          </xsd:element>
++                          </xsd:choice>
++                          
++                          <!--  InvoiceDetailPaymentTerm and PaymentTerm not used in EPIC -->
++                          
++                          <xsd:element ref="Comments" minOccurs="0"/>
++
++                          <xsd:element ref="Extrinsic" minOccurs="0" maxOccurs="unbounded"/>
++                          
++                        </xsd:sequence>
++                        <xsd:attribute name="purpose" use="optional" default="standard">
++                        	<xsd:simpleType>
++								<xsd:restriction base="xsd:string">
++									<!--  This is the only value allowed in EPIC/Kuali -->
++									<xsd:enumeration value="standard"/>
++									<!--<xsd:enumeration value="creditMemo"/>
++									<xsd:enumeration value="debitMemo"/>
++									<xsd:enumeration value="lineLevelCreditMemo"/>-->
++	   							</xsd:restriction>
++  							</xsd:simpleType>
++  						</xsd:attribute>	
++                        <xsd:attribute name="operation" default="new">
++                        	<xsd:simpleType>
++								<xsd:restriction base="xsd:string">
++									<!--  This is the only value allowed in EPIC/Kuali -->
++									<xsd:enumeration value="new"/>
++									<!--<xsd:enumeration value="delete"/>
++									<xsd:enumeration value="update"/>-->
++	   							</xsd:restriction>
++  							</xsd:simpleType>
++  						</xsd:attribute>	
++  						<!-- Changed to string from dateTime because of diff formats in the vendor xml files
++  						In vwr, it's like 2008-07-29 (Not valid)
++  						In guybrown, it's 2008-07-29T12:00:00 (valid dateTime)
++  						In fisher, it's 2008-07-25T00:00:00-08:00 (valid dateTime) -->
++                        <xsd:attribute name="invoiceDate" type="purap:dateStringType" use="required" />
++                        <!-- Changed to String from unsignedint -->
++                        <xsd:attribute name="invoiceID" type="purap:idType" use="required" />
++                        <xsd:attribute name="paymentMethodCode" type="kfs:oneAlphaType" use="optional" />
++                        <xsd:attribute name="isInformationOnly" use="optional">
++                        	<xsd:simpleType>
++								<xsd:restriction base="xsd:string">
++						      		<xsd:enumeration value="yes"/>
++	   							</xsd:restriction>
++  							</xsd:simpleType>
++                        </xsd:attribute>
++                      </xsd:complexType>
++                    </xsd:element>
++                    <xsd:element name="InvoiceDetailOrder" minOccurs="1" maxOccurs="unbounded">
++                      <xsd:complexType>
++                        <xsd:sequence>
++                          <xsd:element name="InvoiceDetailOrderInfo">
++                            <xsd:complexType>
++                              <xsd:sequence>
++                               		<xsd:choice>
++                               			<xsd:sequence>
++                               				<xsd:element ref="OrderReference"/>
++	                                 		<xsd:choice minOccurs="0">
++										        <xsd:element ref="MasterAgreementReference"/>
++										        <xsd:element ref="MasterAgreementIDInfo"/>
++										    </xsd:choice>
++										    <xsd:element ref="SupplierOrderInfo" minOccurs="0"/>
++                               			</xsd:sequence>
++                               			<xsd:sequence>
++                               				<xsd:element ref="MasterAgreementReference"/>
++										    <xsd:element ref="OrderIDInfo" minOccurs="0"/>
++									        <xsd:element ref="SupplierOrderInfo" minOccurs="0"/>
++                               			</xsd:sequence>
++                               			<xsd:sequence>
++                               				<xsd:element ref="MasterAgreementIDInfo"/>
++										    <xsd:element ref="OrderIDInfo" minOccurs="0"/>
++									        <xsd:element ref="SupplierOrderInfo" minOccurs="0"/>
++                               			</xsd:sequence>
++                               			<xsd:sequence>
++										    <xsd:element ref="OrderIDInfo"/>
++									        <xsd:element ref="SupplierOrderInfo" minOccurs="0"/>
++                               			</xsd:sequence>
++                               			<xsd:sequence>
++                               				<xsd:element ref="SupplierOrderInfo"/>
++                               			</xsd:sequence>
++                               		</xsd:choice>
++                              </xsd:sequence>
++                            </xsd:complexType>
++                          </xsd:element>
++                          
++                          <xsd:choice>
++                          		<xsd:element ref="InvoiceDetailItem" minOccurs="1" maxOccurs="unbounded"/>
++                          		<xsd:element ref="InvoiceDetailServiceItem" minOccurs="1" maxOccurs="unbounded"/>
++                          </xsd:choice>
++                          
++                        </xsd:sequence>
++                      </xsd:complexType>
++                    </xsd:element>
++                    
++                    <!--  The next element should be InvoiceDetailHeaderOrder, but EPIC doesnt uses this element -->
++                    
++                    <xsd:element name="InvoiceDetailSummary">
++                      <xsd:complexType>
++                        <xsd:sequence>
++                          <xsd:element name="SubtotalAmount">
++                            <xsd:complexType>
++                              <xsd:sequence>
++                                <xsd:element ref="Money"/>
++                              </xsd:sequence>
++                            </xsd:complexType>
++                          </xsd:element>
++                          <xsd:element ref="Tax"/>
++                          <xsd:element name="SpecialHandlingAmount" minOccurs="0">
++                            <xsd:complexType>
++                              <xsd:sequence>
++                                <xsd:element ref="Money"/>
++                                <xsd:element ref="Description" minOccurs="0"/>
++                              </xsd:sequence>
++                            </xsd:complexType>
++                          </xsd:element>
++                          <xsd:element name="ShippingAmount" minOccurs="0">
++                            <xsd:complexType>
++                              <xsd:sequence>
++                                <xsd:element ref="Money"/>
++                              </xsd:sequence>
++                            </xsd:complexType>
++                          </xsd:element>
++                          <xsd:element ref="GrossAmount" minOccurs="0"/>
++                          <xsd:element ref="InvoiceDetailDiscount" minOccurs="0"/>
++                          <xsd:element ref="NetAmount"/>
++                          <xsd:element name="DepositAmount" minOccurs="0">
++                            <xsd:complexType>
++                              <xsd:sequence>
++                                <xsd:element ref="Money"/>
++                              </xsd:sequence>
++                            </xsd:complexType>
++                          </xsd:element>
++                          <xsd:element name="DueAmount" minOccurs="0">
++                            <xsd:complexType>
++                              <xsd:sequence>
++                                <xsd:element ref="Money"/>
++                              </xsd:sequence>
++                            </xsd:complexType>
++                          </xsd:element>
++                        </xsd:sequence>
++                      </xsd:complexType>
++                    </xsd:element>
++                  </xsd:sequence>
++                </xsd:complexType>
++              </xsd:element>
++            </xsd:sequence>
++            <xsd:attribute name="deploymentMode" use="optional" default="production">
++            	<xsd:simpleType>
++					<xsd:restriction base="xsd:string">
++						<!-- This is the only value allowed in kuali -->
++						<xsd:enumeration value="production"/>
++						<!-- <xsd:enumeration value="test"/>  -->
++					 </xsd:restriction>
++				 </xsd:simpleType>
++  			</xsd:attribute>				
++          </xsd:complexType>
++        </xsd:element>
++      </xsd:sequence>
++      <!-- Chaning to optional since barnesandnoble's xml doesn't contain this attribute -->
++      <xsd:attribute name="version" type="xsd:string" use="optional" default="1.2.019"/>
++      <xsd:attribute ref="xml:lang" use="optional" />
++      <xsd:attribute name="timestamp" type="xsd:string" use="required" />
++      <xsd:attribute name="payloadID" type="xsd:string" use="required" />
++    </xsd:complexType>
++  </xsd:element>
++</xsd:schema>
+Index: test/unit/src/org/kuali/kfs/module/purap/service/ElectronicInvoiceHelperServiceTest.java
+===================================================================
+--- test/unit/src/org/kuali/kfs/module/purap/service/ElectronicInvoiceHelperServiceTest.java	(revision 7517)
++++ test/unit/src/org/kuali/kfs/module/purap/service/ElectronicInvoiceHelperServiceTest.java	(revision 7518)
+@@ -49,8 +49,10 @@
+ import org.kuali.kfs.sys.suite.RelatesTo.JiraIssue;
+ import org.kuali.kfs.vnd.businessobject.VendorDetail;
+ import org.kuali.kfs.vnd.document.service.VendorService;
++import org.kuali.rice.kns.UserSession;
+ import org.kuali.rice.kns.service.DocumentService;
+ import org.kuali.rice.kns.service.ParameterService;
++import org.kuali.rice.kns.util.GlobalVariables;
+ import org.kuali.rice.kns.util.Guid;
+ 
+ @ConfigureContext
+@@ -85,7 +87,7 @@
+      * TODO: Fix this test. It should not have a hard-coded URL for finding the schema.
+      */
+     @ConfigureContext(session = kfs, shouldCommitTransactions=true)
+-    public void PATCHFIX_testRejectDocumentCreationInvalidData()
++    public void XXX_testRejectDocumentCreationInvalidData()
+     throws Exception{
+         
+         String rejectFile = "reject.xml";
+@@ -99,10 +101,10 @@
+         //If we use the schemaLocation with DEV url and not running Tomcat locally, this test is going to fail, because
+         //it won't be able to find the electronicInvoice.xsd unless Tomcat is running locally.
+         //Therefore, for unit test purpose, let's set the schemaLocation to CNV url.
+-        String schemaLocation = electronicInvoiceInputFileType.getSchemaLocation();
+-        int beginIndex = schemaLocation.indexOf("static");
+-        String newSchemaLocation = "https://test.kuali.org/kfs-reg/" + schemaLocation.substring(beginIndex);
+-        electronicInvoiceInputFileType.setSchemaLocation(newSchemaLocation);
++//        String schemaLocation = electronicInvoiceInputFileType.getSchemaLocation();
++//        int beginIndex = schemaLocation.indexOf("static");
++//        String newSchemaLocation = "https://test.kuali.org/kfs-reg/" + schemaLocation.substring(beginIndex);
++//        electronicInvoiceInputFileType.setSchemaLocation(newSchemaLocation);
+         
+         ElectronicInvoiceLoad load = SpringContext.getBean(ElectronicInvoiceHelperService.class).loadElectronicInvoices();
+ 
+@@ -122,7 +124,7 @@
+      * TODO: Fix this test. It should not have a hard-coded URL for finding the schema.
+      */
+     @ConfigureContext(session = kfs, shouldCommitTransactions=true)
+-    public void PATCHFIX_testRejectDocumentCreationCorruptXML()
++    public void XXX_testRejectDocumentCreationCorruptXML()
+     throws Exception{
+         
+         String corruptFile = "corrupt.xml";
+@@ -153,32 +155,35 @@
+      * TODO: Fix this test. It should not have a hard-coded URL for finding the schema.
+      */
+     @ConfigureContext(session = kfs, shouldCommitTransactions=false)
+-    public void PATCHFIX_testPaymentRequestDocumentCreation()
++    public void testPaymentRequestDocumentCreation()
+     throws Exception{
+         
+         String acceptFile = "accept.xml";
+         
+-        changeCurrentUser(khuntley);
+-        RequisitionDocument reqDoc = RequisitionDocumentFixture.REQ_ONLY_REQUIRED_FIELDS.createRequisitionDocument();
+-        AccountingDocumentTestUtils.testRouteDocument(reqDoc, SpringContext.getBean(DocumentService.class));
+-        Integer reqId = reqDoc.getPurapDocumentIdentifier();
+-
+-        changeCurrentUser(kfs);
+-        PurchaseOrderDocument poDocument = createPODoc(reqId);
++//        changeCurrentUser(khuntley);
++//        GlobalVariables.setUserSession(new UserSession("kfs-test-sys1"));
++//        RequisitionDocument reqDoc = RequisitionDocumentFixture.REQ_ONLY_REQUIRED_FIELDS.createRequisitionDocument();
++//        AccountingDocumentTestUtils.testRouteDocument(reqDoc, SpringContext.getBean(DocumentService.class));
++//        Integer reqId = reqDoc.getPurapDocumentIdentifier();
++//
++//        changeCurrentUser(kfs);
++//        PurchaseOrderDocument poDocument = createPODoc(reqId);
++//        
++//        String vendorDUNS = RandomUtils.nextInt() + "";
++//        if (StringUtils.isEmpty(poDocument.getVendorDetail().getVendorDunsNumber())){
++//            VendorDetail vd = SpringContext.getBean(VendorService.class).getByVendorNumber(poDocument.getVendorNumber());
++//            vd.setVendorDunsNumber(vendorDUNS);
++//            SpringContext.getBean(VendorService.class).saveVendorHeader(vd);
++//        }else{
++//            vendorDUNS = poDocument.getVendorDetail().getVendorDunsNumber();
++//        }
++//        
++//        String poNumber = poDocument.getPurapDocumentIdentifier().toString();
++//        createItemMappingsRecords(poDocument.getVendorHeaderGeneratedIdentifier()+"", poDocument.getVendorDetailAssignedIdentifier()+"");
++//        updateUnitPriceVariance();
+         
+-        String vendorDUNS = RandomUtils.nextInt() + "";
+-        if (StringUtils.isEmpty(poDocument.getVendorDetail().getVendorDunsNumber())){
+-            VendorDetail vd = SpringContext.getBean(VendorService.class).getByVendorNumber(poDocument.getVendorNumber());
+-            vd.setVendorDunsNumber(vendorDUNS);
+-            SpringContext.getBean(VendorService.class).saveVendorHeader(vd);
+-        }else{
+-            vendorDUNS = poDocument.getVendorDetail().getVendorDunsNumber();
+-        }
+-        
+-        String poNumber = poDocument.getPurapDocumentIdentifier().toString();
+-        createItemMappingsRecords(poDocument.getVendorHeaderGeneratedIdentifier()+"", poDocument.getVendorDetailAssignedIdentifier()+"");
+-        updateUnitPriceVariance();
+-        
++        String vendorDUNS="0001236545";
++        String poNumber = "";
+         String xmlChunk = ElectronicInvoiceHelperServiceFixture.getCXMLForPaymentDocCreation(vendorDUNS,poNumber);
+         writeXMLFile(xmlChunk, acceptFile);
+         
+Index: test/unit/src/org/kuali/kfs/module/purap/fixture/ElectronicInvoiceHelperServiceFixture.java
+===================================================================
+--- test/unit/src/org/kuali/kfs/module/purap/fixture/ElectronicInvoiceHelperServiceFixture.java	(revision 7517)
++++ test/unit/src/org/kuali/kfs/module/purap/fixture/ElectronicInvoiceHelperServiceFixture.java	(revision 7518)
+@@ -104,7 +104,7 @@
+         
+         request.append("<Request deploymentMode=\"production\">");
+         request.append("<InvoiceDetailRequest>");
+-        request.append("<InvoiceDetailRequestHeader invoiceID=\"LDR3496\" purpose=\"standard\" invoiceDate=" + getCXMLDate(true) +">");
++        request.append("<InvoiceDetailRequestHeader invoiceID=\"LDR3496\" purpose=\"standard\" invoiceDate=" + getCXMLDate(true) +" paymentMethodCode=\"F\">");
+         request.append("<InvoiceDetailHeaderIndicator/>");
+         request.append("<InvoiceDetailLineIndicator/>");
+         request.append("<InvoicePartner>");
+Index: work/src/org/kuali/kfs/module/purap/service/impl/ElectronicInvoiceHelperServiceImpl.java
+===================================================================
+--- work/src/org/kuali/kfs/module/purap/service/impl/ElectronicInvoiceHelperServiceImpl.java	(revision 7517)
++++ work/src/org/kuali/kfs/module/purap/service/impl/ElectronicInvoiceHelperServiceImpl.java	(revision 7518)
+@@ -124,18 +124,18 @@
+     protected final String UNKNOWN_DUNS_IDENTIFIER = "Unknown";
+     protected final String INVOICE_FILE_MIME_TYPE = "text/xml";  
+     
+-    private StringBuffer emailTextErrorList;
++    protected StringBuffer emailTextErrorList;
+     
+-    private ElectronicInvoiceInputFileType electronicInvoiceInputFileType;
+-    private MailService mailService;
+-    private ElectronicInvoiceMatchingService matchingService; 
+-    private ElectronicInvoicingDao electronicInvoicingDao;
+-    private BatchInputFileService batchInputFileService;
+-    private VendorService vendorService;
+-    private PurchaseOrderService purchaseOrderService;
+-    private PaymentRequestService paymentRequestService;
+-    private KualiConfigurationService kualiConfigurationService;
+-    private DateTimeService dateTimeService;
++    protected ElectronicInvoiceInputFileType electronicInvoiceInputFileType;
++    protected MailService mailService;
++    protected ElectronicInvoiceMatchingService matchingService; 
++    protected ElectronicInvoicingDao electronicInvoicingDao;
++    protected BatchInputFileService batchInputFileService;
++    protected VendorService vendorService;
++    protected PurchaseOrderService purchaseOrderService;
++    protected PaymentRequestService paymentRequestService;
++    protected KualiConfigurationService kualiConfigurationService;
++    protected DateTimeService dateTimeService;
+     
+     public ElectronicInvoiceLoad loadElectronicInvoices() {
+ 
+Index: work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml	(revision 7517)
++++ work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml	(revision 7518)
+@@ -46,7 +46,7 @@
+     <property name="maxLength" value="1"/>
+     <property name="required" value="true"/>
+     <property name="validationPattern">
+-      <bean parent="AlphaNumericValidationPattern" />
++      <bean parent="AlphaValidationPattern" />
+     </property>
+     <property name="control">
+       <bean parent="TextControlDefinition" p:size="2" />
+Index: work/src/edu/arizona/kfs/module/purap/service/impl/UaElectronicInvoiceHelperServiceImpl.java
+===================================================================
+--- work/src/edu/arizona/kfs/module/purap/service/impl/UaElectronicInvoiceHelperServiceImpl.java	(revision 0)
++++ work/src/edu/arizona/kfs/module/purap/service/impl/UaElectronicInvoiceHelperServiceImpl.java	(revision 7518)
+@@ -0,0 +1,223 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.module.purap.service.impl;
++
++import java.util.HashMap;
++
++import org.apache.log4j.Logger;
++import org.kuali.kfs.module.purap.PurapConstants;
++import org.kuali.kfs.module.purap.businessobject.ElectronicInvoiceRejectReason;
++import org.kuali.kfs.module.purap.document.PaymentRequestDocument;
++import org.kuali.kfs.module.purap.document.PurchaseOrderDocument;
++import org.kuali.kfs.module.purap.document.RequisitionDocument;
++import org.kuali.kfs.module.purap.document.service.AccountsPayableService;
++import org.kuali.kfs.module.purap.document.service.PaymentRequestService;
++import org.kuali.kfs.module.purap.document.service.RequisitionService;
++import org.kuali.kfs.module.purap.document.validation.event.AttributedCalculateAccountsPayableEvent;
++import org.kuali.kfs.module.purap.document.validation.event.AttributedPaymentRequestForEInvoiceEvent;
++import org.kuali.kfs.module.purap.service.impl.ElectronicInvoiceHelperServiceImpl;
++import org.kuali.kfs.module.purap.service.impl.ElectronicInvoiceOrderHolder;
++import org.kuali.kfs.module.purap.util.ExpiredOrClosedAccountEntry;
++import org.kuali.kfs.sys.businessobject.Bank;
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.kfs.sys.service.BankService;
++import org.kuali.rice.kew.exception.WorkflowException;
++import org.kuali.rice.kim.bo.Person;
++import org.kuali.rice.kim.service.PersonService;
++import org.kuali.rice.kns.exception.ValidationException;
++import org.kuali.rice.kns.service.DocumentService;
++import org.kuali.rice.kns.service.KualiRuleService;
++import org.kuali.rice.kns.util.GlobalVariables;
++import org.kuali.rice.kns.util.KualiDecimal;
++
++import edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService;
++import edu.arizona.kfs.module.purap.businessobject.UaElectronicInvoiceDetailRequestHeader;
++import edu.arizona.kfs.module.purap.document.UaPaymentRequestDocument;
++
++public class UaElectronicInvoiceHelperServiceImpl extends ElectronicInvoiceHelperServiceImpl {
++    protected static final String DEFAULT_EINVOICE_PAYMENT_METHOD_CODE = "H";
++    private static final Logger LOG = Logger.getLogger(ElectronicInvoiceHelperServiceImpl.class);
++
++    @Override
++    protected PaymentRequestDocument createPaymentRequest(ElectronicInvoiceOrderHolder orderHolder) {
++        
++        if (LOG.isInfoEnabled()){
++            LOG.info("Creating Payment Request document");
++        }
++        
++        GlobalVariables.getMessageList().clear();
++        
++        validateInvoiceOrderValidForPREQCreation(orderHolder);
++        
++        if (LOG.isInfoEnabled()){
++            if (orderHolder.isInvoiceRejected()){
++                LOG.info("Not possible to convert einvoice details into payment request");
++            }else{
++                LOG.info("Payment request document creation validation succeeded");
++            }
++        }
++        
++        if (orderHolder.isInvoiceRejected()){
++            return null;
++        }
++        
++        PaymentRequestDocument preqDoc = null;
++        try {
++            preqDoc = (PaymentRequestDocument) SpringContext.getBean(DocumentService.class).getNewDocument("PREQ");
++        } catch (WorkflowException e) {
++            String extraDescription = "Error=" + e.getMessage();
++            ElectronicInvoiceRejectReason rejectReason = matchingService.createRejectReason(PurapConstants.ElectronicInvoice.PREQ_WORKLOW_EXCEPTION,          
++                                                                                            extraDescription, 
++                                                                                            orderHolder.getFileName());
++            orderHolder.addInvoiceOrderRejectReason(rejectReason);
++            LOG.error("Error creating Payment request document - " + e.getMessage());
++            return null;
++        }
++        
++        PurchaseOrderDocument poDoc = orderHolder.getPurchaseOrderDocument();
++        if (poDoc == null){
++            throw new RuntimeException("Purchase Order document (POId=" + orderHolder.getInvoicePurchaseOrderID() + ") does not exist in the system");
++        }
++        
++        preqDoc.getDocumentHeader().setDocumentDescription(generatePREQDocumentDescription(poDoc));        
++        preqDoc.setStatusCode(PurapConstants.PaymentRequestStatuses.IN_PROCESS);
++        preqDoc.setInvoiceDate(orderHolder.getInvoiceDate());
++        preqDoc.setInvoiceNumber(orderHolder.getInvoiceNumber());
++        preqDoc.setVendorInvoiceAmount(new KualiDecimal(orderHolder.getInvoiceNetAmount()));
++        preqDoc.setAccountsPayableProcessorIdentifier("E-Invoice");
++        preqDoc.setVendorCustomerNumber(orderHolder.getCustomerNumber());
++        preqDoc.setPaymentRequestElectronicInvoiceIndicator(true);
++        
++        if (orderHolder.getAccountsPayablePurchasingDocumentLinkIdentifier() != null){
++            preqDoc.setAccountsPayablePurchasingDocumentLinkIdentifier(orderHolder.getAccountsPayablePurchasingDocumentLinkIdentifier());
++        }
++        
++        // KITT-592 - updated to copy the payment method code from the holder classes
++        // and default the bank in based on that
++        boolean hasPaymentMethodCode = false;
++        if ( preqDoc instanceof UaPaymentRequestDocument ) {
++            if ( orderHolder.getElectronicInvoice().getInvoiceDetailRequestHeader() instanceof UaElectronicInvoiceDetailRequestHeader ) {
++                String paymentMethodCode = ((UaElectronicInvoiceDetailRequestHeader)orderHolder.getElectronicInvoice().getInvoiceDetailRequestHeader()).getPaymentMethodCode();
++                if ( paymentMethodCode == null ) {
++                    paymentMethodCode = DEFAULT_EINVOICE_PAYMENT_METHOD_CODE;
++                }
++                ((UaPaymentRequestDocument)preqDoc).setPaymentMethodCode(paymentMethodCode);
++                hasPaymentMethodCode = true;
++            }
++        }
++        Bank defaultBank = null;
++        if ( hasPaymentMethodCode ) {
++            defaultBank = SpringContext.getBean(UaPaymentMethodGeneralLedgerPendingEntryService.class).getBankForPaymentMethod( ((UaPaymentRequestDocument)preqDoc).getPaymentMethodCode() );
++        } else { // default to baseline behavior - extended documents not in use
++            //Copied from PaymentRequestServiceImpl.populatePaymentRequest()
++            //set bank code to default bank code in the system parameter
++            defaultBank = SpringContext.getBean(BankService.class).getDefaultBankByDocType(PaymentRequestDocument.class);
++        }
++        if (defaultBank != null) {
++            preqDoc.setBankCode(defaultBank.getBankCode());
++            preqDoc.setBank(defaultBank);
++        }
++        
++        RequisitionDocument reqDoc = SpringContext.getBean(RequisitionService.class).getRequisitionById(poDoc.getRequisitionIdentifier());
++        String reqDocInitiator = reqDoc.getDocumentHeader().getWorkflowDocument().getInitiatorPrincipalId();
++        try {
++            Person user = SpringContext.getBean(PersonService.class).getPerson(reqDocInitiator);
++            preqDoc.setProcessingCampusCode(user.getCampusCode());
++        }catch(Exception e){
++            String extraDescription = "Error setting processing campus code - " + e.getMessage();
++            ElectronicInvoiceRejectReason rejectReason = matchingService.createRejectReason(PurapConstants.ElectronicInvoice.PREQ_ROUTING_VALIDATION_ERROR, extraDescription, orderHolder.getFileName());
++            orderHolder.addInvoiceOrderRejectReason(rejectReason);
++            return null;
++        }
++        
++        HashMap<String, ExpiredOrClosedAccountEntry> expiredOrClosedAccountList = SpringContext.getBean(AccountsPayableService.class).expiredOrClosedAccountsList(poDoc);
++        if (expiredOrClosedAccountList == null){
++            expiredOrClosedAccountList = new HashMap<String, ExpiredOrClosedAccountEntry>(0);
++        }
++        
++        if (LOG.isInfoEnabled()){
++             LOG.info(expiredOrClosedAccountList.size() + " accounts have been found as Expired or Closed");
++        }
++        
++        preqDoc.populatePaymentRequestFromPurchaseOrder(orderHolder.getPurchaseOrderDocument(),expiredOrClosedAccountList);
++        
++        populateItemDetails(preqDoc,orderHolder);
++        
++        /*
++         * Validate totals,paydate
++         */
++        //PaymentRequestDocumentRule.processCalculateAccountsPayableBusinessRules
++        SpringContext.getBean(KualiRuleService.class).applyRules(new AttributedCalculateAccountsPayableEvent(preqDoc));
++        
++        SpringContext.getBean(PaymentRequestService.class).calculatePaymentRequest(preqDoc,true);
++        
++        processItemsForDiscount(preqDoc,orderHolder);
++        
++        if (orderHolder.isInvoiceRejected()){
++            return null;
++        }
++        
++        SpringContext.getBean(PaymentRequestService.class).calculatePaymentRequest(preqDoc,false);
++        /*
++         * PaymentRequestReview 
++         */
++        //PaymentRequestDocumentRule.processRouteDocumentBusinessRules
++        SpringContext.getBean(KualiRuleService.class).applyRules(new AttributedPaymentRequestForEInvoiceEvent(preqDoc));
++        
++        if(GlobalVariables.getMessageMap().hasErrors()){
++            if (LOG.isInfoEnabled()){
++                LOG.info("***************Error in rules processing - " + GlobalVariables.getMessageMap());
++            }
++            ElectronicInvoiceRejectReason rejectReason = matchingService.createRejectReason(PurapConstants.ElectronicInvoice.PREQ_ROUTING_VALIDATION_ERROR, GlobalVariables.getMessageMap().toString(), orderHolder.getFileName());
++            orderHolder.addInvoiceOrderRejectReason(rejectReason);
++            return null;
++        }
++        
++        if(GlobalVariables.getMessageList().size() > 0){
++            if (LOG.isInfoEnabled()){
++                LOG.info("Payment request contains " + GlobalVariables.getMessageList().size() + " warning message(s)");
++                for (int i = 0; i < GlobalVariables.getMessageList().size(); i++) {
++                    LOG.info("Warning " + i + "  - " +GlobalVariables.getMessageList().get(i));
++                }
++            }
++        }
++        
++        addShipToNotes(preqDoc,orderHolder);
++        
++        String routingAnnotation = null;
++        if (!orderHolder.isRejectDocumentHolder()){
++            routingAnnotation = "Routed by electronic invoice batch job";
++        }
++        
++        try {
++            SpringContext.getBean(DocumentService.class).routeDocument(preqDoc,routingAnnotation, null);
++        }
++        catch (WorkflowException e) {
++            e.printStackTrace();
++            ElectronicInvoiceRejectReason rejectReason = matchingService.createRejectReason(PurapConstants.ElectronicInvoice.PREQ_ROUTING_FAILURE, e.getMessage(), orderHolder.getFileName());
++            orderHolder.addInvoiceOrderRejectReason(rejectReason);
++            return null;
++        }catch(ValidationException e){
++            String extraDescription = GlobalVariables.getMessageMap().toString();
++            ElectronicInvoiceRejectReason rejectReason = matchingService.createRejectReason(PurapConstants.ElectronicInvoice.PREQ_ROUTING_VALIDATION_ERROR, extraDescription, orderHolder.getFileName());
++            orderHolder.addInvoiceOrderRejectReason(rejectReason);
++            return null;
++        }
++        
++        return preqDoc;
++    }
++    
++}
+Index: work/src/edu/arizona/kfs/module/purap/batch/electronicInvoiceDigesterRules.xml
+===================================================================
+--- work/src/edu/arizona/kfs/module/purap/batch/electronicInvoiceDigesterRules.xml	(revision 0)
++++ work/src/edu/arizona/kfs/module/purap/batch/electronicInvoiceDigesterRules.xml	(revision 7518)
+@@ -0,0 +1,662 @@
++<?xml version="1.0"?>
++<!--
++ Copyright 2007-2008 The Kuali Foundation
++ 
++ Licensed under the Educational Community License, Version 2.0 (the "License");
++ you may not use this file except in compliance with the License.
++ You may obtain a copy of the License at
++ 
++ http://www.opensource.org/licenses/ecl2.php
++ 
++ Unless required by applicable law or agreed to in writing, software
++ distributed under the License is distributed on an "AS IS" BASIS,
++ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ See the License for the specific language governing permissions and
++ limitations under the License.
++-->
++<!DOCTYPE digester-rules 
++    PUBLIC "-//Jakarta Apache //DTD digester-rules XML V1.0//EN" 
++    "http://jakarta.apache.org/commons/digester/dtds/digester-rules.dtd">
++
++<digester-rules>
++
++    <pattern value="cXML">
++        <object-create-rule classname="org.kuali.kfs.module.purap.businessobject.ElectronicInvoice" />
++		
++		<set-properties-rule>
++      		<alias attr-name="version" prop-name="version" />
++      		<alias attr-name="timestamp" prop-name="timestamp" />
++      		<alias attr-name="payloadID" prop-name="payloadID" />
++      		<alias attr-name="xml:lang" prop-name="locale" />
++	    </set-properties-rule>
++	   
++	   <!-- HEADER -->
++	   <pattern value="Header">
++		    <object-create-rule classname="org.kuali.kfs.module.purap.util.cxml.CxmlHeader" />
++		    
++		    <!-- FROM -->
++		    <set-properties-rule pattern="From/Credential">
++			   <alias attr-name="domain" prop-name="fromDomain" />
++		    </set-properties-rule>
++		    
++		    <call-method-rule pattern="From/Credential/Identity" methodname="setFromIdentity" paramcount="0" />
++		    <call-method-rule pattern="From/Credential/SharedSecret" methodname="setFromSharedSecret" paramcount="0" />
++		    
++		    <!-- TO -->
++		    <set-properties-rule pattern="To/Credential">
++			   <alias attr-name="domain" prop-name="toDomain" />
++		    </set-properties-rule>
++		    
++		    <call-method-rule pattern="To/Credential/Identity" methodname="setToIdentity" paramcount="0" />
++ 		    <call-method-rule pattern="To/Credential/SharedSecret" methodname="setToSharedSecret" paramcount="0" />
++ 		    
++		   <!-- SENDER -->
++		   <set-properties-rule pattern="Sender/Credential">
++			   <alias attr-name="domain" prop-name="senderDomain" />
++		   </set-properties-rule>
++		    
++		   <call-method-rule pattern="Sender/Credential/Identity" methodname="setSenderIdentity" paramcount="0" />
++		   <call-method-rule pattern="Sender/Credential/SharedSecret" methodname="setSenderSharedSecret" paramcount="0" />
++		   <call-method-rule pattern="Sender/UserAgent" methodname="setSenderUserAgent" paramcount="0" />
++		    
++		   <set-next-rule methodname="setCxmlHeader" />
++		    
++	   </pattern> <!-- Header -->
++	   
++	   <!-- REQUEST -->
++	   <pattern value="Request">
++	   		<set-properties-rule>
++			   <alias attr-name="deploymentMode" prop-name="deploymentMode"/>
++		   </set-properties-rule>
++	   </pattern>
++	   
++	   <pattern value="Request/InvoiceDetailRequest/InvoiceDetailRequestHeader">
++	   
++		   <object-create-rule classname="edu.arizona.kfs.module.purap.businessobject.UaElectronicInvoiceDetailRequestHeader" />
++		   
++	   		<set-properties-rule>
++	      		<alias attr-name="invoiceID" prop-name="invoiceId"/>
++	      		<alias attr-name="purpose" prop-name="purpose"/>
++	      		<alias attr-name="operation" prop-name="operation"/>
++	      		<alias attr-name="invoiceDate" prop-name="invoiceDateString"/>
++	      		<alias attr-name="isInformationOnly" prop-name="buyerInformationOnlyIndicator"/>
++	      		<alias attr-name="paymentMethodCode" prop-name="paymentMethodCode"/>
++		    </set-properties-rule>
++		    
++		    <pattern value="InvoiceDetailHeaderIndicator">
++			    <set-properties-rule>
++		      		<alias attr-name="isHeaderInvoice" prop-name="headerInvoiceInd"/>
++			    </set-properties-rule>
++		    </pattern>
++		    
++		    <pattern value="InvoiceDetailLineIndicator">
++			    <set-properties-rule>
++				    <alias attr-name="isTaxInLine" prop-name="taxInfoProvidedIndicator"/>
++		      		<alias attr-name="isSpecialHandlingInLine" prop-name="specialHandlingInfoProvidedIndicator"/>
++		      		<alias attr-name="isShippingInLine" prop-name="shippingInfoProvidedIndicator"/>
++		      		<alias attr-name="isDiscountInLine" prop-name="discountInfoProvidedIndicator"/>
++		      		<alias attr-name="isAccountingInLine" prop-name="accountingInfoProvidedIndicator"/>
++			    </set-properties-rule>
++		    </pattern>
++		    
++	   		<!-- INVOICE PARTNER -->
++	   		<pattern value="InvoicePartner">
++	   			<set-properties-rule pattern="IdReference">
++		      		<alias attr-name="domain" prop-name="idReferenceDomain" />
++		      		<alias attr-name="identifier" prop-name="idReferenceIdentifier" />
++	      		</set-properties-rule>
++
++	      		<call-method-rule pattern="IdReference/Creator" methodname="setIdReferenceCreator" paramcount="0" />
++	      		<call-method-rule pattern="IdReference/Description" methodname="setIdReferenceDescription" paramcount="0" />
++	      		
++	      		<pattern value="Contact">
++
++		      		<object-create-rule classname="org.kuali.kfs.module.purap.businessobject.ElectronicInvoiceContact" />
++
++		      		<set-properties-rule>
++			      		<alias attr-name="role" prop-name="role" />
++			      		<alias attr-name="addressID" prop-name="addressID" />
++		      		</set-properties-rule>
++
++					<call-method-rule pattern="Name" methodname="setName" paramcount="0" />			      		
++					
++	      			<pattern value="PostalAddress">
++	      			
++	      				<object-create-rule classname="org.kuali.kfs.module.purap.businessobject.ElectronicInvoicePostalAddress" />
++	      				
++	      				<set-properties-rule>
++			      			<alias attr-name="name" prop-name="type" />
++		      			</set-properties-rule>
++		      		
++	      				<call-method-rule pattern="DeliverTo" methodname="addName" paramcount="0" />
++	      				
++	      				<!-- Have to find a better way of handling this element -->
++	      				<call-method-rule pattern="Street" methodname="addStreet" paramcount="0" />
++	      				
++	      				<call-method-rule pattern="City" methodname="setCityName" paramcount="0" />
++	      				<call-method-rule pattern="State" methodname="setStateCode" paramcount="0" />
++	      				<call-method-rule pattern="PostalCode" methodname="setPostalCode" paramcount="0" />
++	      				<call-method-rule pattern="Country" methodname="setCountryName" paramcount="0" />
++	      				
++	      				<pattern value="Country">
++	      					<set-properties-rule>
++				      			<alias attr-name="isoCountryCode" prop-name="countryCode" />
++			      			</set-properties-rule>
++	      				</pattern>
++	      				
++	      				<set-next-rule methodname="addPostalAddress" />
++	      				
++	      			</pattern> <!-- PostalAddress -->
++	      			
++	      			<pattern value="Email">
++	                    <call-method-rule methodname="addEmailAddress" paramcount="2" />
++	                    <call-param-rule attrname="name" paramnumber="0"/>
++	                    <call-param-rule paramnumber="1"/>
++                	</pattern>
++                
++                	<pattern value="Phone">
++	                    <call-method-rule methodname="addPhoneNumber" paramcount="4" />
++	                    <call-param-rule attrname="name" paramnumber="0"/>
++	                    <call-param-rule pattern="TelephoneNumber/CountryCode" paramnumber="1"/>
++	                    <call-param-rule pattern="TelephoneNumber/AreaOrCityCode" paramnumber="2"/>
++	                    <call-param-rule pattern="TelephoneNumber/Number" paramnumber="3"/>
++                	</pattern>
++                	
++                    <pattern value="Fax">
++	                    <call-method-rule methodname="addFaxNumber" paramcount="4" />
++	                    <call-param-rule attrname="name" paramnumber="0"/>
++	                    <call-param-rule pattern="TelephoneNumber/CountryCode" paramnumber="1"/>
++	                    <call-param-rule pattern="TelephoneNumber/AreaOrCityCode" paramnumber="2"/>
++	                    <call-param-rule pattern="TelephoneNumber/Number" paramnumber="3"/>
++                	</pattern>
++                    
++                    <call-method-rule pattern="URL" methodname="addWebAddress" paramcount="0" />
++                    
++	      			<set-next-rule methodname="addInvoicePartnerContact" />
++	      			
++	      		</pattern> <!-- InvoicePartner/Contacts -->
++	      		
++	   		</pattern> <!-- InvoicePartner -->
++	   		
++	   		<!-- SHIPPING DETAILS -->
++	   		<pattern value="InvoiceDetailShipping">
++	   			<set-properties-rule>
++	      			<alias attr-name="shippingDate" prop-name="shippingDateString" />
++      			</set-properties-rule>
++      			
++      			<!-- CONTACTS -->
++	      		<pattern value="Contact">
++      				
++      				<object-create-rule classname="org.kuali.kfs.module.purap.businessobject.ElectronicInvoiceContact" />
++      				
++      				<set-properties-rule>
++			      		<alias attr-name="role" prop-name="role" />
++			      		<alias attr-name="addressID" prop-name="addressID" />
++		      		</set-properties-rule>
++
++					<call-method-rule pattern="Name" methodname="setName" paramcount="0" />			      		
++					
++	      			<pattern value="PostalAddress">
++	      			
++	      				<object-create-rule classname="org.kuali.kfs.module.purap.businessobject.ElectronicInvoicePostalAddress" />
++	      				
++	      				<set-properties-rule>
++			      			<alias attr-name="name" prop-name="type" />
++		      			</set-properties-rule>
++		      		
++	      				<call-method-rule pattern="DeliverTo" methodname="addName" paramcount="0" />
++	      				
++	      				<!-- FIXME: Have to find a better way of handling this element -->
++	      				<call-method-rule pattern="Street" methodname="addStreet" paramcount="0" />
++	      				
++	      				
++	      				<call-method-rule pattern="City" methodname="setCityName" paramcount="0" />
++	      				<call-method-rule pattern="State" methodname="setStateCode" paramcount="0" />
++	      				<call-method-rule pattern="PostalCode" methodname="setPostalCode" paramcount="0" />
++	      				<call-method-rule pattern="Country" methodname="setCountryName" paramcount="0" />
++	      				
++	      				<pattern value="Country">
++	      					<set-properties-rule>
++				      			<alias attr-name="isoCountryCode" prop-name="countryCode" />
++			      			</set-properties-rule>
++	      				</pattern>
++	      				
++	      				<set-next-rule methodname="addPostalAddress" />
++	      				
++	      			</pattern> <!-- PostalAddress -->
++	      			
++	      			<pattern value="Email">
++	                    <call-method-rule methodname="addEmailAddress" paramcount="2" />
++	                    <call-param-rule attrname="name" paramnumber="0"/>
++	                    <call-param-rule paramnumber="1"/>
++                	</pattern>
++                	
++                	<pattern value="Phone">
++	                    <call-method-rule methodname="addPhoneNumber" paramcount="4" />
++	                    <call-param-rule attrname="name" paramnumber="0"/>
++	                    <call-param-rule pattern="TelephoneNumber/CountryCode" paramnumber="1"/>
++	                    <call-param-rule pattern="TelephoneNumber/AreaOrCityCode" paramnumber="2"/>
++	                    <call-param-rule pattern="TelephoneNumber/Number" paramnumber="3"/>
++                	</pattern>
++                	
++                    <pattern value="Fax">
++	                    <call-method-rule methodname="addFaxNumber" paramcount="4" />
++	                    <call-param-rule attrname="name" paramnumber="0"/>
++	                    <call-param-rule pattern="TelephoneNumber/CountryCode" paramnumber="1"/>
++	                    <call-param-rule pattern="TelephoneNumber/AreaOrCityCode" paramnumber="2"/>
++	                    <call-param-rule pattern="TelephoneNumber/Number" paramnumber="3"/>
++                	</pattern>
++                    
++                    <call-method-rule pattern="URL" methodname="addWebAddress" paramcount="0" />
++                    
++	      			<set-next-rule methodname="addInvoiceShippingContacts" />
++	      			
++      			</pattern> <!-- InvoiceDetailShipping/Contact -->
++      			
++      			<!-- INFO: Skipping CarrierIdentifier,ShipmentIdentifier,DocumentReference since these are not handled currently -->
++      			
++	   		</pattern> <!-- InvoiceDetailShipping -->
++	   		
++	   		<!-- The next two elements were not used currently -->
++	   		<set-properties-rule pattern="InvoiceDetailPaymentTerm">
++   				<alias attr-name="payInNumberOfDays" prop-name="payInNumberOfDays" paramtype="java.lang.Integer"/>
++   				<alias attr-name="percentageRate" prop-name="percentageRate"/>
++   			</set-properties-rule>
++   			
++	   		<set-properties-rule pattern="PaymentTerm">
++   				<alias attr-name="payInNumberOfDays" prop-name="payInNumberOfDays" paramtype="java.lang.Integer"/>
++   			</set-properties-rule>
++
++			<!-- INFO: Comments element not handled currently -->    			
++			
++	   		<pattern value="Extrinsic">
++	   			<object-create-rule classname="org.kuali.kfs.module.purap.util.cxml.CxmlExtrinsic" />
++	   			
++	   			<call-method-rule methodname="setValue" paramcount="0" />
++    			<set-properties-rule>
++    				<alias attr-name="name" prop-name="name" />
++    			</set-properties-rule>
++    			
++	   			<set-next-rule methodname="addExtrinsic" />
++	   		</pattern> <!--  Extrinsic -->
++	   		
++	   		<set-next-rule methodname="setInvoiceDetailRequestHeader" />
++		   
++	   </pattern> <!--  Request -->
++		   
++	   <!-- INVOICE ORDER -->
++	   <pattern value="Request/InvoiceDetailRequest/InvoiceDetailOrder">
++	   
++		   <object-create-rule classname="org.kuali.kfs.module.purap.businessobject.ElectronicInvoiceOrder" />
++		   
++		   <set-properties-rule pattern="InvoiceDetailOrderInfo/OrderReference">
++      			<alias attr-name="orderID" prop-name="orderReferenceOrderID" />
++      			<alias attr-name="orderDate" prop-name="orderReferenceOrderDateString" />
++     	   </set-properties-rule>
++     		   
++     	   <set-properties-rule pattern="InvoiceDetailOrderInfo/OrderReference/DocumentReference">
++      			<alias attr-name="payloadID" prop-name="orderReferenceDocumentRefPayloadID" />
++     	   </set-properties-rule>
++     			
++		   <call-method-rule pattern="InvoiceDetailOrderInfo/OrderReference/DocumentReference" methodname="setOrderReferenceDocumentRef" paramcount="0" />
++		   
++		   <set-properties-rule pattern="InvoiceDetailOrderInfo/MasterAgreementReference">
++		  	   <alias attr-name="agreementID" prop-name="masterAgreementReferenceID" />
++     		   <alias attr-name="agreementDate" prop-name="masterAgreementReferenceDateString" />
++    	   </set-properties-rule>
++    		   
++    	   <set-properties-rule pattern="InvoiceDetailOrderInfo/MasterAgreementIDInfo">
++      		   <alias attr-name="agreementID" prop-name="masterAgreementIDInfoID" />
++      		   <alias attr-name="agreementDate" prop-name="masterAgreementIDInfoDateString" />
++   		   </set-properties-rule>
++    		   
++    	   <set-properties-rule pattern="InvoiceDetailOrderInfo/OrderIDInfo">
++    		   <alias attr-name="orderID" prop-name="orderIDInfoID" />
++     		   <alias attr-name="orderDate" prop-name="orderIDInfoDateString" />
++    	   </set-properties-rule>
++    		   
++    	   <set-properties-rule pattern="InvoiceDetailOrderInfo/SupplierOrderInfo">
++    		   <alias attr-name="orderID" prop-name="supplierOrderInfoID" />
++    	   </set-properties-rule>
++     	
++     	
++     	   <!-- INVOICE ITEM -->
++	   	   <pattern value="InvoiceDetailItem">	   
++	   			<object-create-rule classname="org.kuali.kfs.module.purap.businessobject.ElectronicInvoiceItem" />
++	   			
++	   			<set-properties-rule>
++    				<alias attr-name="invoiceLineNumber" prop-name="invoiceLineNumber" />
++     				<alias attr-name="quantity" prop-name="quantity" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="UnitOfMeasure" methodname="setUnitOfMeasure" paramcount="0" />
++    			
++    			<call-method-rule pattern="UnitPrice/Money" methodname="setUnitPrice" paramcount="0" />
++    			<set-properties-rule pattern="UnitPrice/Money">
++    				<alias attr-name="currency" prop-name="unitPriceCurrency" />
++    			</set-properties-rule>
++    			
++    			<!-- Currently, the element name is SubTotalAmount instead of SubtotalAmount (case problem - total/Total) I think we're not using this element-->
++    			<call-method-rule pattern="SubtotalAmount/Money" methodname="setSubTotalAmount" paramcount="0" />
++    			<set-properties-rule pattern="SubtotalAmount/Money">
++    				<alias attr-name="currency" prop-name="subTotalAmountCurrency" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="Tax/Money" methodname="setTaxAmount" paramcount="0" />
++    			<set-properties-rule pattern="Tax/Money">
++    				<alias attr-name="currency" prop-name="taxAmountCurrency" />
++    			</set-properties-rule>
++    			
++    			<!-- Parser is just trying to read the value of Tax element and setting it as description. (I think it's not possible....)
++    			But there is a seperate element available for description in xsd/dtd, 
++    			HAVE TO DECIDE BASED ON MORE SAMPLE DATA FILES -->
++    			<call-method-rule pattern="Tax/Description" methodname="setTaxDescription" paramcount="0" />
++    			
++    			<call-method-rule pattern="InvoiceDetailLineSpecialHandling/Money" methodname="setInvoiceLineSpecialHandlingAmount" paramcount="0" />
++    			<set-properties-rule pattern="InvoiceDetailLineSpecialHandling/Money">
++    				<alias attr-name="currency" prop-name="invoiceLineSpecialHandlingAmountCurrency" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="InvoiceDetailLineShipping/Money" methodname="setInvoiceLineShippingAmount" paramcount="0" />
++    			<set-properties-rule pattern="InvoiceDetailLineShipping/Money">
++    				<alias attr-name="currency" prop-name="invoiceLineShippingAmountCurrency" />
++    			</set-properties-rule>
++    			
++    			<set-properties-rule pattern="InvoiceDetailLineShipping/InvoiceDetailShipping">
++    				<alias attr-name="shippingDate" prop-name="shippingDateString" />
++    			</set-properties-rule>
++    			
++    			<pattern value="InvoiceDetailLineShipping/InvoiceDetailShipping/Contact">
++	
++		      		<object-create-rule classname="org.kuali.kfs.module.purap.businessobject.ElectronicInvoiceContact" />
++
++		      		<set-properties-rule>
++			      		<alias attr-name="role" prop-name="role" />
++			      		<alias attr-name="addressID" prop-name="addressID" />
++		      		</set-properties-rule>
++
++					<call-method-rule pattern="Name" methodname="setName" paramcount="0" />			      		
++					
++	      			<pattern value="PostalAddress">
++	      			
++	      				<object-create-rule classname="org.kuali.kfs.module.purap.businessobject.ElectronicInvoicePostalAddress" />
++	      				
++	      				<set-properties-rule>
++			      			<alias attr-name="name" prop-name="type" />
++		      			</set-properties-rule>
++		      		
++	      				<call-method-rule pattern="DeliverTo" methodname="addName" paramcount="0" />
++	      				
++	      				<!-- Have to find a better way of handling this element -->
++	      				<call-method-rule pattern="Street" methodname="addStreet" paramcount="0" />
++	      				
++	      				
++	      				<call-method-rule pattern="City" methodname="setCityName" paramcount="0" />
++	      				<call-method-rule pattern="State" methodname="setStateCode" paramcount="0" />
++	      				<call-method-rule pattern="PostalCode" methodname="setPostalCode" paramcount="0" />
++	      				<call-method-rule pattern="Country" methodname="setCountryName" paramcount="0" />
++	      				
++	      				<pattern value="Country">
++	      					<set-properties-rule>
++				      			<alias attr-name="isoCountryCode" prop-name="countryCode" />
++			      			</set-properties-rule>
++	      				</pattern>
++	      				
++	      				<set-next-rule methodname="addPostalAddress" />
++	      				
++	      			</pattern> <!-- PostalAddress -->
++	      			
++	      			<pattern value="Email">
++	                    <call-method-rule methodname="addEmailAddress" paramcount="2" />
++	                    <call-param-rule attrname="name" paramnumber="0"/>
++	                    <call-param-rule paramnumber="1"/>
++                	</pattern>
++                
++                	<pattern value="Phone">
++	                    <call-method-rule methodname="addPhoneNumber" paramcount="4" />
++	                    <call-param-rule attrname="name" paramnumber="0"/>
++	                    <call-param-rule pattern="TelephoneNumber/CountryCode" paramnumber="1"/>
++	                    <call-param-rule pattern="TelephoneNumber/AreaOrCityCode" paramnumber="2"/>
++	                    <call-param-rule pattern="TelephoneNumber/Number" paramnumber="3"/>
++                	</pattern>
++                	
++                    <pattern value="Fax">
++	                    <call-method-rule methodname="addFaxNumber" paramcount="4" />
++	                    <call-param-rule attrname="name" paramnumber="0"/>
++	                    <call-param-rule pattern="TelephoneNumber/CountryCode" paramnumber="1"/>
++	                    <call-param-rule pattern="TelephoneNumber/AreaOrCityCode" paramnumber="2"/>
++	                    <call-param-rule pattern="TelephoneNumber/Number" paramnumber="3"/>
++                	</pattern>
++                    
++                    <call-method-rule pattern="URL" methodname="addWebAddress" paramcount="0" />
++                    
++	      			<set-next-rule methodname="addInvoiceShippingContacts" />
++	      			
++	      		</pattern> <!-- InvoiceDetailLineShipping/InvoiceDetailShipping/Contact -->
++		      		
++    			<call-method-rule pattern="GrossAmount/Money" methodname="setInvoiceLineGrossAmount" paramcount="0" />
++    			<set-properties-rule pattern="GrossAmount/Money">
++    				<alias attr-name="currency" prop-name="invoiceLineGrossAmountCurrency" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="InvoiceDetailDiscount/Money" methodname="setInvoiceLineDiscountAmount" paramcount="0" />
++    			<set-properties-rule pattern="InvoiceDetailDiscount/Money">
++    				<alias attr-name="currency" prop-name="invoiceLineDiscountAmountCurrency" />
++    			</set-properties-rule>
++    			
++    			<!-- Not handled currently, but this is there in Barnes&Noble's xml file,
++    			but contains ZERO!!! -->
++    			<set-properties-rule pattern="Money">
++    				<alias attr-name="percentageRate" prop-name="invoiceLineDiscountPercentageRate" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="NetAmount/Money" methodname="setInvoiceLineNetAmount" paramcount="0" />
++    			<set-properties-rule pattern="NetAmount/Money">
++    				<alias attr-name="currency" prop-name="invoiceLineNetAmountCurrency" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="InvoiceDetailItemReference/Country" methodname="setReferenceCountryName" paramcount="0" />
++    			<set-properties-rule pattern="InvoiceDetailItemReference/Country">
++    				<alias attr-name="isoCountryCode" prop-name="referenceCountryCode" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="InvoiceDetailItemReference/Description" methodname="setReferenceDescription" paramcount="0" />
++    			<call-method-rule pattern="InvoiceDetailItemReference/ItemID/SupplierPartAuxiliaryID" methodname="setReferenceItemIDSupplierPartAuxID" paramcount="0" />
++    			<call-method-rule pattern="InvoiceDetailItemReference/ItemID/SupplierPartID" methodname="setReferenceItemIDSupplierPartID" paramcount="0" />
++    			
++    			<set-properties-rule pattern="InvoiceDetailItemReference">
++    				<alias attr-name="lineNumber" prop-name="referenceLineNumber" />
++     				<alias attr-name="serialNumber" prop-name="referenceSerialNumber" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="InvoiceDetailItemReference/ManufacturerName" methodname="setReferenceManufacturerName" paramcount="0" />
++    			<call-method-rule pattern="InvoiceDetailItemReference/ManufacturerPartID" methodname="setReferenceManufacturerPartID" paramcount="0" />
++    			
++    			<call-method-rule pattern="InvoiceDetailItemReference/SerialNumber" methodname="addReferenceSerialNumber" paramcount="0" />
++    			
++    			<call-method-rule pattern="Comments" methodname="addComments" paramcount="0" />
++    			
++    			<pattern value="Extrinsic">
++		   			<object-create-rule classname="org.kuali.kfs.module.purap.util.cxml.CxmlExtrinsic" />
++		   			
++		   			<call-method-rule methodname="setValue" paramcount="0" />
++	    			<set-properties-rule>
++	    				<alias attr-name="name" prop-name="name" />
++	    			</set-properties-rule>
++	    			
++		   			<set-next-rule methodname="addExtrinsic" />
++	   			</pattern> <!--  Extrinsic -->
++    			
++		   		<set-next-rule methodname="addInvoiceItem" />
++		   		
++		   </pattern> 	<!-- InvoiceDetailItem -->  
++		   
++		   <!-- InvoiceDetailServiceItem -->
++	   	   <pattern value="InvoiceDetailServiceItem">	   
++	   			<object-create-rule classname="org.kuali.kfs.module.purap.businessobject.ElectronicInvoiceItem" />
++	   			
++	   			<set-properties-rule>
++    				<alias attr-name="invoiceLineNumber" prop-name="invoiceLineNumber" />
++     				<alias attr-name="quantity" prop-name="quantity" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="UnitOfMeasure" methodname="setUnitOfMeasure" paramcount="0" />
++    			
++    			<call-method-rule pattern="UnitPrice/Money" methodname="setUnitPrice" paramcount="0" />
++    			<set-properties-rule pattern="UnitPrice/Money">
++    				<alias attr-name="currency" prop-name="unitPriceCurrency" />
++    			</set-properties-rule>
++    			
++    			<!--  FIXME : These two values should be set only if UnitPrice not available. Have to do some R&D -->
++    			<call-method-rule pattern="UnitRate/UnitOfMeasure" methodname="setUnitOfMeasure" paramcount="0" />
++    			<call-method-rule pattern="UnitRate/Money" methodname="setUnitPrice" paramcount="0" />
++    			
++    			<!-- This is not handled currently, but it is needed if there is no UnitPrice/Money element-->
++    			<set-properties-rule pattern="UnitRate/Money">
++    				<alias attr-name="currency" prop-name="unitPriceCurrency" />
++    			</set-properties-rule>
++    			
++    			<!-- In parser, the element name is SubTotalAmount instead of SubtotalAmount (case problem - total/Total)
++    			I think we're not using this element-->
++    			<call-method-rule pattern="SubtotalAmount/Money" methodname="setSubTotalAmount" paramcount="0" />
++    			<set-properties-rule pattern="SubtotalAmount/Money">
++    				<alias attr-name="currency" prop-name="subTotalAmountCurrency" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="Tax/Money" methodname="setTaxAmount" paramcount="0" />
++    			<set-properties-rule pattern="Tax/Money">
++    				<alias attr-name="currency" prop-name="taxAmountCurrency" />
++    			</set-properties-rule>
++    			
++    			<!-- Parser is just trying to read the value of Tax element and setting it as description. (I think it's not possible....)
++    			But there is a seperate element available for description in xsd/dtd, 
++    			HAVE TO DECIDE BASED ON MORE SAMPLE DATA FILES -->
++    			<call-method-rule pattern="Tax/Description" methodname="setTaxDescription" paramcount="0" />
++    			
++    			<call-method-rule pattern="GrossAmount/Money" methodname="setInvoiceLineGrossAmount" paramcount="0" />
++    			<set-properties-rule pattern="GrossAmount/Money">
++    				<alias attr-name="currency" prop-name="invoiceLineGrossAmountCurrency" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="InvoiceDetailDiscount/Money" methodname="setInvoiceLineDiscountAmount" paramcount="0" />
++    			<set-properties-rule pattern="InvoiceDetailDiscount/Money">
++    				<alias attr-name="currency" prop-name="invoiceLineDiscountAmountCurrency" />
++    			</set-properties-rule>
++    			
++    			<!-- Not handled currently, but this is there in Barnes&Noble's xml file,
++    			but contains ZERO!!! -->
++    			<set-properties-rule pattern="Money">
++    				<alias attr-name="percentageRate" prop-name="invoiceLineDiscountPercentageRate" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="NetAmount/Money" methodname="setInvoiceLineNetAmount" paramcount="0" />
++    			<set-properties-rule pattern="NetAmount/Money">
++    				<alias attr-name="currency" prop-name="invoiceLineNetAmountCurrency" />
++    			</set-properties-rule>
++    			
++    			<call-method-rule pattern="InvoiceDetailServiceItemReference/Description" methodname="setReferenceDescription" paramcount="0" />
++    			<call-method-rule pattern="InvoiceDetailServiceItemReference/ItemID/SupplierPartAuxiliaryID" methodname="setReferenceItemIDSupplierPartAuxID" paramcount="0" />
++    			<call-method-rule pattern="InvoiceDetailServiceItemReference/ItemID/SupplierPartID" methodname="setReferenceItemIDSupplierPartID" paramcount="0" />
++    			
++    			<set-properties-rule pattern="InvoiceDetailServiceItemReference">
++    				<alias attr-name="lineNumber" prop-name="referenceLineNumber" />
++    			</set-properties-rule>
++
++	   			<call-method-rule pattern="Comments" methodname="addComments" paramcount="0" />
++	   			    			
++    			<pattern value="Extrinsic">
++		   			<object-create-rule classname="org.kuali.kfs.module.purap.util.cxml.CxmlExtrinsic" />
++		   			
++		   			<call-method-rule methodname="setValue" paramcount="0" />
++	    			<set-properties-rule>
++	    				<alias attr-name="name" prop-name="name" />
++	    			</set-properties-rule>
++	    			
++		   			<set-next-rule methodname="addExtrinsic" />
++	   			</pattern> <!--  Extrinsic -->
++	   			
++		   		<set-next-rule methodname="addInvoiceItem" />
++		   		
++		   </pattern> 	<!-- InvoiceDetailServiceItem --> 
++	   
++     	   <set-next-rule methodname="addInvoiceDetailOrder" />
++     		   
++	   </pattern> <!-- Request/InvoiceDetailRequest/InvoiceDetailOrder -->
++	   
++	    <!-- InvoiceDetailSummary -->
++	   <pattern value="Request/InvoiceDetailRequest/InvoiceDetailSummary">
++		   <object-create-rule classname="org.kuali.kfs.module.purap.businessobject.ElectronicInvoiceDetailRequestSummary" />
++		   
++		   <call-method-rule pattern="Tax/Money" methodname="setTaxAmount" paramcount="0" />
++   		   <set-properties-rule pattern="Tax/Money">
++   				<alias attr-name="currency" prop-name="taxAmountCurrency" />
++   	   	   </set-properties-rule>
++		   
++		   <call-method-rule pattern="Tax/Description" methodname="setTaxDescription" paramcount="0" />
++		   
++		   <!-- FIXME: If the above desc is empty, have to get the desc from TaxDetail... Have to do this check-->
++		   <call-method-rule pattern="Tax/TaxDetail/Description" methodname="setTaxDescription" paramcount="0" />
++		   
++		   <set-properties-rule pattern="Tax/TaxDetail">
++   				<alias attr-name="category" prop-name="taxCategory" />
++   				<alias attr-name="purpose" prop-name="taxPurpose" />
++   				<alias attr-name="percentageRate" prop-name="taxPercentageRate" />
++   	   	   </set-properties-rule>
++   	   	   
++		   <call-method-rule pattern="SpecialHandlingAmount/Money" methodname="setSpecialHandlingAmount" paramcount="0" />
++   		   <set-properties-rule pattern="SpecialHandlingAmount/Money">
++   				<alias attr-name="currency" prop-name="specialHandlingAmountCurrency" />
++   	   	   </set-properties-rule>
++		   
++		   <call-method-rule pattern="SpecialHandlingAmount/Description" methodname="setSpecialHandlingAmountDescription" paramcount="0" />
++		   
++		   <!-- In parser, the element name is SubTotalAmount instead of SubtotalAmount (case problem - total/Total)
++   			I think we're not using this element-->
++   			<call-method-rule pattern="SubtotalAmount/Money" methodname="setSubTotalAmount" paramcount="0" />
++   			<set-properties-rule pattern="SubtotalAmount/Money">
++   				<alias attr-name="currency" prop-name="subTotalAmountCurrency" />
++   			</set-properties-rule>
++		   
++		    <call-method-rule pattern="ShippingAmount/Money" methodname="setShippingAmount" paramcount="0" />
++   			<set-properties-rule pattern="ShippingAmount/Money">
++   				<alias attr-name="currency" prop-name="shippingAmountCurrency" />
++   			</set-properties-rule>
++		   
++		    <call-method-rule pattern="GrossAmount/Money" methodname="setGrossAmount" paramcount="0" />
++    		<set-properties-rule pattern="GrossAmount/Money">
++    			<alias attr-name="currency" prop-name="grossAmountCurrency" />
++    		</set-properties-rule>
++		   
++		    <call-method-rule pattern="InvoiceDetailDiscount/Money" methodname="setDiscountAmount" paramcount="0" />
++    		<set-properties-rule pattern="InvoiceDetailDiscount/Money">
++    			<alias attr-name="currency" prop-name="discountAmountCurrency" />
++    		</set-properties-rule>
++		   
++		    <!-- Not handled currently, but this is there in Barnes&Noble's xml file,
++    			 but contains ZERO!!! -->
++    		<set-properties-rule pattern="Money">
++    			<alias attr-name="percentageRate" prop-name="invoiceLineDiscountPercentageRate" />
++    		</set-properties-rule>
++    			
++		    <call-method-rule pattern="NetAmount/Money" methodname="setNetAmount" paramcount="0" />
++    		<set-properties-rule pattern="NetAmount/Money">
++    			<alias attr-name="currency" prop-name="netAmountCurrency" />
++    		</set-properties-rule>
++    		
++    		<call-method-rule pattern="DepositAmount/Money" methodname="setDepositAmount" paramcount="0" />
++    		<set-properties-rule pattern="DepositAmount/Money">
++    			<alias attr-name="currency" prop-name="depositAmountCurrency" />
++    		</set-properties-rule>
++    		
++    		<call-method-rule pattern="DueAmount/Money" methodname="setDueAmount" paramcount="0" />
++    		<set-properties-rule pattern="DueAmount/Money">
++    			<alias attr-name="currency" prop-name="dueAmountCurrency" />
++    		</set-properties-rule>
++		   
++		   <set-next-rule methodname="setInvoiceDetailRequestSummary" />
++		   
++	   </pattern> <!-- Request/InvoiceDetailRequest/InvoiceDetailSummary -->
++		
++    </pattern> <!-- cXML -->
++    
++</digester-rules>
+Index: work/src/edu/arizona/kfs/module/purap/businessobject/UaElectronicInvoiceDetailRequestHeader.java
+===================================================================
+--- work/src/edu/arizona/kfs/module/purap/businessobject/UaElectronicInvoiceDetailRequestHeader.java	(revision 0)
++++ work/src/edu/arizona/kfs/module/purap/businessobject/UaElectronicInvoiceDetailRequestHeader.java	(revision 7518)
+@@ -0,0 +1,31 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.module.purap.businessobject;
++
++import org.kuali.kfs.module.purap.businessobject.ElectronicInvoiceDetailRequestHeader;
++
++public class UaElectronicInvoiceDetailRequestHeader extends ElectronicInvoiceDetailRequestHeader {
++
++    private String paymentMethodCode;
++
++    public String getPaymentMethodCode() {
++        return paymentMethodCode;
++    }
++
++    public void setPaymentMethodCode(String paymentMethodCode) {
++        this.paymentMethodCode = paymentMethodCode;
++    }
++}
+Index: work/src/edu/arizona/kfs/module/purap/spring-purap.xml
+===================================================================
+--- work/src/edu/arizona/kfs/module/purap/spring-purap.xml	(revision 7517)
++++ work/src/edu/arizona/kfs/module/purap/spring-purap.xml	(revision 7518)
+@@ -84,6 +84,36 @@
+         <property name="paymentMethodGeneralLedgerPendingEntryService" ref="uaPaymentMethodGeneralLedgerPendingEntryService" />
+     </bean>
+ 
++	<!-- KITT-592 : updated E-Invoice processing to handle payment method -->
++	<bean id="electronicInvoiceHelperService" class="edu.arizona.kfs.module.purap.service.impl.UaElectronicInvoiceHelperServiceImpl">
++		<property name="electronicInvoicingDao" ref="electronicInvoicingDao" />
++        <property name="electronicInvoiceInputFileType" ref="electronicInvoiceInputFileType" />
++		<property name="electronicInvoiceMatchingService" ref="electronicInvoiceMatchingService"/>
++		<property name="mailService" ref="mailService"/>
++		<property name="batchInputFileService" ref="batchInputFileService" />
++		<property name="vendorService" ref="vendorService"/>
++		<property name="purchaseOrderService" ref="purchaseOrderService" />
++        <property name="paymentRequestService" ref="paymentRequestService" />
++        <property name="kualiConfigurationService" ref="kualiConfigurationService"/>
++        <property name="dateTimeService" ref="dateTimeService" />
++	</bean>
++
++	<bean id="electronicInvoiceInputFileType" class="org.kuali.kfs.module.purap.batch.ElectronicInvoiceInputFileType">
++    	<property name="directoryPath">
++	       <value>${staging.directory}/purap/electronicInvoice</value>
++	    </property>
++	    <property name="fileExtension">
++	       <value>xml</value>
++	    </property>
++	    <property name="digestorRulesFileName">
++	       <value>edu/arizona/kfs/module/purap/batch/electronicInvoiceDigesterRules.xml</value>
++	    </property>
++	    <property name="schemaLocation">
++	       <value>${externalizable.static.content.url}/xsd/purap/uaElectronicInvoice.xsd</value>
++	    </property>
++	</bean>
++
++
+ 	<import resource="document/validation/configuration/PurapValidatorOverrides.xml" />
+ 
+ </beans>
+Index: work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java
+===================================================================
+--- work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java	(revision 7517)
++++ work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java	(revision 7518)
+@@ -38,7 +38,7 @@
+  */
+ public class UaPaymentRequestServiceImpl extends PaymentRequestServiceImpl {
+ 
+-    private UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService;
++    protected UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService;
+     
+     /**
+      * This method filters the payment requests given to just those which will be processed by PDP.

@@ -1,0 +1,53 @@
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java	(revision 13632)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java	(revision 13633)
+@@ -98,6 +98,7 @@
+                 // KITT-592 : if this is a UA CM document and the source is a new UA payment request document, copy the payment method code
+                 if ( document instanceof UaVendorCreditMemoDocument && document.getPaymentRequestDocument() instanceof UaPaymentRequestDocument ) {
+                     ((UaVendorCreditMemoDocument)document).setPaymentMethodCode(((UaPaymentRequestDocument)document.getPaymentRequestDocument()).getPaymentMethodCode());
++                    ((UaVendorCreditMemoDocument)document).synchronizeBankCodeWithPaymentMethod();
+                 }
+             }
+             else {
+@@ -156,6 +157,7 @@
+                     && cmDocument.getPaymentRequestDocument() instanceof UaPaymentRequestDocument ) {
+                 ((UaVendorCreditMemoDocument)cmDocument).setPaymentMethodCode(
+                         ((UaPaymentRequestDocument)cmDocument.getPaymentRequestDocument()).getPaymentMethodCode() );
++                ((UaVendorCreditMemoDocument)cmDocument).synchronizeBankCodeWithPaymentMethod();
+             } else { // otherwise, go back to the vendor
+                 VendorDetail vd = vendorService.getVendorDetail(cmDocument.getVendorHeaderGeneratedIdentifier(), cmDocument.getVendorDetailAssignedIdentifier());
+                 if (vd != null
+@@ -164,6 +166,7 @@
+                             && StringUtils.isNotBlank( ((VendorDetailExtension)vd.getExtension()).getDefaultB2BPaymentMethodCode() ) ) {
+                         ((UaVendorCreditMemoDocument)cmDocument).setPaymentMethodCode(
+                                 ((VendorDetailExtension)vd.getExtension()).getDefaultB2BPaymentMethodCode() );
++                        ((UaVendorCreditMemoDocument)cmDocument).synchronizeBankCodeWithPaymentMethod();
+                     }
+                 }
+             }
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java	(revision 13632)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java	(revision 13633)
+@@ -135,6 +135,7 @@
+                     && StringUtils.isNotBlank( ((VendorDetailExtension)po.getVendorDetail().getExtension()).getDefaultB2BPaymentMethodCode() ) ) {
+                 setPaymentMethodCode(
+                         ((VendorDetailExtension)po.getVendorDetail().getExtension()).getDefaultB2BPaymentMethodCode() );
++                synchronizeBankCodeWithPaymentMethod();
+             }
+         }
+     }
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaVendorCreditMemoDocument.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaVendorCreditMemoDocument.java	(revision 13632)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaVendorCreditMemoDocument.java	(revision 13633)
+@@ -87,7 +87,7 @@
+         }        
+     }
+ 
+-    protected void synchronizeBankCodeWithPaymentMethod() {
++    public void synchronizeBankCodeWithPaymentMethod() {
+         Bank bank = getPaymentMethodGeneralLedgerPendingEntryService().getBankForPaymentMethod( getPaymentMethodCode() );
+         if ( bank != null ) {
+             setBankCode(bank.getBankCode());

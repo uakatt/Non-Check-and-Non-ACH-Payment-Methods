@@ -1,0 +1,45 @@
+Index: work/src/edu/arizona/kfs/fp/ojb-fp.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/ojb-fp.xml	(revision 11802)
++++ work/src/edu/arizona/kfs/fp/ojb-fp.xml	(revision 11803)
+@@ -633,32 +633,32 @@
+     <field-descriptor name="clearingAccountNumber"         column="clr_account_nbr" jdbc-type="VARCHAR" />
+     <field-descriptor name="clearingFinancialObjectCode"   column="clr_obj_cd" jdbc-type="VARCHAR" />
+     <field-descriptor name="active"                        column="active_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
+-    <reference-descriptor name="chartOfAccounts" class-ref="org.kuali.kfs.coa.businessobject.Chart" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++    <reference-descriptor name="chartOfAccounts" class-ref="org.kuali.kfs.coa.businessobject.Chart" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
+         <foreignkey field-ref="chartOfAccountsCode" />
+     </reference-descriptor>
+-    <reference-descriptor name="feeIncomeChartOfAccounts" class-ref="org.kuali.kfs.coa.businessobject.Chart" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++    <reference-descriptor name="feeIncomeChartOfAccounts" class-ref="org.kuali.kfs.coa.businessobject.Chart" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
+         <foreignkey field-ref="feeIncomeChartOfAccountsCode" />
+     </reference-descriptor>
+-    <reference-descriptor name="feeExpenseFinancialObject" class-ref="org.kuali.kfs.coa.businessobject.ObjectCodeCurrent" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++    <reference-descriptor name="feeExpenseFinancialObject" class-ref="org.kuali.kfs.coa.businessobject.ObjectCodeCurrent" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
+         <foreignkey field-ref="chartOfAccountsCode" />
+         <foreignkey field-ref="feeExpenseFinancialObjectCode" />
+     </reference-descriptor>
+-    <reference-descriptor name="feeIncomeFinancialObject" class-ref="org.kuali.kfs.coa.businessobject.ObjectCodeCurrent" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++    <reference-descriptor name="feeIncomeFinancialObject" class-ref="org.kuali.kfs.coa.businessobject.ObjectCodeCurrent" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
+         <foreignkey field-ref="feeIncomeChartOfAccountsCode" />
+         <foreignkey field-ref="feeIncomeFinancialObjectCode" />
+     </reference-descriptor>
+-    <reference-descriptor name="feeIncomeAccount" class-ref="org.kuali.kfs.coa.businessobject.Account" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++    <reference-descriptor name="feeIncomeAccount" class-ref="org.kuali.kfs.coa.businessobject.Account" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
+         <foreignkey field-ref="feeIncomeChartOfAccountsCode" />
+         <foreignkey field-ref="feeIncomeAccountNumber" />
+     </reference-descriptor>
+-    <reference-descriptor name="clearingChartOfAccounts" class-ref="org.kuali.kfs.coa.businessobject.Chart" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++    <reference-descriptor name="clearingChartOfAccounts" class-ref="org.kuali.kfs.coa.businessobject.Chart" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
+         <foreignkey field-ref="clearingChartOfAccountsCode" />
+     </reference-descriptor>
+-    <reference-descriptor name="clearingAccount" class-ref="org.kuali.kfs.coa.businessobject.Account" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++    <reference-descriptor name="clearingAccount" class-ref="org.kuali.kfs.coa.businessobject.Account" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
+         <foreignkey field-ref="clearingChartOfAccountsCode" />
+         <foreignkey field-ref="clearingAccountNumber" />
+     </reference-descriptor>
+-    <reference-descriptor name="clearingFinancialObject" class-ref="org.kuali.kfs.coa.businessobject.ObjectCodeCurrent" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++    <reference-descriptor name="clearingFinancialObject" class-ref="org.kuali.kfs.coa.businessobject.ObjectCodeCurrent" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
+         <foreignkey field-ref="clearingChartOfAccountsCode" />
+         <foreignkey field-ref="clearingFinancialObjectCode" />
+     </reference-descriptor>

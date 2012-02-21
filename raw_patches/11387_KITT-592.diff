@@ -1,0 +1,180 @@
+Index: financial-system/kfs-cfg-dbs/trunk/data.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/data.xml	(revision 11386)
++++ financial-system/kfs-cfg-dbs/trunk/data.xml	(revision 11387)
+@@ -2,8 +2,6 @@
+ <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+-    <include file="latest/dat/FP_PMT_MTHD_T.xml" />
+-    <include file="latest/dat/FP_PMT_MTHD_CHART_T.xml" />
+     <include file="latest/dat/KREW.xml" />
+     <include file="latest/dat/KRIM4.xml" />
+     <include file="latest/dat/AP_ELCTRNC_INV_MAP_T.xml" />
+@@ -13,4 +11,4 @@
+     <include file="latest/dat/PUR_PDF_LANG_T.xml" />
+     <include file="latest/dat/KRIM2.xml" />
+     <include file="latest/dat/KRNS_PARM_T.xml" />
+-</databaseChangeLog>
+\ No newline at end of file
++</databaseChangeLog>
+Index: financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml	(revision 11386)
++++ financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml	(revision 11387)
+@@ -1,33 +1,42 @@
+ <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+     <changeSet  author="jhkeller" id="20100210jk-1">
+-	    <createTable tableName="FP_PMT_MTHD_T">
+-	      <column name="PMT_MTHD_CD"  type="CHAR(1)" >
+-	        <constraints nullable="false" primaryKey="true" primaryKeyName="FP_PMT_MTHD_TP1" />
+-	      </column>
+-	      <column name="OBJ_ID" type="VARCHAR(36)">
+-	        <constraints nullable="false" unique="true" uniqueConstraintName="FP_PMT_MTHD_TC0" />
+-	      </column>
+-	      <column name="VER_NBR" type="NUMBER(8,0)">
+-	        <constraints nullable="false" />
+-	      </column>
+-	      <column name="PMT_MTHD_NM"           type="VARCHAR(40)"  />
+-	      <column name="BNK_CD"                type="VARCHAR(4)"   />
+-	      <column name="FEE_IND"               type="CHAR(1)" defaultValue="N">
+-	      	<constraints nullable="false" />
+-	      </column>
+-	      <column name="PDP_IND"               type="CHAR(1)" defaultValue="N">
+-	      	<constraints nullable="false" />
+-	      </column>
+-	      <column name="INTERDEPT_IND"               type="CHAR(1)" defaultValue="N">
+-	      	<constraints nullable="false" />
+-	      </column>
+-	      <column name="CLR_ACCT_IND"               type="CHAR(1)" defaultValue="N">
+-	      	<constraints nullable="false" />
+-	      </column>
+-	      <column name="ACTIVE_IND"               type="CHAR(1)" defaultValue="Y">
+-	      	<constraints nullable="false" />
+-	      </column>
+-	    </createTable>
++    <changeSet author="jhkeller" id="KITT-592-FP_PMT_MTHD_T"> 
++        <createTable tableName="FP_PMT_MTHD_T"> 
++            <column name="PMT_MTHD_CD" type="CHAR(1)"> 
++                <constraints nullable="false" primaryKey="true" 
++                    primaryKeyName="FP_PMT_MTHD_TP1" /> 
++            </column> 
++            <column name="OBJ_ID" type="VARCHAR2(36)"> 
++                <constraints nullable="false" unique="true" 
++                    uniqueConstraintName="FP_PMT_MTHD_TC0" /> 
++            </column> 
++            <column name="VER_NBR" type="NUMBER(8,0)"> 
++                <constraints nullable="false" /> 
++            </column> 
++            <column name="PMT_MTHD_NM" type="VARCHAR2(40)" /> 
++            <column name="BNK_CD" type="VARCHAR2(4)" /> 
++            <column name="FEE_IND" type="CHAR(1)" defaultValue="N"> 
++                <constraints nullable="false" /> 
++            </column> 
++            <column name="PDP_IND" type="CHAR(1)" defaultValue="N"> 
++                <constraints nullable="false" /> 
++            </column> 
++            <column name="INTERDEPT_IND" type="CHAR(1)" defaultValue="N"> 
++                <constraints nullable="false" /> 
++            </column> 
++            <column name="CLR_ACCT_IND" type="CHAR(1)" defaultValue="N"> 
++                <constraints nullable="false" /> 
++            </column> 
++            <column name="DV_DISPLAY_IND" type="CHAR(1)" defaultValue="N"> 
++                <constraints nullable="false" /> 
++            </column> 
++            <column name="VENDOR_DISPLAY_IND" type="CHAR(1)" defaultValue="N"> 
++                <constraints nullable="false" /> 
++            </column> 
++            <column name="ACTIVE_IND" type="CHAR(1)" defaultValue="Y"> 
++                <constraints nullable="false" /> 
++            </column> 
++        </createTable> 
+ 	</changeSet>
+ </databaseChangeLog>
+     
+\ No newline at end of file
+Index: financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_PMT_MTHD_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_PMT_MTHD_T.xml	(revision 11386)
++++ financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_PMT_MTHD_T.xml	(revision 11387)
+@@ -1,37 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+- 
+-<databaseChangeLog
+-  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+-  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+-         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+- 
+-  <changeSet id="20100204jk-2" author="jhkeller">
+-    <!-- Initial data for the payment method table -->
+-    <sql splitStatements="false" endDelimiter=""><![CDATA[ 
+-BEGIN		
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('C', 'C', 1, 'Check', '0002', 'N', 'Y', 'N', 'Y', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('H', 'H', 1, 'ACH', '0013', 'N', 'Y', 'N', 'Y', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('F', 'F', 1, 'Foreign Draft', '0001', 'Y', 'N', 'N', 'N', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('W', 'W', 1, 'Wire Charge', '0001', 'Y', 'N', 'N', 'N', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('A', 'A', 1, 'AP Credit Card', NULL, 'N', 'N', 'N', 'Y', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('B', 'B', 1, 'Bookstore', NULL, 'N', 'N', 'Y', 'N', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('S', 'S', 1, 'AzBW Store', NULL, 'N', 'N', 'Y', 'N', 'Y');	
+-END;
+-]]>
+-    </sql>
+-  </changeSet>
+-</databaseChangeLog>
+Index: financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_PMT_MTHD_CHART_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_PMT_MTHD_CHART_T.xml	(revision 11386)
++++ financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_PMT_MTHD_CHART_T.xml	(revision 11387)
+@@ -1,37 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+- 
+-<databaseChangeLog
+-  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+-  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+-         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+- 
+-  <changeSet id="20100204jk-3" author="jhkeller">
+-    <!-- Initial data for the payment method table -->
+-    <sql splitStatements="false" endDelimiter=""><![CDATA[ 
+-BEGIN		
+-	INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
+-	  VALUES('C', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'C-UA', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
+-	  VALUES('H', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'H-UA', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
+-	  VALUES('F', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'F-UA', 1, 'UA', '2558300', '3140', '5780', 5, NULL, NULL, NULL, 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
+-	  VALUES('W', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'W-UA', 1, 'UA', '2558300', '3140', '5780', 15, NULL, NULL, NULL, 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
+-	  VALUES('A', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'A-UA', 1, NULL, NULL, NULL, NULL, NULL, 'UA', '2899900', '9175', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
+-	  VALUES('B', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'B-UA', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
+-	  VALUES('S', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'S-UA', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Y');
+-END;
+-]]>
+-    </sql>
+-  </changeSet>
+-</databaseChangeLog>

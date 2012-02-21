@@ -1,0 +1,44 @@
+Index: financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml	(revision 7682)
++++ financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml	(revision 7683)
+@@ -1,5 +1,5 @@
+ <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+-    <changeSet author="" id="">
++    <changeSet  author="jhkeller" id="20100210jk-1">
+ 	    <createTable tableName="FP_PMT_MTHD_T">
+ 	      <column name="PMT_MTHD_CD"  type="CHAR(1)" >
+ 	        <constraints nullable="false" primaryKey="true" primaryKeyName="FP_PMT_MTHD_TP1" />
+Index: financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_CHART_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_CHART_T.xml	(revision 7682)
++++ financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_CHART_T.xml	(revision 7683)
+@@ -1,5 +1,5 @@
+ <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+-    <changeSet author="" id="">
++    <changeSet author="jhkeller" id="20100210jk-2">
+     <createTable tableName="FP_PMT_MTHD_CHART_T">
+       <column name="PMT_MTHD_CD"  type="CHAR(1)" >
+         <constraints nullable="false" primaryKey="true" primaryKeyName="FP_PMT_MTHD_CHART_TP1" />
+Index: financial-system/kfs-cfg-dbs/trunk/latest/cst/FP_PMT_MTHD_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/latest/cst/FP_PMT_MTHD_T.xml	(revision 7682)
++++ financial-system/kfs-cfg-dbs/trunk/latest/cst/FP_PMT_MTHD_T.xml	(revision 7683)
+@@ -1,5 +1,5 @@
+ <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+-    <changeSet author="" id="">
++    <changeSet  author="jhkeller" id="20100210jk-3">
+ 	    <addForeignKeyConstraint baseColumnNames="BNK_CD"
+ 	                             baseTableName="FP_PMT_MTHD_T"
+ 	                             constraintName="FP_PMT_MTHD_TR1"
+Index: financial-system/kfs-cfg-dbs/trunk/latest/cst/FP_PMT_MTHD_CHART_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/latest/cst/FP_PMT_MTHD_CHART_T.xml	(revision 7682)
++++ financial-system/kfs-cfg-dbs/trunk/latest/cst/FP_PMT_MTHD_CHART_T.xml	(revision 7683)
+@@ -1,5 +1,5 @@
+ <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+-    <changeSet author="" id="">
++    <changeSet  author="jhkeller" id="20100210jk-4">
+     <addForeignKeyConstraint baseColumnNames="pmt_mthd_cd"
+                              baseTableName="fp_pmt_mthd_chart_t"
+                              constraintName="fp_pmt_mthd_chart_tr1"

@@ -1,0 +1,13 @@
+Index: work/src/edu/arizona/kfs/fp/ojb-fp.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/ojb-fp.xml	(revision 11048)
++++ work/src/edu/arizona/kfs/fp/ojb-fp.xml	(revision 11049)
+@@ -608,7 +608,7 @@
+     <field-descriptor name="displayOnDisbursementVoucherDocument" column="dv_display_ind"     jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
+     <field-descriptor name="displayOnVendorDocument"              column="vendor_display_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
+     <field-descriptor name="active"                     column="active_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
+-    <reference-descriptor name="bank" class-ref="org.kuali.kfs.sys.businessobject.Bank" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++    <reference-descriptor name="bank" class-ref="org.kuali.kfs.sys.businessobject.Bank" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
+         <foreignkey field-ref="bankCode" />
+     </reference-descriptor>
+     <collection-descriptor name="paymentMethodCharts" proxy="true" element-class-ref="edu.arizona.kfs.fp.businessobject.PaymentMethodChart" 

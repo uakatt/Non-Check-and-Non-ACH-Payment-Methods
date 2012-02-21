@@ -1,0 +1,248 @@
+Index: financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinder.java
+===================================================================
+--- financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinder.java	(revision 10229)
++++ financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinder.java	(revision 10230)
+@@ -37,7 +37,8 @@
+  * @see org.kuali.kfs.fp.businessobject.options.PaymentMethodValuesFinder
+  */
+ public class PaymentMethodValuesFinder extends KeyValuesBase {
+-    static protected Map<String,String> filterCriteria = new HashMap<String, String>();
++    private static BusinessObjectService businessObjectService;
++    static private Map<String,String> filterCriteria = new HashMap<String, String>();
+     static {
+         filterCriteria.put("active", "Y");
+     }
+@@ -46,15 +47,14 @@
+      * @see org.kuali.keyvalues.KeyValuesFinder#getKeyValues()
+      */
+     public List<KeyLabelPair> getKeyValues() {
+-        Collection<PaymentMethod> paymentMethods = getBusinessObjectService().findMatching(PaymentMethod.class, filterCriteria);
++        Collection<PaymentMethod> paymentMethods = getBusinessObjectService().findMatching(PaymentMethod.class, getFilterCriteria());
+         List<KeyLabelPair> labels = new ArrayList<KeyLabelPair>( paymentMethods.size() );       
+         for ( PaymentMethod pm : paymentMethods ) {
+-            labels.add(new KeyLabelPair(pm.getPaymentMethodCode(), pm.getPaymentMethodName()));
++            labels.add(new KeyLabelPair(pm.getPaymentMethodCode(), pm.getPaymentMethodCode() + " - " + pm.getPaymentMethodName()));
+         }
+         return labels;
+     }
+ 
+-    private static BusinessObjectService businessObjectService;
+     protected BusinessObjectService getBusinessObjectService() {
+         if ( businessObjectService == null ) {
+             businessObjectService = SpringContext.getBean(BusinessObjectService.class);
+@@ -62,4 +62,8 @@
+         return businessObjectService;
+     }
+     
++    protected Map<String,String> getFilterCriteria() {
++        return filterCriteria;
++    }
++    
+ }
+Index: financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java
+===================================================================
+--- financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java	(revision 10229)
++++ financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java	(revision 10230)
+@@ -37,8 +37,12 @@
+  * @see org.kuali.kfs.fp.businessobject.options.PaymentMethodValuesFinder
+  */
+ public class PaymentMethodsForDVValuesFinder extends PaymentMethodValuesFinder {
++    static private Map<String,String> filterCriteria = new HashMap<String, String>();
+     static {
++        filterCriteria.put("active", "Y");
+         filterCriteria.put("displayOnDisbursementVoucherDocument", "Y");
++    }    
++    protected Map<String,String> getFilterCriteria() {
++        return filterCriteria;
+     }
+-    
+ }
+Index: financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForVendorValuesFinder.java
+===================================================================
+--- financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForVendorValuesFinder.java	(revision 10229)
++++ financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForVendorValuesFinder.java	(revision 10230)
+@@ -37,8 +37,13 @@
+  * @see org.kuali.kfs.fp.businessobject.options.PaymentMethodValuesFinder
+  */
+ public class PaymentMethodsForVendorValuesFinder extends PaymentMethodValuesFinder {
++    static private Map<String,String> filterCriteria = new HashMap<String, String>();
+     static {
++        filterCriteria.put("active", "Y");
+         filterCriteria.put("displayOnVendorDocument", "Y");
+     }
+     
++    protected Map<String,String> getFilterCriteria() {
++        return filterCriteria;
++    }    
+ }
+Index: financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml
+===================================================================
+--- financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml	(revision 10229)
++++ financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml	(revision 10230)
+@@ -17,6 +17,8 @@
+         <ref bean="PaymentMethod-processedUsingPdp"/>
+         <ref bean="PaymentMethod-interdepartmentalPayment"/>
+         <ref bean="PaymentMethod-offsetUsingClearingAccount"/>
++        <ref bean="PaymentMethod-displayOnDisbursementVoucherDocument"/>
++        <ref bean="PaymentMethod-displayOnVendorDocument"/>
+         <ref bean="PaymentMethod-active"/>
+       </list>
+     </property>
+@@ -29,13 +31,13 @@
+ 		by all uses.
+ 	-->
+ 	<bean name="PaymentMethodSelectControl" parent="SelectControlDefinition"
+-		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodValuesFinder" p:includeKeyInLabel="true" />
++		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodValuesFinder" />
+ 		
+ 	<bean name="PaymentMethodsForDVSelectControl" parent="SelectControlDefinition"
+-		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodsForDVValuesFinder" p:includeKeyInLabel="true" />
++		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodsForDVValuesFinder" />
+ 
+ 	<bean name="PaymentMethodsForVendorSelectControl" parent="SelectControlDefinition"
+-		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodsForVendorValuesFinder" p:includeKeyInLabel="true" />
++		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodsForVendorValuesFinder" />
+ 
+   <bean id="PaymentMethodAttribute-SelectControl" parent="PaymentMethod-paymentMethodCode" p:control-ref="PaymentMethodSelectControl" />
+ 
+@@ -104,6 +106,20 @@
+     <property name="shortLabel" value="ClrAcctInd"/>
+   </bean>
+ 
++  <bean id="PaymentMethod-displayOnDisbursementVoucherDocument" parent="PaymentMethod-displayOnDisbursementVoucherDocument-parentBean"/>
++  <bean id="PaymentMethod-displayOnDisbursementVoucherDocument-parentBean" abstract="true" parent="GenericAttributes-genericBoolean">
++    <property name="name" value="displayOnDisbursementVoucherDocument"/>
++    <property name="label" value="Display on DV?"/>
++    <property name="shortLabel" value="On DV?"/>
++  </bean>
++
++  <bean id="PaymentMethod-displayOnVendorDocument" parent="PaymentMethod-displayOnVendorDocument-parentBean"/>
++  <bean id="PaymentMethod-displayOnVendorDocument-parentBean" abstract="true" parent="GenericAttributes-genericBoolean">
++    <property name="name" value="displayOnVendorDocument"/>
++    <property name="label" value="Display on Vendor Doc?"/>
++    <property name="shortLabel" value="Vendor Doc?"/>
++  </bean>
++
+   <bean id="PaymentMethod-active" parent="PaymentMethod-active-parentBean"/>
+   <bean id="PaymentMethod-active-parentBean" abstract="true" parent="GenericAttributes-activeIndicator">
+     <property name="name" value="active"/>
+@@ -130,6 +146,8 @@
+         <bean parent="FieldDefinition" p:attributeName="processedUsingPdp"/>
+         <bean parent="FieldDefinition" p:attributeName="interdepartmentalPayment"/>
+         <bean parent="FieldDefinition" p:attributeName="offsetUsingClearingAccount"/>
++        <bean parent="FieldDefinition" p:attributeName="displayOnDisbursementVoucherDocument"/>
++        <bean parent="FieldDefinition" p:attributeName="displayOnVendorDocument"/>
+         <bean parent="FieldDefinition" p:attributeName="active"/>
+       </list>
+     </property>
+@@ -142,6 +160,8 @@
+         <bean parent="FieldDefinition" p:attributeName="processedUsingPdp"/>
+         <bean parent="FieldDefinition" p:attributeName="interdepartmentalPayment"/>
+         <bean parent="FieldDefinition" p:attributeName="offsetUsingClearingAccount"/>
++        <bean parent="FieldDefinition" p:attributeName="displayOnDisbursementVoucherDocument"/>
++        <bean parent="FieldDefinition" p:attributeName="displayOnVendorDocument"/>
+         <bean parent="FieldDefinition" p:attributeName="active"/>
+       </list>
+     </property>
+@@ -164,6 +184,8 @@
+ 		        <bean parent="FieldDefinition" p:attributeName="processedUsingPdp"/>
+ 		        <bean parent="FieldDefinition" p:attributeName="interdepartmentalPayment"/>
+ 		        <bean parent="FieldDefinition" p:attributeName="offsetUsingClearingAccount"/>
++		        <bean parent="FieldDefinition" p:attributeName="displayOnDisbursementVoucherDocument"/>
++		        <bean parent="FieldDefinition" p:attributeName="displayOnVendorDocument"/>
+ 		        <bean parent="FieldDefinition" p:attributeName="active"/>
+             </list>
+           </property>
+Index: financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetail.xml
+===================================================================
+--- financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetail.xml	(revision 10229)
++++ financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetail.xml	(revision 10230)
+@@ -12,6 +12,9 @@
+ 				<ref bean="VendorDetail-conflictOfInterest" />
+ 				<ref bean="VendorDetail-azSalesTaxLicense" />
+ 				<ref bean="VendorDetail-tucSalesTaxLicense" />
++			    <!-- MOD-PA2000-01 -->
++				<ref bean="VendorDetail-defaultB2BPaymentMethodCode" />
++				<!-- END MOD -->
+ 			</list>
+ 		</property>
+ 		<property name="relationships">
+@@ -19,6 +22,9 @@
+ 				<dd:relationship objectAttribute="extension">
+ 					<dd:primitiveAttribute source="vendorHeaderGeneratedIdentifier" target="vendorHeaderGeneratedIdentifier" />
+ 					<dd:primitiveAttribute source="vendorDetailAssignedIdentifier" target="vendorDetailAssignedIdentifier" />
++					<!-- MOD-PA2000-01 -->
++					<dd:supportAttribute source="extension.defaultB2BPaymentMethodCode" target="defaultB2BPaymentMethodCode" />
++					<!--  END MOD -->
+ 		            <dd:supportAttribute source="extension.conflictOfInterest" target="conflictOfInterest" /> 
+ 		            <dd:supportAttribute source="extension.azSalesTaxLicense" target="azSalesTaxLicense" /> 
+ 		            <dd:supportAttribute source="extension.tucSalesTaxLicense" target="tucSalesTaxLicense" /> 
+@@ -44,6 +50,13 @@
+ 		abstract="true" parent="VendorDetailExtension-tucSalesTaxLicense-parentBean"
+ 		attributeName="extension.tucSalesTaxLicense" />
+ 
++    <!-- MOD-PA2000-01 -->
++	<bean id="VendorDetail-defaultB2BPaymentMethodCode" parent="VendorDetail-defaultB2BPaymentMethodCode-parentBean" />
++	<dd:boAttributeRef id="VendorDetail-defaultB2BPaymentMethodCode-parentBean"
++		abstract="true" parent="VendorDetailExtension-defaultB2BPaymentMethodCode"
++		attributeName="extension.defaultB2BPaymentMethodCode" />
++	<!--  END MOD -->
++	
+ 	<!-- Business Object Inquiry Definition -->
+ 	<!-- Added Extended Attributes tab after Vendor Header Information -->
+ 
+@@ -99,6 +112,9 @@
+ 							<bean parent="FieldDefinition" p:attributeName="vendorConfirmationIndicator" />
+ 							<bean parent="FieldDefinition" p:attributeName="vendorInactiveReasonCode" />
+ 							<bean parent="FieldDefinition" p:attributeName="extension.conflictOfInterest" />
++							<!-- MOD-PA2000-01 -->
++							<bean parent="FieldDefinition" p:attributeName="extension.defaultB2BPaymentMethodCode" />
++							<!--  END MOD -->
+ 						</list>
+ 					</property>
+ 				</bean>
+Index: financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetailExtension.xml
+===================================================================
+--- financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetailExtension.xml	(revision 10229)
++++ financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetailExtension.xml	(revision 10230)
+@@ -19,8 +19,9 @@
+ 				<ref bean="VendorDetailExtension-tucSalesTaxLicense" />
+ 				<ref bean="VendorDetailExtension-vendorHeaderGeneratedIdentifier" />
+ 				<ref bean="VendorDetailExtension-vendorDetailAssignedIdentifier" />
++				<!-- MOD-PA2000-01 -->
+ 				<ref bean="VendorDetailExtension-defaultB2BPaymentMethodCode" />
+-
++				<!--  END MOD -->
+ 			</list>
+ 		</property>
+ 	</bean>
+@@ -72,6 +73,7 @@
+ 		</property>
+ 	</bean>
+ 
++	<!-- MOD-PA2000-01 -->
+ 	<bean id="VendorDetailExtension-defaultB2BPaymentMethodCode" parent="VendorDetailExtension-defaultB2BPaymentMethodCode-parentBean" />
+ 	<bean id="VendorDetailExtension-defaultB2BPaymentMethodCode-parentBean" abstract="true"
+ 		parent="PaymentMethod-paymentMethodCode">
+@@ -80,6 +82,7 @@
+ 		<property name="shortLabel" value="Dflt B2B Pmt Mthd" />
+ 		<property name="control" ref="PaymentMethodsForVendorSelectControl" />
+ 	</bean>
++	<!--  END MOD -->
+ 
+ 	<bean id="VendorDetailExtension-versionNumber" parent="AttributeReferenceDummy-versionNumber-parentBean" />
+ 
+Index: financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/document/datadictionary/VendorMaintenanceDocument.xml
+===================================================================
+--- financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/document/datadictionary/VendorMaintenanceDocument.xml	(revision 10229)
++++ financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/document/datadictionary/VendorMaintenanceDocument.xml	(revision 10230)
+@@ -20,7 +20,9 @@
+ 		<property name="maintainableItems">
+ 			<list merge="true">
+ 				<bean parent="MaintainableFieldDefinition" p:name="extension.conflictOfInterest" p:required="true"/>
++				<!-- MOD-PA2000-01 -->
+ 				<bean parent="MaintainableFieldDefinition" p:name="extension.defaultB2BPaymentMethodCode" p:required="true" />
++				<!--  END MOD -->
+ 			</list>
+ 		</property>
+ 	</bean>

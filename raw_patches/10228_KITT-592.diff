@@ -1,0 +1,74 @@
+Index: financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml	(revision 10227)
++++ financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml	(revision 10228)
+@@ -53,6 +53,8 @@
+ 		</rollback>
+ 		<modifySql dbms="mysql">
+ 			<replace replace="VARCHAR2" with="VARCHAR" />
++			<replace replace="NUMBER" with="NUMERIC" />
++			<replace replace="SYS_GUID" with="UUID" />
+ 		</modifySql>
+ 	</changeSet>
+ 	<changeSet author="jhkeller" id="KITT-592-FP_PMT_MTHD_CHART_T">
+@@ -140,6 +142,8 @@
+ 		</rollback>
+ 		<modifySql dbms="mysql">
+ 			<replace replace="VARCHAR2" with="VARCHAR" />
++			<replace replace="NUMBER" with="NUMERIC" />
++			<replace replace="SYS_GUID" with="UUID" />
+ 		</modifySql>
+     </changeSet>
+ 	<changeSet author="jhkeller" id="KITT-592-AP_PMT_RQST_T">
+@@ -183,6 +187,9 @@
+     </changeSet>
+ 	<changeSet author="jhkeller" id="KITT-592-GL_OFFSET_DEFN-DATA-DVNC">
+ 		<sql>
++			DELETE FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVNC'
++		</sql>
++		<sql>
+ INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
+ (SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'DVNC', FIN_COA_CD, SYS_GUID(), 1
+ 	FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF'
+@@ -193,9 +200,15 @@
+ 				DELETE FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVNC'
+ 			</sql>
+ 		</rollback>
++		<modifySql dbms="mysql">
++			<replace replace="SYS_GUID" with="UUID" />
++		</modifySql>
+     </changeSet>
+ 	<changeSet author="jhkeller" id="KITT-592-GL_OFFSET_DEFN-DATA-PRNC">
+ 		<sql>
++			DELETE FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'PRNC'
++		</sql>
++		<sql>
+ INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
+ (SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'PRNC', FIN_COA_CD, SYS_GUID(), 1
+ 	FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF'
+@@ -206,9 +219,15 @@
+ 				DELETE FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'PRNC'
+ 			</sql>
+ 		</rollback>
++		<modifySql dbms="mysql">
++			<replace replace="SYS_GUID" with="UUID" />
++		</modifySql>
+     </changeSet>
+ 	<changeSet author="jhkeller" id="KITT-592-GL_OFFSET_DEFN-DATA-CMNC">
+ 		<sql>
++			DELETE FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'CMNC'
++		</sql>
++		<sql>
+ INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
+ (SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'CMNC', FIN_COA_CD, SYS_GUID(), 1
+ 	FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF'
+@@ -219,6 +238,9 @@
+ 				DELETE FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'CMNC'
+ 			</sql>
+ 		</rollback>
++		<modifySql dbms="mysql">
++			<replace replace="SYS_GUID" with="UUID" />
++		</modifySql>
+     </changeSet>
+     
+ </databaseChangeLog>   

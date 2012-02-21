@@ -1,0 +1,13 @@
+Index: financial-system/kfs-cfg-dbs/trunk/latest/tab/PUR_VNDR_DTL_EXT_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/latest/tab/PUR_VNDR_DTL_EXT_T.xml	(revision 11327)
++++ financial-system/kfs-cfg-dbs/trunk/latest/tab/PUR_VNDR_DTL_EXT_T.xml	(revision 11328)
+@@ -24,6 +24,8 @@
+       <column name="AZ_SALES_TAX_LIC"     type="varchar2(9)"  />
+       <column name="TUC_SALES_TAX_LIC"    type="varchar2(7)"  />
+       <column name="VNDR_CONFLICT_OF_INT" type="varchar2(15)" />
++      <column name="DFLT_B2B_PMT_MTHD_CD" type="CHAR(1)" defaultValue="A" />
++      <column name="EXPORT_CONTROLS_IND" type="CHAR(1)" defaultValue="N" />
+     </createTable>
+   </changeSet>
+ </databaseChangeLog>

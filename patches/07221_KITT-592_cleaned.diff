@@ -1,0 +1,335 @@
+Index: work/src/org/kuali/kfs/module/cab/batch/service/impl/BatchExtractServiceImpl.java
+===================================================================
+--- work/src/org/kuali/kfs/module/cab/batch/service/impl/BatchExtractServiceImpl.java	(revision 7220)
++++ work/src/org/kuali/kfs/module/cab/batch/service/impl/BatchExtractServiceImpl.java	(revision 7221)
+@@ -76,6 +76,7 @@
+ import org.kuali.kfs.sys.service.impl.KfsParameterConstants;
+ import org.kuali.rice.kns.bo.Parameter;
+ import org.kuali.rice.kns.service.BusinessObjectService;
++import org.kuali.rice.kns.service.DataDictionaryService;
+ import org.kuali.rice.kns.service.DateTimeService;
+ import org.kuali.rice.kns.service.ParameterService;
+ import org.kuali.rice.kns.util.DateUtils;
+@@ -204,7 +205,9 @@
+         VendorCreditMemoDocument creditMemoDocument = null;
+         Map<String, String> keys = new LinkedHashMap<String, String>();
+         keys.put(CabPropertyConstants.DOCUMENT_NUMBER, entry.getDocumentNumber());
+-        Collection<VendorCreditMemoDocument> matchingCms = businessObjectService.findMatching(VendorCreditMemoDocument.class, keys);
++        Collection<VendorCreditMemoDocument> matchingCms = businessObjectService.findMatching(
++                SpringContext.getBean(DataDictionaryService.class)
++                        .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.CREDIT_MEMO_DOCUMENT), keys);
+         if (matchingCms != null && matchingCms.size() == 1) {
+             creditMemoDocument = matchingCms.iterator().next();
+         }
+@@ -238,8 +241,10 @@
+     protected PaymentRequestDocument findPaymentRequestDocument(Entry entry) {
+         PaymentRequestDocument paymentRequestDocument = null;
+         Map<String, String> keys = new LinkedHashMap<String, String>();
+-        keys.put(CabPropertyConstants.DOCUMENT_NUMBER, entry.getDocumentNumber());
+-        Collection<PaymentRequestDocument> matchingPreqs = businessObjectService.findMatching(PaymentRequestDocument.class, keys);
++        keys.put(CabPropertyConstants.DOCUMENT_NUMBER, entry.getDocumentNumber());        
++        Collection<PaymentRequestDocument> matchingPreqs = businessObjectService.findMatching(
++                SpringContext.getBean(DataDictionaryService.class)
++                        .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), keys);
+         if (matchingPreqs != null && matchingPreqs.size() == 1) {
+             paymentRequestDocument = matchingPreqs.iterator().next();
+         }
+@@ -665,7 +670,9 @@
+                 Map<String, String> fieldValues = new HashMap<String, String>();
+                 fieldValues.put(CabPropertyConstants.GeneralLedgerEntry.DOCUMENT_NUMBER, entry.getDocumentNumber());
+                 // check if vendor credit memo, then include as FP line
+-                Collection<VendorCreditMemoDocument> matchingCreditMemos = businessObjectService.findMatching(VendorCreditMemoDocument.class, fieldValues);
++                Collection<VendorCreditMemoDocument> matchingCreditMemos = businessObjectService.findMatching(
++                        SpringContext.getBean(DataDictionaryService.class)
++                                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.CREDIT_MEMO_DOCUMENT), fieldValues);
+                 for (VendorCreditMemoDocument creditMemoDocument : matchingCreditMemos) {
+                     if (creditMemoDocument.getPurchaseOrderIdentifier() == null) {
+                         fpLines.add(entry);
+Index: work/src/org/kuali/kfs/module/cab/businessobject/PurchasingAccountsPayableDocument.java
+===================================================================
+--- work/src/org/kuali/kfs/module/cab/businessobject/PurchasingAccountsPayableDocument.java	(revision 7220)
++++ work/src/org/kuali/kfs/module/cab/businessobject/PurchasingAccountsPayableDocument.java	(revision 7221)
+@@ -24,6 +24,7 @@
+ import org.apache.commons.lang.StringUtils;
+ import org.kuali.kfs.module.cab.CabConstants;
+ import org.kuali.kfs.module.cab.CabPropertyConstants;
++import org.kuali.kfs.module.purap.PurapConstants;
+ import org.kuali.kfs.module.purap.PurapPropertyConstants;
+ import org.kuali.kfs.module.purap.businessobject.CreditMemoStatus;
+ import org.kuali.kfs.module.purap.businessobject.PaymentRequestStatus;
+@@ -35,6 +36,7 @@
+ import org.kuali.rice.kew.service.impl.KEWModuleService;
+ import org.kuali.rice.kns.bo.PersistableBusinessObjectBase;
+ import org.kuali.rice.kns.service.BusinessObjectService;
++import org.kuali.rice.kns.service.DataDictionaryService;
+ import org.kuali.rice.kns.util.ObjectUtils;
+ import org.kuali.rice.kns.util.TypedArrayList;
+ 
+@@ -300,7 +302,8 @@
+ 
+             if (CabConstants.PREQ.equals(this.documentTypeCode)) {
+ 
+-                PaymentRequestDocument paymentRequestDocument = (PaymentRequestDocument) SpringContext.getBean(BusinessObjectService.class).findByPrimaryKey(PaymentRequestDocument.class, objectKeys);
++                PaymentRequestDocument paymentRequestDocument = (PaymentRequestDocument) SpringContext.getBean(BusinessObjectService.class).findByPrimaryKey(SpringContext.getBean(DataDictionaryService.class)
++                        .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), objectKeys);
+                 if (ObjectUtils.isNotNull(paymentRequestDocument)) {
+                     statusCode = paymentRequestDocument.getStatusCode();
+ 
+@@ -313,7 +316,8 @@
+                 }
+             }
+             else {
+-                VendorCreditMemoDocument vendorCreditMemoDocument = (VendorCreditMemoDocument) SpringContext.getBean(BusinessObjectService.class).findByPrimaryKey(VendorCreditMemoDocument.class, objectKeys);
++                VendorCreditMemoDocument vendorCreditMemoDocument = (VendorCreditMemoDocument) SpringContext.getBean(BusinessObjectService.class).findByPrimaryKey(SpringContext.getBean(DataDictionaryService.class)
++                        .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.CREDIT_MEMO_DOCUMENT), objectKeys);
+                 if (ObjectUtils.isNotNull(vendorCreditMemoDocument)) {
+                     statusCode = vendorCreditMemoDocument.getStatusCode();
+ 
+Index: work/src/org/kuali/kfs/module/purap/dataaccess/impl/ElectronicInvoicingDaoOjb.java
+===================================================================
+--- work/src/org/kuali/kfs/module/purap/dataaccess/impl/ElectronicInvoicingDaoOjb.java	(revision 7220)
++++ work/src/org/kuali/kfs/module/purap/dataaccess/impl/ElectronicInvoicingDaoOjb.java	(revision 7221)
+@@ -17,7 +17,9 @@
+ import org.kuali.kfs.module.purap.dataaccess.ElectronicInvoicingDao;
+ import org.kuali.kfs.module.purap.document.ElectronicInvoiceRejectDocument;
+ import org.kuali.kfs.module.purap.document.PaymentRequestDocument;
++import org.kuali.kfs.sys.context.SpringContext;
+ import org.kuali.rice.kns.dao.impl.PlatformAwareDaoBaseOjb;
++import org.kuali.rice.kns.service.DataDictionaryService;
+ 
+ public class ElectronicInvoicingDaoOjb extends PlatformAwareDaoBaseOjb implements ElectronicInvoicingDao {
+ 
+@@ -57,7 +59,8 @@
+         Criteria criteria = new Criteria();
+         criteria.addEqualTo("status.code", PurapConstants.PaymentRequestStatuses.PENDING_E_INVOICE);
+         criteria.addEqualTo("isElectronicInvoice", Boolean.TRUE);
+-        List invoices = (List) getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(PaymentRequestDocument.class, criteria));
++        List invoices = (List) getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), criteria));
+         for (Iterator iter = invoices.iterator(); iter.hasNext();) {
+             PaymentRequestDocument p = (PaymentRequestDocument) iter.next();
+         }
+Index: work/src/org/kuali/kfs/module/purap/service/impl/PurapGeneralLedgerServiceImpl.java
+===================================================================
+--- work/src/org/kuali/kfs/module/purap/service/impl/PurapGeneralLedgerServiceImpl.java	(revision 7220)
++++ work/src/org/kuali/kfs/module/purap/service/impl/PurapGeneralLedgerServiceImpl.java	(revision 7221)
+@@ -414,9 +414,13 @@
+             else if (CANCEL_PAYMENT_REQUEST.equals(processType)) {
+                 SpringContext.getBean(PurapAccountRevisionService.class).cancelPaymentRequestAccountRevisions(preq.getItems(), preq.getPostingYearFromPendingGLEntries(), preq.getPostingPeriodCodeFromPendingGLEntries());
+             }
++
++            // MOD-PA2000-01 
++            // generate any document level GL entries (offsets or fee charges)
++            // we would only want to do this when booking the actuals (not the encumbrances)
++            preq.generateDocumentGeneralLedgerPendingEntries(sequenceHelper);
+         }
+ 
+-
+         // Manually save GL entries for Payment Request and encumbrances
+         saveGLEntries(preq.getGeneralLedgerPendingEntries());
+ 
+Index: work/src/org/kuali/kfs/module/purap/document/dataaccess/impl/PaymentRequestDaoOjb.java
+===================================================================
+--- work/src/org/kuali/kfs/module/purap/document/dataaccess/impl/PaymentRequestDaoOjb.java	(revision 7220)
++++ work/src/org/kuali/kfs/module/purap/document/dataaccess/impl/PaymentRequestDaoOjb.java	(revision 7221)
+@@ -41,6 +41,7 @@
+ import org.kuali.rice.kew.exception.WorkflowException;
+ import org.kuali.rice.kns.dao.impl.PlatformAwareDaoBaseOjb;
+ import org.kuali.rice.kns.exception.InfrastructureException;
++import org.kuali.rice.kns.service.DataDictionaryService;
+ import org.kuali.rice.kns.service.DateTimeService;
+ import org.kuali.rice.kns.service.DocumentService;
+ import org.kuali.rice.kns.service.KualiConfigurationService;
+@@ -136,7 +137,8 @@
+             criteria.addAndCriteria(c1);
+         }
+ 
+-        return getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(PaymentRequestDocument.class, criteria));
++        return getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), criteria));
+     }
+ 
+     /**
+@@ -154,7 +156,8 @@
+         criteria.addIsNull("extractedTimestamp");
+         criteria.addEqualTo("immediatePaymentIndicator", Boolean.TRUE);
+ 
+-        return getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(PaymentRequestDocument.class, criteria));
++        return getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), criteria));
+     }
+ 
+     /**
+@@ -192,7 +195,8 @@
+         criteria.addEqualTo("vendorHeaderGeneratedIdentifier", vendorHeaderGeneratedIdentifier);
+         criteria.addEqualTo("vendorDetailAssignedIdentifier", vendorDetailAssignedIdentifier);
+ 
+-        return getPersistenceBrokerTemplate().getIteratorByQuery(new QueryByCriteria(PaymentRequestDocument.class, criteria));
++        return getPersistenceBrokerTemplate().getIteratorByQuery(new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), criteria));
+     }
+ 
+     /**
+@@ -226,7 +230,8 @@
+         criteria.addEqualTo( "vendorCountryCode", vendor.getVendorCountry() );
+         criteria.addLike( "vendorPostalCode", vendor.getVendorPostalCode() + "%" );
+ 
+-        return getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(PaymentRequestDocument.class, criteria));
++        return getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), criteria));
+     }
+     
+     /**
+@@ -240,7 +245,8 @@
+         criteria.addNotEqualTo("paymentRequestedCancelIndicator", "Y");
+         criteria.addIn("status", Arrays.asList(PurapConstants.PaymentRequestStatuses.PREQ_STATUSES_FOR_AUTO_APPROVE));
+ 
+-        Query query = new QueryByCriteria(PaymentRequestDocument.class, criteria);
++        Query query = new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), criteria);
+         Iterator<PaymentRequestDocument> documents = (Iterator<PaymentRequestDocument>) getPersistenceBrokerTemplate().getIteratorByQuery(query);
+         ArrayList<String> documentHeaderIds = new ArrayList<String>();
+         while (documents.hasNext()) {
+@@ -250,7 +256,8 @@
+ 
+         if (documentHeaderIds.size() > 0) {
+             try {
+-                return SpringContext.getBean(DocumentService.class).getDocumentsByListOfDocumentHeaderIds(PaymentRequestDocument.class, documentHeaderIds);
++                return SpringContext.getBean(DocumentService.class).getDocumentsByListOfDocumentHeaderIds(SpringContext.getBean(DataDictionaryService.class)
++                        .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), documentHeaderIds);
+             }
+             catch (WorkflowException e) {
+                 throw new InfrastructureException("unable to retrieve paymentRequestDocuments", e);
+@@ -320,7 +327,8 @@
+      */
+     protected Iterator<Object[]> getDocumentNumbersOfPaymentRequestByCriteria(Criteria criteria, boolean orderByAscending) {
+         LOG.debug("getDocumentNumberOfPaymentRequestByCriteria() started");
+-        ReportQueryByCriteria rqbc = new ReportQueryByCriteria(PaymentRequestDocument.class, criteria);
++        ReportQueryByCriteria rqbc = new ReportQueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), criteria);
+         rqbc.setAttributes(new String[] { KFSPropertyConstants.DOCUMENT_NUMBER });
+         if (orderByAscending) {
+             rqbc.addOrderByAscending(KFSPropertyConstants.DOCUMENT_NUMBER);
+@@ -357,7 +365,8 @@
+         criteria.addEqualTo("vendorHeaderGeneratedIdentifier", vendorHeaderGeneratedId);
+         criteria.addEqualTo("vendorDetailAssignedIdentifier", vendorDetailAssignedId);
+         criteria.addEqualTo("invoiceNumber", invoiceNumber);
+-        QueryByCriteria qbc = new QueryByCriteria(PaymentRequestDocument.class, criteria);
++        QueryByCriteria qbc = new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), criteria);
+         return this.getPaymentRequestsByQueryByCriteria(qbc);
+     }
+ 
+@@ -371,7 +380,8 @@
+         criteria.addEqualTo("purchaseOrderIdentifier", poId);
+         criteria.addEqualTo("vendorInvoiceAmount", vendorInvoiceAmount);
+         criteria.addEqualTo("invoiceDate", invoiceDate);
+-        QueryByCriteria qbc = new QueryByCriteria(PaymentRequestDocument.class, criteria);
++        QueryByCriteria qbc = new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), criteria);
+         return this.getPaymentRequestsByQueryByCriteria(qbc);
+     }
+ 
+@@ -383,7 +393,8 @@
+         
+         criteria.addEqualTo(PurapPropertyConstants.PURCHASE_ORDER_IDENTIFIER, purchaseOrderId);
+         criteria.addIn(PurapPropertyConstants.STATUS_CODE, Arrays.asList(PaymentRequestStatuses.STATUSES_POTENTIALLY_ACTIVE));
+-        QueryByCriteria qbc = new QueryByCriteria(PaymentRequestDocument.class, criteria);
++        QueryByCriteria qbc = new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), criteria);
+         
+         Iterator<Object[]> iter = getDocumentNumbersOfPaymentRequestByCriteria(criteria, false);
+         while (iter.hasNext()) {
+@@ -399,7 +410,8 @@
+         criteria.addNotEqualTo("paymentRequestedCancelIndicator", "Y");
+         criteria.addEqualTo("statusCode", PurapConstants.PaymentRequestStatuses.AWAITING_RECEIVING_REVIEW);
+ 
+-        Query query = new QueryByCriteria(PaymentRequestDocument.class, criteria);
++        Query query = new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), criteria);
+         Iterator<PaymentRequestDocument> documents = (Iterator<PaymentRequestDocument>) getPersistenceBrokerTemplate().getIteratorByQuery(query);
+         ArrayList<String> documentHeaderIds = new ArrayList<String>();
+         while (documents.hasNext()) {
+@@ -409,7 +421,8 @@
+ 
+         if (documentHeaderIds.size() > 0) {
+             try {
+-                return SpringContext.getBean(DocumentService.class).getDocumentsByListOfDocumentHeaderIds(PaymentRequestDocument.class, documentHeaderIds);
++                return SpringContext.getBean(DocumentService.class).getDocumentsByListOfDocumentHeaderIds(SpringContext.getBean(DataDictionaryService.class)
++                        .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.PAYMENT_REQUEST_DOCUMENT), documentHeaderIds);
+             }
+             catch (WorkflowException e) {
+                 throw new InfrastructureException("unable to retrieve paymentRequestDocuments", e);
+Index: work/src/org/kuali/kfs/module/purap/document/dataaccess/impl/CreditMemoDaoOjb.java
+===================================================================
+--- work/src/org/kuali/kfs/module/purap/document/dataaccess/impl/CreditMemoDaoOjb.java	(revision 7220)
++++ work/src/org/kuali/kfs/module/purap/document/dataaccess/impl/CreditMemoDaoOjb.java	(revision 7221)
+@@ -34,7 +34,9 @@
+ import org.kuali.kfs.module.purap.document.dataaccess.CreditMemoDao;
+ import org.kuali.kfs.module.purap.util.VendorGroupingHelper;
+ import org.kuali.kfs.sys.KFSPropertyConstants;
++import org.kuali.kfs.sys.context.SpringContext;
+ import org.kuali.rice.kns.dao.impl.PlatformAwareDaoBaseOjb;
++import org.kuali.rice.kns.service.DataDictionaryService;
+ import org.kuali.rice.kns.util.KualiDecimal;
+ import org.kuali.rice.kns.util.TransactionalServiceUtils;
+ 
+@@ -42,7 +44,7 @@
+  * OJB Implementation of CreditMemoDao. Provides persistence layer methods for the credit memo document.
+  */
+ public class CreditMemoDaoOjb extends PlatformAwareDaoBaseOjb implements CreditMemoDao {
+-    private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(CreditMemoDaoOjb.class);
++    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(CreditMemoDaoOjb.class);
+ 
+     /**
+      * @see org.kuali.kfs.module.purap.document.dataaccess.CreditMemoDao#getCreditMemosToExtract(java.lang.String)
+@@ -56,7 +58,8 @@
+         criteria.addIsNull("extractedTimestamp");
+         criteria.addEqualTo("holdIndicator", Boolean.FALSE);
+ 
+-        return getPersistenceBrokerTemplate().getIteratorByQuery(new QueryByCriteria(VendorCreditMemoDocument.class, criteria));
++        return getPersistenceBrokerTemplate().getIteratorByQuery(new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.CREDIT_MEMO_DOCUMENT), criteria));
+     }
+ 
+     
+@@ -76,7 +79,8 @@
+         criteria.addEqualTo( "vendorCountryCode", vendor.getVendorCountry() );
+         criteria.addLike( "vendorPostalCode", vendor.getVendorPostalCode() + "%" );
+ 
+-        return getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(VendorCreditMemoDocument.class, criteria));
++        return getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.CREDIT_MEMO_DOCUMENT), criteria));
+     }
+ 
+ 
+@@ -98,7 +102,8 @@
+         // use the criteria to do a Count against the DB, and return the resulting
+         // number. Any positive non-zero result means that a potential duplicate
+         // exists and we return true, otherwise, return false.
+-        int cmCount = getPersistenceBrokerTemplate().getCount(new QueryByCriteria(VendorCreditMemoDocument.class, criteria));
++        int cmCount = getPersistenceBrokerTemplate().getCount(new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.CREDIT_MEMO_DOCUMENT), criteria));
+         if (cmCount > 0) {
+             return true;
+         }
+@@ -125,7 +130,8 @@
+         // use the criteria to do a Count against the DB, and return the resulting
+         // number. Any positive non-zero result means that a potential duplicate
+         // exists and we return true, otherwise, return false.
+-        int cmCount = getPersistenceBrokerTemplate().getCount(new QueryByCriteria(VendorCreditMemoDocument.class, criteria));
++        int cmCount = getPersistenceBrokerTemplate().getCount(new QueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.CREDIT_MEMO_DOCUMENT), criteria));
+         if (cmCount > 0) {
+             return true;
+         }
+@@ -177,7 +183,8 @@
+      */
+     protected Iterator<Object[]> getDocumentNumbersOfCreditMemoByCriteria(Criteria criteria, boolean orderByAscending) {
+         LOG.debug("getDocumentNumberOfCreditMemoByCriteria() started");
+-        ReportQueryByCriteria rqbc = new ReportQueryByCriteria(VendorCreditMemoDocument.class, criteria);
++        ReportQueryByCriteria rqbc = new ReportQueryByCriteria(SpringContext.getBean(DataDictionaryService.class)
++                .getDocumentClassByTypeName(PurapConstants.PurapDocTypeCodes.CREDIT_MEMO_DOCUMENT), criteria);
+         rqbc.setAttributes(new String[] { KFSPropertyConstants.DOCUMENT_NUMBER });
+         if (orderByAscending) {
+             rqbc.addOrderByAscending(KFSPropertyConstants.DOCUMENT_NUMBER);

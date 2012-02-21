@@ -1,0 +1,10 @@
+Index: financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml	(revision 11393)
++++ financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml	(revision 11394)
+@@ -1,5 +1,4 @@
+ <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+-    <changeSet  author="jhkeller" id="20100210jk-1">
+     <changeSet author="jhkeller" id="KITT-592-FP_PMT_MTHD_T"> 
+         <createTable tableName="FP_PMT_MTHD_T"> 
+             <column name="PMT_MTHD_CD" type="CHAR(1)"> 

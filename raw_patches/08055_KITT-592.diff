@@ -1,0 +1,13 @@
+Index: financial-system/kfs-cfg-dbs/trunk/latest/dat/GL_OFFSET_DEFN_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/latest/dat/GL_OFFSET_DEFN_T.xml	(revision 8054)
++++ financial-system/kfs-cfg-dbs/trunk/latest/dat/GL_OFFSET_DEFN_T.xml	(revision 8055)
+@@ -6,7 +6,7 @@
+   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+  
+-  <changeSet id="20100119-2" author="jhkeller" >
++  <changeSet id="20100119-2" author="jhkeller" runAlways="true">
+ 
+ <!-- Since adding the new document type code, need to ensure that the needed offset entries are in place. -->
+     <sql><![CDATA[ 

@@ -1,0 +1,22 @@
+Index: financial-system/kfs-cfg-dbs/branches/3.0-576/data.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/branches/3.0-576/data.xml	(revision 11391)
++++ financial-system/kfs-cfg-dbs/branches/3.0-576/data.xml	(revision 11392)
+@@ -1,16 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+-    <include file="latest/dat/FP_PMT_MTHD_T.xml" />
+-    <include file="latest/dat/FP_PMT_MTHD_CHART_T.xml" />
+-    <include file="latest/dat/KREW.xml" />
+-    <include file="latest/dat/KRIM4.xml" />
+-    <include file="latest/dat/AP_ELCTRNC_INV_MAP_T.xml" />
+-    <include file="latest/dat/KRIM.xml" />
+-    <include file="latest/dat/KRIM3.xml" />
+-    <include file="latest/dat/GL_OFFSET_DEFN_T.xml" />
+-    <include file="latest/dat/PUR_PDF_LANG_T.xml" />
+-    <include file="latest/dat/KRIM2.xml" />
+-    <include file="latest/dat/KRNS_PARM_T.xml" />
+-</databaseChangeLog>
+\ No newline at end of file

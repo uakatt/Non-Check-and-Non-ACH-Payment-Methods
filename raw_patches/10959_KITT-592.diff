@@ -1,0 +1,184 @@
+Index: financial-system/kfs/trunk/work/web-root/WEB-INF/tags/fp/dvMessages.tag
+===================================================================
+--- financial-system/kfs/trunk/work/web-root/WEB-INF/tags/fp/dvMessages.tag	(revision 10958)
++++ financial-system/kfs/trunk/work/web-root/WEB-INF/tags/fp/dvMessages.tag	(revision 10959)
+@@ -15,9 +15,34 @@
+ --%>
+ <%@ include file="/jsp/sys/kfsTldHeader.jsp"%>
+ 
++<%-- MOD-PA2000-01: Baseline Modification Start --%>
++<script type="text/javascript" src="dwr/interface/UaPaymentMethodGeneralLedgerPendingEntryService.js"></script>
++<%-- MOD-PA2000-01: Baseline Modification End --%>
++
+ <%-- helpful messages --%>
+ <script type="text/javascript">
+   function paymentMethodMessages(selectedMethod) {
++
++    <%-- MOD-PA2000-01: Baseline Modification Start --%>
++	if ( selectedMethod != "" ) {
++		var dwrReply = {
++			callback:function(data) {
++			if ( data != null && typeof data == 'object' ) {
++					setRecipientValue( "document.disbVchrBankCode", data.bankCode );
++					setRecipientValue( "document.bank", data.bankName );
++				} else {
++					setRecipientValue( "document.disbVchrBankCode", "" );
++					setRecipientValue( "document.bank", "" );
++				}
++			},
++			errorHandler:function( errorMessage ) { 
++				window.status = errorMessage;
++			}
++		};
++		UaPaymentMethodGeneralLedgerPendingEntryService.getBankForPaymentMethod( selectedMethod, dwrReply );
++	}
++    <%-- MOD-PA2000-01: Baseline Modification End --%>
++	  
+     if (selectedMethod == 'W') {
+ 		alert('<bean:message key="message.dv.feewarning"/>');
+ <%-- KULFDBCK-892
+Index: financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag
+===================================================================
+--- financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag	(revision 10958)
++++ financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag	(revision 10959)
+@@ -22,7 +22,7 @@
+ <c:set var="fullDocumentEntryCompleted" value="${not empty KualiForm.editingMode['fullDocumentEntryCompleted']}" />
+ <c:set var="purchaseOrderAttributes" value="${DataDictionary.PurchaseOrderDocument.attributes}" />
+ 
+-<kul:tab tabTitle="Credit Memo Info" defaultOpen="true">
++<kul:tab tabTitle="Credit Memo Info" defaultOpen="true" tabErrorKey="document.bankCode,document.paymentMethodCode">
+    
+     <div class="tab-container" align=center>
+             <h3>Credit Memo Info</h3>
+@@ -122,16 +122,46 @@
+ 			<tr>
+ 	            <sys:bankLabel align="right"/>
+                 <sys:bankControl property="document.bankCode" objectProperty="document.bank" readOnly="${not fullEntryMode}"/>
+-                <th align=right valign=middle class="bord-l-b">
+-                    <div align="right">&nbsp;</div>
+-                </th>
+-                <td align=left valign=middle class="datacell">
+-                    &nbsp;
+-                </td>
+-                
+-            </tr>
+-            
++<%-- MOD-PA2000-01: Baseline Modification Start --%>
++                    <th align=right valign=middle class="bord-l-b">
++                        <div align="right"><kul:htmlAttributeLabel attributeEntry="${documentAttributes.paymentMethodCode}" /></div>
++                    </th>
++                    <td align=left valign=middle class="datacell">
++                        <kul:htmlControlAttribute 
++                        	attributeEntry="${documentAttributes.paymentMethodCode}" property="document.paymentMethodCode" 
++                        	readOnly="${not fullEntryMode}"
++                        	onchange="paymentMethodChanged( this.value );" />
++                    </td>
++<%-- MOD-PA2000-01: Baseline Modification End --%>
++            </tr>            
+ 		</table> 
+     </div>
++<%-- MOD-PA2000-01: Baseline Modification Start --%>
++<c:if test="${fullEntryMode}">
++	<script type="text/javascript" src="dwr/interface/UaPaymentMethodGeneralLedgerPendingEntryService.js"></script>
++	<script type="text/javascript">
++		function paymentMethodChanged(selectedMethod) {
++		
++			if ( selectedMethod != "" ) {
++				var dwrReply = {
++					callback:function(data) {
++					if ( data != null && typeof data == 'object' ) {
++							setRecipientValue( "document.bankCode", data.bankCode );
++							setRecipientValue( "document.bank", data.bankName );
++						} else {
++							setRecipientValue( "document.bankCode", "" );
++							setRecipientValue( "document.bank", "" );
++						}
++					},
++					errorHandler:function( errorMessage ) { 
++						window.status = errorMessage;
++					}
++				};
++				UaPaymentMethodGeneralLedgerPendingEntryService.getBankForPaymentMethod( selectedMethod, dwrReply );
++			}
++		}	
++	</script>
++</c:if>
++<%-- MOD-PA2000-01: Baseline Modification End --%>
+     
+ </kul:tab>
+Index: financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/paymentRequestInvoiceInfo.tag
+===================================================================
+--- financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/paymentRequestInvoiceInfo.tag	(revision 10958)
++++ financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/paymentRequestInvoiceInfo.tag	(revision 10959)
+@@ -166,14 +166,47 @@
+ 			<tr>
+ 	                <sys:bankLabel align="right"/>
+                     <sys:bankControl property="document.bankCode" objectProperty="document.bank" readOnly="${not (fullEntryMode or editPreExtract)}"/>
++<%-- MOD-PA2000-01: Baseline Modification Start --%>
+                     <th align=right valign=middle class="bord-l-b">
+-                        <div align="right">&nbsp;</div>
++                        <div align="right"><kul:htmlAttributeLabel attributeEntry="${documentAttributes.paymentMethodCode}" /></div>
+                     </th>
+                     <td align=left valign=middle class="datacell">
+-                        &nbsp;
++                        <kul:htmlControlAttribute 
++                        	attributeEntry="${documentAttributes.paymentMethodCode}" property="document.paymentMethodCode" 
++                        	readOnly="${not (fullEntryMode or editPreExtract)}" tabindexOverride="${tabindexOverrideBase + 4}"
++                        	onchange="paymentMethodChanged( this.value );" />
+                     </td>
++<%-- MOD-PA2000-01: Baseline Modification End --%>
+                 
+             </tr>
++
++<%-- MOD-PA2000-01: Baseline Modification Start --%>
++<c:if test="${(fullEntryMode or editPreExtract)}">
++	<script type="text/javascript" src="dwr/interface/UaPaymentMethodGeneralLedgerPendingEntryService.js"></script>
++	<script type="text/javascript">
++		function paymentMethodChanged(selectedMethod) {
++		
++			if ( selectedMethod != "" ) {
++				var dwrReply = {
++					callback:function(data) {
++					if ( data != null && typeof data == 'object' ) {
++							setRecipientValue( "document.bankCode", data.bankCode );
++							setRecipientValue( "document.bank", data.bankName );
++						} else {
++							setRecipientValue( "document.bankCode", "" );
++							setRecipientValue( "document.bank", "" );
++						}
++					},
++					errorHandler:function( errorMessage ) { 
++						window.status = errorMessage;
++					}
++				};
++				UaPaymentMethodGeneralLedgerPendingEntryService.getBankForPaymentMethod( selectedMethod, dwrReply );
++			}
++		}	
++	</script>
++</c:if>
++<%-- MOD-PA2000-01: Baseline Modification End --%>
+             
+ 		</table> 
+ 		
+Index: financial-system/kfs/trunk/work/web-root/WEB-INF/tags/sys/bankControl.tag
+===================================================================
+--- financial-system/kfs/trunk/work/web-root/WEB-INF/tags/sys/bankControl.tag	(revision 10958)
++++ financial-system/kfs/trunk/work/web-root/WEB-INF/tags/sys/bankControl.tag	(revision 10959)
+@@ -46,7 +46,17 @@
+   </c:if>
+ 
+   <td class="${style}">
++<%-- MOD-PA2000-01: Baseline Modification Start --%>
++    <c:if test="${readOnly}">
++    	<span id="${property}">
++    </c:if>
++<%-- MOD-PA2000-01: Baseline Modification End --%>
+     <kul:htmlControlAttribute attributeEntry="${DataDictionary.Bank.attributes.bankCode}" property="${property}" readOnly="${readOnly}" onblur="loadBankInfo(document.forms['KualiForm'], '${property}', '${objectProperty}');" />
++<%-- MOD-PA2000-01: Baseline Modification Start --%>
++    <c:if test="${readOnly}">
++    	</span>
++    </c:if>
++<%-- MOD-PA2000-01: Baseline Modification End --%>
+     <c:if test="${not readOnly}">
+       &nbsp;
+       <kul:lookup boClassName="org.kuali.kfs.sys.businessobject.Bank" fieldConversions="bankCode:${property}" lookupParameters="${lookupParameters}" readOnlyFields="${readOnlyFields}" autoSearch="true"/>

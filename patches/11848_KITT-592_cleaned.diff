@@ -1,0 +1,143 @@
+Index: work/src/org/kuali/kfs/module/purap/document/service/impl/PaymentRequestServiceImpl.java
+===================================================================
+--- work/src/org/kuali/kfs/module/purap/document/service/impl/PaymentRequestServiceImpl.java	(revision 11847)
++++ work/src/org/kuali/kfs/module/purap/document/service/impl/PaymentRequestServiceImpl.java	(revision 11848)
+@@ -109,22 +109,23 @@
+ public class PaymentRequestServiceImpl implements PaymentRequestService {
+     private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(PaymentRequestServiceImpl.class);
+ 
+-    private DateTimeService dateTimeService;
+-    private DocumentService documentService;
+-    private NoteService noteService;
+-    private PurapService purapService;
+-    private PaymentRequestDao paymentRequestDao;
+-    private ParameterService parameterService;
+-    private KualiConfigurationService configurationService;
+-    private NegativePaymentRequestApprovalLimitService negativePaymentRequestApprovalLimitService;
+-    private PurapAccountingService purapAccountingService;
+-    private BusinessObjectService businessObjectService;
+-    private PurApWorkflowIntegrationService purapWorkflowIntegrationService;
+-    private WorkflowDocumentService workflowDocumentService;
+-    private AccountsPayableService accountsPayableService;
+-    private VendorService vendorService;
+-    private DataDictionaryService dataDictionaryService;
+-    private UniversityDateService universityDateService;
++    // KITT-592 - changed variables to protected
++    protected DateTimeService dateTimeService;
++    protected DocumentService documentService;
++    protected NoteService noteService;
++    protected PurapService purapService;
++    protected PaymentRequestDao paymentRequestDao;
++    protected ParameterService parameterService;
++    protected KualiConfigurationService configurationService;
++    protected NegativePaymentRequestApprovalLimitService negativePaymentRequestApprovalLimitService;
++    protected PurapAccountingService purapAccountingService;
++    protected BusinessObjectService businessObjectService;
++    protected PurApWorkflowIntegrationService purapWorkflowIntegrationService;
++    protected WorkflowDocumentService workflowDocumentService;
++    protected AccountsPayableService accountsPayableService;
++    protected VendorService vendorService;
++    protected DataDictionaryService dataDictionaryService;
++    protected UniversityDateService universityDateService;
+     
+     public void setDateTimeService(DateTimeService dateTimeService) {
+         this.dateTimeService = dateTimeService;
+Index: work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java
+===================================================================
+--- work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java	(revision 11847)
++++ work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java	(revision 11848)
+@@ -20,14 +20,18 @@
+ import java.util.Collection;
+ import java.util.Iterator;
+ 
++import org.apache.commons.lang.StringUtils;
+ import org.kuali.kfs.module.purap.document.PaymentRequestDocument;
+ import org.kuali.kfs.module.purap.document.VendorCreditMemoDocument;
+ import org.kuali.kfs.module.purap.document.service.impl.PaymentRequestServiceImpl;
+ import org.kuali.kfs.module.purap.util.VendorGroupingHelper;
++import org.kuali.kfs.vnd.businessobject.VendorDetail;
++import org.kuali.rice.kns.util.ObjectUtils;
+ 
+ import edu.arizona.kfs.fp.businessobject.options.PaymentMethodValuesFinder;
+ import edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService;
+ import edu.arizona.kfs.module.purap.document.UaPaymentRequestDocument;
++import edu.arizona.kfs.vnd.businessobject.VendorDetailExtension;
+ 
+ /**
+  * Override the base payment request service to filter out those which are not being paid by check/ACH.
+@@ -101,5 +105,24 @@
+         this.paymentMethodGeneralLedgerPendingEntryService = paymentMethodGeneralLedgerPendingEntryService;
+     }
+     
+-    
++
++    /** KITT-592
++     * 
++     * Update to baseline method to additionally set the payment method when the vendor is changed.
++     */
++    @Override
++    public void changeVendor(PaymentRequestDocument preq, Integer headerId, Integer detailId) {
++        super.changeVendor(preq, headerId, detailId);
++        if ( preq instanceof UaPaymentRequestDocument ) {
++            VendorDetail vd = vendorService.getVendorDetail(headerId, detailId);
++            if (vd != null
++                    && ObjectUtils.isNotNull(vd.getExtension()) ) {
++                if ( vd.getExtension() instanceof VendorDetailExtension
++                        && StringUtils.isNotBlank( ((VendorDetailExtension)vd.getExtension()).getDefaultB2BPaymentMethodCode() ) ) {
++                    ((UaPaymentRequestDocument)preq).setPaymentMethodCode(
++                            ((VendorDetailExtension)vd.getExtension()).getDefaultB2BPaymentMethodCode() );
++                }
++            }
++        }
++    }
+ }
+Index: work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java
+===================================================================
+--- work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java	(revision 11847)
++++ work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java	(revision 11848)
+@@ -1,6 +1,11 @@
+ package edu.arizona.kfs.module.purap.document;
+ 
++import java.util.HashMap;
++
++import org.apache.commons.lang.StringUtils;
+ import org.kuali.kfs.module.purap.document.PaymentRequestDocument;
++import org.kuali.kfs.module.purap.document.PurchaseOrderDocument;
++import org.kuali.kfs.module.purap.util.ExpiredOrClosedAccountEntry;
+ import org.kuali.kfs.sys.KFSConstants;
+ import org.kuali.kfs.sys.businessobject.Bank;
+ import org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntry;
+@@ -14,8 +19,10 @@
+ import org.kuali.rice.kns.service.ParameterConstants.NAMESPACE;
+ import org.kuali.rice.kns.util.GlobalVariables;
+ import org.kuali.rice.kns.util.KNSConstants;
++import org.kuali.rice.kns.util.ObjectUtils;
+ 
+ import edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService;
++import edu.arizona.kfs.vnd.businessobject.VendorDetailExtension;
+ 
+ /**
+  * Overrides the prepareForSave method to ensure that the bank code is synchronized with the payment method.
+@@ -116,4 +123,22 @@
+         }
+     }
+     
++
++    /** KITT-592
++     * 
++     * Update to baseline method to additionally set the payment method when a vendor is selected.
++     * 
++     */
++    @Override
++    public void populatePaymentRequestFromPurchaseOrder(PurchaseOrderDocument po, HashMap<String, ExpiredOrClosedAccountEntry> expiredOrClosedAccountList) {
++        super.populatePaymentRequestFromPurchaseOrder(po, expiredOrClosedAccountList);
++        if ( ObjectUtils.isNotNull(po.getVendorDetail())
++                && ObjectUtils.isNotNull(po.getVendorDetail().getExtension()) ) {
++            if ( po.getVendorDetail().getExtension() instanceof VendorDetailExtension
++                    && StringUtils.isNotBlank( ((VendorDetailExtension)po.getVendorDetail().getExtension()).getDefaultB2BPaymentMethodCode() ) ) {
++                setPaymentMethodCode(
++                        ((VendorDetailExtension)po.getVendorDetail().getExtension()).getDefaultB2BPaymentMethodCode() );
++            }
++        }
++    }
+ }

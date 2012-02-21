@@ -1,0 +1,191 @@
+Index: financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml	(revision 0)
++++ financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml	(revision 10223)
+@@ -0,0 +1,185 @@
++<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
++	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">	
++	<changeSet author="jhkeller" id="KITT-592-FP_PMT_MTHD_T">
++		<createTable tableName="FP_PMT_MTHD_T">
++			<column name="PMT_MTHD_CD" type="CHAR(1)">
++				<constraints nullable="false" primaryKey="true"
++					primaryKeyName="FP_PMT_MTHD_TP1" />
++			</column>
++			<column name="OBJ_ID" type="VARCHAR2(36)">
++				<constraints nullable="false" unique="true"
++					uniqueConstraintName="FP_PMT_MTHD_TC0" />
++			</column>
++			<column name="VER_NBR" type="NUMBER(8,0)">
++				<constraints nullable="false" />
++			</column>
++			<column name="PMT_MTHD_NM" type="VARCHAR2(40)" />
++			<column name="BNK_CD" type="VARCHAR2(4)" />
++			<column name="FEE_IND" type="CHAR(1)" defaultValue="N">
++				<constraints nullable="false" />
++			</column>
++			<column name="PDP_IND" type="CHAR(1)" defaultValue="N">
++				<constraints nullable="false" />
++			</column>
++			<column name="INTERDEPT_IND" type="CHAR(1)" defaultValue="N">
++				<constraints nullable="false" />
++			</column>
++			<column name="CLR_ACCT_IND" type="CHAR(1)" defaultValue="N">
++				<constraints nullable="false" />
++			</column>
++			<column name="DV_DISPLAY_IND" type="CHAR(1)" defaultValue="N">
++				<constraints nullable="false" />
++			</column>
++			<column name="VENDOR_DISPLAY_IND" type="CHAR(1)" defaultValue="N">
++				<constraints nullable="false" />
++			</column>
++			<column name="ACTIVE_IND" type="CHAR(1)" defaultValue="Y">
++				<constraints nullable="false" />
++			</column>
++		</createTable>
++		<insert tableName="FP_PMT_MTHD_T">
++			<column name="PMT_MTHD_CD" value="A" />
++			<column name="OBJ_ID" value="A" />
++			<column name="VER_NBR" valueNumeric="1" />
++			<column name="PMT_MTHD_NM" value="ACH/Check" />
++			<column name="BNK_CD" value="0002" />
++			<column name="PDP_IND" value="Y" />
++			<column name="VENDOR_DISPLAY_IND" value="Y" />
++			<column name="DV_DISPLAY_IND" value="Y" />
++		</insert>
++		<rollback>
++			<dropTable tableName="FP_PMT_MTHD_T" cascadeConstraints="true" />
++		</rollback>
++		<modifySql dbms="mysql">
++			<replace replace="VARCHAR2" with="VARCHAR" />
++		</modifySql>
++	</changeSet>
++	<changeSet author="jhkeller" id="KITT-592-FP_PMT_MTHD_CHART_T">
++		<createTable tableName="FP_PMT_MTHD_CHART_T">
++			<column name="PMT_MTHD_CD" type="CHAR(1)">
++				<constraints nullable="false" primaryKey="true"
++					primaryKeyName="FP_PMT_MTHD_CHART_TP1" />
++			</column>
++			<column name="FIN_COA_CD" type="VARCHAR2(2)">
++				<constraints nullable="false" primaryKey="true"
++					primaryKeyName="FP_PMT_MTHD_CHART_TP1" />
++			</column>
++			<column name="EFF_DT" type="DATE">
++				<constraints nullable="false" primaryKey="true"
++					primaryKeyName="FP_PMT_MTHD_CHART_TP1" />
++			</column>
++			<column name="OBJ_ID" type="VARCHAR2(36)">
++				<constraints nullable="false" unique="true"
++					uniqueConstraintName="FP_PMT_MTHD_CHART_TC0" />
++			</column>
++			<column name="VER_NBR" type="NUMBER(8,0)">
++				<constraints nullable="false" />
++			</column>
++			<column name="fee_inc_fin_coa_cd" type="VARCHAR2(2)" />
++			<column name="fee_inc_account_nbr" type="VARCHAR2(7)" />
++			<column name="fee_inc_obj_cd" type="VARCHAR2(4)" />
++			<column name="fee_exp_obj_cd" type="VARCHAR2(4)" />
++			<column name="fee_amt" type="NUMBER(19,2)" />
++			<column name="clr_fin_coa_cd" type="VARCHAR2(2)" />
++			<column name="clr_account_nbr" type="VARCHAR2(7)" />
++			<column name="clr_obj_cd" type="VARCHAR2(4)" />
++			<column name="ACTIVE_IND" type="CHAR(1)" defaultValue="Y">
++				<constraints nullable="false" />
++			</column>
++		</createTable>
++		<insert tableName="FP_PMT_MTHD_CHART_T">
++			<column name="PMT_MTHD_CD" value="A" />
++			<column name="FIN_COA_CD" value="UA" />
++			<column name="EFF_DT" valueDate="2009-07-01" />
++			<column name="OBJ_ID" value="A-UA" />
++			<column name="VER_NBR" valueNumeric="1" />
++		</insert>
++	    <addForeignKeyConstraint baseColumnNames="BNK_CD"
++	                             baseTableName="FP_PMT_MTHD_T"
++	                             constraintName="FP_PMT_MTHD_TR1"
++	                             referencedColumnNames="BNK_CD"
++	                             referencedTableName="FP_BANK_T"/>
++	    <addForeignKeyConstraint baseColumnNames="pmt_mthd_cd"
++	                             baseTableName="fp_pmt_mthd_chart_t"
++	                             constraintName="fp_pmt_mthd_chart_tr1"
++	                             referencedColumnNames="pmt_mthd_cd"
++	                             referencedTableName="fp_pmt_mthd_t"/>
++	    <addForeignKeyConstraint constraintName="fp_pmt_mthd_chart_tr2"
++	    						 baseTableName="fp_pmt_mthd_chart_t"
++	    						 baseColumnNames="fin_coa_cd"
++	                             referencedTableName="ca_chart_t"
++	                             referencedColumnNames="fin_coa_cd"
++	                             />
++	    <addForeignKeyConstraint constraintName="fp_pmt_mthd_chart_tr3"
++	    						 baseTableName="fp_pmt_mthd_chart_t"
++	    						 baseColumnNames="fee_inc_fin_coa_cd"
++	                             referencedTableName="ca_chart_t"
++	                             referencedColumnNames="fin_coa_cd"
++	                             />
++	    <addForeignKeyConstraint constraintName="fp_pmt_mthd_chart_tr4"
++	    						 baseTableName="fp_pmt_mthd_chart_t"
++	    						 baseColumnNames="fee_inc_fin_coa_cd,fee_inc_account_nbr"
++	                             referencedTableName="ca_account_t"
++	                             referencedColumnNames="fin_coa_cd,account_nbr"
++	                             />
++	    <addForeignKeyConstraint constraintName="fp_pmt_mthd_chart_tr5"
++	    						 baseTableName="fp_pmt_mthd_chart_t"
++	    						 baseColumnNames="clr_fin_coa_cd"
++	                             referencedTableName="ca_chart_t"
++	                             referencedColumnNames="fin_coa_cd"
++	                             />
++	    <addForeignKeyConstraint constraintName="fp_pmt_mthd_chart_tr6"
++	    						 baseTableName="fp_pmt_mthd_chart_t"
++	    						 baseColumnNames="clr_fin_coa_cd,clr_account_nbr"
++	                             referencedTableName="ca_account_t"
++	                             referencedColumnNames="fin_coa_cd,account_nbr"
++	                             />
++		<rollback>
++			<dropTable tableName="FP_PMT_MTHD_CHART_T" cascadeConstraints="true" />
++		</rollback>
++		<modifySql dbms="mysql">
++			<replace replace="VARCHAR2" with="VARCHAR" />
++		</modifySql>
++    </changeSet>
++	<changeSet author="jhkeller" id="KITT-592-AP_PMT_RQST_T">
++		<addColumn tableName="AP_PMT_RQST_T">
++			<column name="PMT_MTHD_CD" type="CHAR(1)" defaultValue="A" />
++		</addColumn>
++	    <addForeignKeyConstraint baseColumnNames="pmt_mthd_cd"
++	                             baseTableName="AP_PMT_RQST_T"
++	                             constraintName="AP_PMT_RQST_TR3"
++	                             referencedColumnNames="pmt_mthd_cd"
++	                             referencedTableName="fp_pmt_mthd_t"/>
++		<rollback>
++			<dropColumn tableName="AP_PMT_RQST_T" columnName="PMT_MTHD_CD" />
++		</rollback>
++    </changeSet>
++	<changeSet author="jhkeller" id="KITT-592-AP_CRDT_MEMO_T">
++		<addColumn tableName="AP_CRDT_MEMO_T">
++			<column name="PMT_MTHD_CD" type="CHAR(1)" defaultValue="A" />
++		</addColumn>
++	    <addForeignKeyConstraint baseColumnNames="pmt_mthd_cd"
++	                             baseTableName="AP_CRDT_MEMO_T"
++	                             constraintName="AP_CRDT_MEMO_TR2"
++	                             referencedColumnNames="pmt_mthd_cd"
++	                             referencedTableName="fp_pmt_mthd_t"/>
++		<rollback>
++			<dropColumn tableName="AP_CRDT_MEMO_T" columnName="PMT_MTHD_CD" />
++		</rollback>
++    </changeSet>
++	<changeSet author="jhkeller" id="KITT-592-PUR_VNDR_DTL_EXT_T">
++		<addColumn tableName="PUR_VNDR_DTL_EXT_T">
++			<column name="DFLT_B2B_PMT_MTHD_CD" type="CHAR(1)" defaultValue="A" />
++		</addColumn>
++	    <addForeignKeyConstraint baseColumnNames="DFLT_B2B_PMT_MTHD_CD"
++	                             baseTableName="PUR_VNDR_DTL_EXT_T"
++	                             constraintName="PUR_VNDR_DTL_EXT_TR1"
++	                             referencedColumnNames="pmt_mthd_cd"
++	                             referencedTableName="fp_pmt_mthd_t"/>
++		<rollback>
++			<dropColumn tableName="PUR_VNDR_DTL_EXT_T" columnName="DFLT_B2B_PMT_MTHD_CD" />
++		</rollback>
++    </changeSet>
++</databaseChangeLog>   
++      
+\ No newline at end of file

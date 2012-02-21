@@ -1,0 +1,1162 @@
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/spring-purap.xml
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/spring-purap.xml	(revision 7355)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/spring-purap.xml	(revision 7356)
+@@ -26,8 +26,13 @@
+                            http://www.springframework.org/schema/aop
+                            http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
+                            
+-    <bean id="purapModuleExtensionConfiguration" parent="rsmartPurapModuleConfiguration-parentBean" >
++    <bean id="purapModuleConfiguration" parent="rsmartPurapModuleConfiguration-parentBean" >
+ 		<property name="initializeDataDictionary" value="true" />
++        <property name="packagePrefixes">
++            <list merge="true">
++                <value>edu.arizona.kfs.module.purap</value>
++            </list>
++        </property>
+ 		<property name="dataDictionaryPackages">
+ 			<list merge="true">
+                 <value>edu/arizona/kfs/module/purap/document/datadictionary</value>
+@@ -40,5 +45,47 @@
+ 		</property>
+ 		
+ 	</bean>
++
++	<!-- KITT-592 - replace the payment request service with one which uses the new payment method-based GL entry generator  -->
++    <bean id="paymentRequestService" class="edu.arizona.kfs.module.purap.document.service.impl.UaPaymentRequestServiceImpl">
++		<property name="dateTimeService" ref="dateTimeService" />
++		<property name="paymentRequestDao" ref="paymentRequestDao" />
++        <property name="documentService" ref="documentService" />
++        <property name="purapService" ref="purapService" />
++        <property name="noteService" ref="noteService" />
++        <property name="parameterService" ref="parameterService" />
++        <property name="configurationService" ref="kualiConfigurationService" />
++        <property name="negativePaymentRequestApprovalLimitService" ref="negativePaymentRequestApprovalLimitService" />
++        <property name="purapAccountingService" ref="purapAccountingService" />
++        <property name="businessObjectService" ref="businessObjectService" />
++        <property name="purapWorkflowIntegrationService" ref="purapWorkflowIntegrationService" />
++        <property name="workflowDocumentService" ref="workflowDocumentService" />
++        <property name="vendorService" ref="vendorService" />
++        <property name="dataDictionaryService" ref="dataDictionaryService" />
++        <property name="universityDateService" ref="universityDateService"/>
++        <property name="paymentMethodGeneralLedgerPendingEntryService" ref="uaPaymentMethodGeneralLedgerPendingEntryService" />
++    </bean>
++
++	<!-- KITT-592 - replace the credit memo service with one which uses the new payment method-based GL entry generator  -->
++	<bean id="creditMemoService" class="edu.arizona.kfs.module.purap.document.service.impl.UaCreditMemoServiceImpl">
++        <property name="accountsPayableService" ref="accountsPayableService" />
++		<property name="creditMemoDao" ref="creditMemoDao" />
++        <property name="dataDictionaryService" ref="dataDictionaryService" />
++        <property name="documentService" ref="documentService" />
++        <property name="kualiConfigurationService" ref="kualiConfigurationService" />
++        <property name="noteService" ref="noteService" />
++        <property name="paymentRequestService" ref="paymentRequestService" />
++        <property name="purapAccountingService" ref="purapAccountingService" />
++        <property name="purapGeneralLedgerService" ref="purapGeneralLedgerService" />
++        <property name="purapService" ref="purapService" />
++        <property name="purchaseOrderService" ref="purchaseOrderService" />
++        <property name="vendorService" ref="vendorService" />
++        <property name="workflowDocumentService" ref="workflowDocumentService" />
++        <property name="paymentMethodGeneralLedgerPendingEntryService" ref="uaPaymentMethodGeneralLedgerPendingEntryService" />
++    </bean>
++
++	<!-- KITT-592: replace the bank code validator with one aware of the documents with a payment method code -->
++    <bean id="PurchasingAccountsPayable-bankCodeValidation" class="edu.arizona.kfs.module.purap.document.validation.impl.UaAccountsPayableBankCodeValidation" abstract="true"/>
++
+ </beans>
+ 
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/datadictionary/PaymentRequestDocument.xml
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/datadictionary/PaymentRequestDocument.xml	(revision 7355)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/datadictionary/PaymentRequestDocument.xml	(revision 7356)
+@@ -2,8 +2,26 @@
+ <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p" xmlns:dd="http://rice.kuali.org/dd" xsi:schemaLocation="http://www.springframework.org/schema/beans         http://www.springframework.org/schema/beans/spring-beans-2.0.xsd         http://rice.kuali.org/dd         http://rice.kuali.org/dd/dd.xsd">
+ 
+   <bean id="PaymentRequestDocument" parent="PaymentRequestDocument-parentBean">
+-      <property name="documentPresentationControllerClass" value="edu.arizona.kfs.module.purap.document.authorization.DocuwarePaymentRequestDocumentPresentationController"/>
++		<!--
++			MOD-PA2000-01 Override the document data dictionary entry to add
++			the bank setting in prepareForSave and payment method attribute.
++		-->
++	  	<property name="documentClass" value="edu.arizona.kfs.module.purap.document.UaPaymentRequestDocument" />
++	    <property name="baseDocumentClass" value="org.kuali.kfs.module.purap.document.PaymentRequestDocument"/>
++	    
++        <property name="documentPresentationControllerClass" value="edu.arizona.kfs.module.purap.document.authorization.DocuwarePaymentRequestDocumentPresentationController"/>
++		
++		<property name="attributes">
++			<list merge="true">
++				<bean parent="PaymentMethodAttribute-SelectControl"/>
++			</list>
++		</property>
+   </bean>
++  
++  <bean id="PaymentRequestDocument-bankCode" parent="PaymentRequestDocument-bankCode-parentBean">
++    <property name="required" value="false"/>
++  </bean>
++  
+ 
+   <bean id="PaymentRequestDocument-accountsPayableProcessorIdentifier" parent="PaymentRequestDocument-accountsPayableProcessorIdentifier-parentBean">
+     <property name="maxLength" value="40"/>
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/datadictionary/VendorCreditMemoDocument.xml
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/datadictionary/VendorCreditMemoDocument.xml	(revision 7355)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/datadictionary/VendorCreditMemoDocument.xml	(revision 7356)
+@@ -2,6 +2,24 @@
+ <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p" xmlns:dd="http://rice.kuali.org/dd" xsi:schemaLocation="http://www.springframework.org/schema/beans         http://www.springframework.org/schema/beans/spring-beans-2.0.xsd         http://rice.kuali.org/dd         http://rice.kuali.org/dd/dd.xsd">
+ 
+   	<bean id="VendorCreditMemoDocument" parent="VendorCreditMemoDocument-parentBean">
++		<!--
++			MOD-PA2000-01 Override the document data dictionary entry to add
++			the bank setting in prepareForSave and add payment method attribute.
++		-->
++	  	<property name="documentClass" value="edu.arizona.kfs.module.purap.document.UaVendorCreditMemoDocument" />
++	    <property name="baseDocumentClass" value="org.kuali.kfs.module.purap.document.VendorCreditMemoDocument"/>
++		
++		<property name="attributes">
++			<list merge="true">
++				<bean parent="PaymentMethodAttribute-SelectControl"/>
++			</list>
++		</property>
++
+         <property name="documentPresentationControllerClass" value="edu.arizona.kfs.module.purap.document.authorization.DocuwareVendorCreditMemoDocumentPresentationController"/>
+     </bean>           
++
++  <bean id="VendorCreditMemoDocument-bankCode" parent="VendorCreditMemoDocument-bankCode-parentBean">
++    <property name="required" value="false"/>
++  </bean>
++
+ </beans>
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java	(revision 7356)
+@@ -0,0 +1,105 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.module.purap.document.service.impl;
++
++import java.sql.Date;
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.Iterator;
++
++import org.kuali.kfs.module.purap.document.PaymentRequestDocument;
++import org.kuali.kfs.module.purap.document.VendorCreditMemoDocument;
++import org.kuali.kfs.module.purap.document.service.impl.PaymentRequestServiceImpl;
++import org.kuali.kfs.module.purap.util.VendorGroupingHelper;
++
++import edu.arizona.kfs.fp.businessobject.options.PaymentMethodValuesFinder;
++import edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService;
++import edu.arizona.kfs.module.purap.document.UaPaymentRequestDocument;
++
++/**
++ * Override the base payment request service to filter out those which are not being paid by check/ACH.
++ * 
++ * MOD-PA2000-01
++ * 
++ * @author jonathan
++ */
++public class UaPaymentRequestServiceImpl extends PaymentRequestServiceImpl {
++
++    private UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService;
++    
++    /**
++     * This method filters the payment requests given to just those which will be processed by PDP.
++     * 
++     * This will be entries with payment method "P".
++     * 
++     * @param baseResults The entire list of payment requests valid for extraction.
++     * @return A filtered subset of the passed in list.
++     */
++    protected Collection<PaymentRequestDocument> filterPaymentRequests( Collection<PaymentRequestDocument> baseResults ) {
++        ArrayList<PaymentRequestDocument> filteredResults = new ArrayList<PaymentRequestDocument>( baseResults.size() );
++        for ( PaymentRequestDocument doc : baseResults ) {
++            if ( doc instanceof UaPaymentRequestDocument ) {
++                if ( getPaymentMethodGeneralLedgerPendingEntryService().isPaymentMethodProcessedUsingPdp( ((UaPaymentRequestDocument)doc).getPaymentMethodCode() ) ) {
++                    filteredResults.add(doc);
++                }
++            } else {
++                // if not the UA modification for some reason, assume that the payment method has not
++                // been set and is therefore check
++                filteredResults.add(doc);
++            }
++        }
++        return filteredResults;
++    }
++    
++    @Override
++    public Collection<PaymentRequestDocument> getPaymentRequestsToExtract(Date onOrBeforePaymentRequestPayDate) {
++        Collection<PaymentRequestDocument> baseResults = super.getPaymentRequestsToExtract(onOrBeforePaymentRequestPayDate);
++        return filterPaymentRequests(baseResults);
++    }
++    
++    @Override
++    public Iterator<PaymentRequestDocument> getPaymentRequestsToExtractByCM(String campusCode, VendorCreditMemoDocument cmd) {
++        throw new UnsupportedOperationException( "This method is not in use." );
++    }
++    
++    @Override
++    public Collection<PaymentRequestDocument> getPaymentRequestsToExtractByVendor(String campusCode, VendorGroupingHelper vendor, Date onOrBeforePaymentRequestPayDate) {
++        Collection<PaymentRequestDocument> baseResults = super.getPaymentRequestsToExtractByVendor(campusCode, vendor, onOrBeforePaymentRequestPayDate);
++        return filterPaymentRequests(baseResults);
++    }
++    
++    @Override
++    public Collection<PaymentRequestDocument> getPaymentRequestsToExtractSpecialPayments(String chartCode, Date onOrBeforePaymentRequestPayDate) {
++        Collection<PaymentRequestDocument> baseResults = super.getPaymentRequestsToExtractSpecialPayments(chartCode, onOrBeforePaymentRequestPayDate);
++        return filterPaymentRequests(baseResults);
++    }
++    
++    @Override
++    public Collection<PaymentRequestDocument> getPaymentRequestToExtractByChart(String chartCode, Date onOrBeforePaymentRequestPayDate) {
++        Collection<PaymentRequestDocument> baseResults = super.getPaymentRequestToExtractByChart(chartCode, onOrBeforePaymentRequestPayDate);
++        return filterPaymentRequests(baseResults);
++    }
++
++    protected UaPaymentMethodGeneralLedgerPendingEntryService getPaymentMethodGeneralLedgerPendingEntryService() {
++        return paymentMethodGeneralLedgerPendingEntryService;
++    }
++
++    public void setPaymentMethodGeneralLedgerPendingEntryService(UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService) {
++        this.paymentMethodGeneralLedgerPendingEntryService = paymentMethodGeneralLedgerPendingEntryService;
++    }
++    
++    
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java	(revision 7356)
+@@ -0,0 +1,140 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.module.purap.document.service.impl;
++
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.Iterator;
++
++import org.kuali.kfs.module.purap.PurapConstants;
++import org.kuali.kfs.module.purap.document.VendorCreditMemoDocument;
++import org.kuali.kfs.module.purap.document.service.impl.CreditMemoServiceImpl;
++import org.kuali.kfs.module.purap.document.validation.event.AttributedContinuePurapEvent;
++import org.kuali.kfs.module.purap.util.VendorGroupingHelper;
++import org.kuali.kfs.sys.businessobject.Bank;
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.kfs.sys.service.BankService;
++import org.kuali.rice.kew.exception.WorkflowException;
++import org.kuali.rice.kns.exception.ValidationException;
++
++import edu.arizona.kfs.fp.businessobject.options.PaymentMethodValuesFinder;
++import edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService;
++import edu.arizona.kfs.module.purap.document.UaPaymentRequestDocument;
++import edu.arizona.kfs.module.purap.document.UaVendorCreditMemoDocument;
++
++public class UaCreditMemoServiceImpl extends CreditMemoServiceImpl {
++    private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(UaCreditMemoServiceImpl.class);
++
++    private UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService;
++    
++    /**
++     * This method filters the payment requests given to just those which will be processed by PDP.
++     * 
++     * This will be entries with payment method "P".
++     * 
++     * @param baseResults The entire list of payment requests valid for extraction.
++     * @return A filtered subset of the passed in list.
++     */
++    protected Collection<VendorCreditMemoDocument> filterPaymentRequests( Collection<VendorCreditMemoDocument> baseResults ) {
++        return filterPaymentRequests(baseResults.iterator());
++    }
++    
++    /**
++     * This method filters the payment requests given to just those which will be processed by PDP.
++     * 
++     * This will be entries with payment method "P".
++     * 
++     * @param baseResults An iterator over a list of payment requests valid for extraction.
++     * @return A filtered subset of the passed in list.
++     */
++    protected Collection<VendorCreditMemoDocument> filterPaymentRequests( Iterator<VendorCreditMemoDocument> baseResults ) {
++        ArrayList<VendorCreditMemoDocument> filteredResults = new ArrayList<VendorCreditMemoDocument>();
++        while ( baseResults.hasNext() ) {
++            VendorCreditMemoDocument doc = baseResults.next();
++            if ( doc instanceof UaVendorCreditMemoDocument ) {
++                if ( getPaymentMethodGeneralLedgerPendingEntryService().isPaymentMethodProcessedUsingPdp( ((UaVendorCreditMemoDocument)doc).getPaymentMethodCode() ) ) {
++                    filteredResults.add(doc);
++                }
++            } else {
++                // if not the UA modification for some reason, assume that the payment method has not
++                // been set and is therefore check
++                filteredResults.add(doc);
++            }
++        }
++        return filteredResults;
++    }
++    
++    /**
++     * Replace superclass method to copy the payment method code from the payment request.
++     * 
++     * @author jonathan
++     * @see org.kuali.kfs.module.purap.document.service.impl.CreditMemoServiceImpl#populateAndSaveCreditMemo(org.kuali.kfs.module.purap.document.VendorCreditMemoDocument)
++     */
++    @Override
++    public void populateAndSaveCreditMemo(VendorCreditMemoDocument document) {
++        try {
++            document.setStatusCode(PurapConstants.CreditMemoStatuses.IN_PROCESS);
++            
++            if (document.isSourceDocumentPaymentRequest()) {
++                document.setBankCode(document.getPaymentRequestDocument().getBankCode());
++                document.setBank(document.getPaymentRequestDocument().getBank());
++                // KITT-592 : if this is a UC CM document and the source is a new UA payment request document, copy the payment method code
++                if ( document instanceof UaVendorCreditMemoDocument && document.getPaymentRequestDocument() instanceof UaPaymentRequestDocument ) {
++                    ((UaVendorCreditMemoDocument)document).setPaymentMethodCode(((UaPaymentRequestDocument)document.getPaymentRequestDocument()).getPaymentMethodCode());
++                }
++            }
++            else {
++                // set bank code to default bank code in the system parameter
++                Bank defaultBank = SpringContext.getBean(BankService.class).getDefaultBankByDocType(VendorCreditMemoDocument.class);
++                if (defaultBank != null) {
++                    document.setBankCode(defaultBank.getBankCode());
++                    document.setBank(defaultBank);
++                }
++            }
++            
++            documentService.saveDocument(document, AttributedContinuePurapEvent.class);
++        } catch (ValidationException ve) {
++            document.setStatusCode(PurapConstants.CreditMemoStatuses.INITIATE);
++        } catch (WorkflowException we) {
++            // set the status back to initiate
++            document.setStatusCode(PurapConstants.CreditMemoStatuses.INITIATE);
++            String errorMsg = "Error saving document # " + document.getDocumentHeader().getDocumentNumber() + " " + we.getMessage();
++            LOG.error(errorMsg, we);
++            throw new RuntimeException(errorMsg, we);
++        }
++    }
++    
++    @Override
++    public Iterator<VendorCreditMemoDocument> getCreditMemosToExtract(String chartCode) {
++        Iterator<VendorCreditMemoDocument> baseResults = super.getCreditMemosToExtract(chartCode);
++        return filterPaymentRequests(baseResults).iterator();
++    }
++    
++    @Override
++    public Collection<VendorCreditMemoDocument> getCreditMemosToExtractByVendor(String chartCode, VendorGroupingHelper vendor) {
++        Collection<VendorCreditMemoDocument> baseResults = super.getCreditMemosToExtractByVendor(chartCode, vendor);
++        return filterPaymentRequests(baseResults);
++    }
++
++    protected UaPaymentMethodGeneralLedgerPendingEntryService getPaymentMethodGeneralLedgerPendingEntryService() {
++        return paymentMethodGeneralLedgerPendingEntryService;
++    }
++
++    public void setPaymentMethodGeneralLedgerPendingEntryService(UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService) {
++        this.paymentMethodGeneralLedgerPendingEntryService = paymentMethodGeneralLedgerPendingEntryService;
++    }
++    
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java	(revision 7356)
+@@ -0,0 +1,53 @@
++/*
++ * Copyright 2008-2009 The Kuali Foundation
++ * 
++ * Licensed under the Educational Community License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl2.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.module.purap.document.validation.impl;
++
++import org.kuali.kfs.module.purap.PurapPropertyConstants;
++import org.kuali.kfs.module.purap.document.AccountsPayableDocumentBase;
++import org.kuali.kfs.module.purap.document.validation.impl.AccountsPayableBankCodeValidation;
++import org.kuali.kfs.sys.document.validation.event.AttributedDocumentEvent;
++import org.kuali.kfs.sys.document.validation.impl.BankCodeValidation;
++
++import edu.arizona.kfs.module.purap.document.UaPaymentRequestDocument;
++import edu.arizona.kfs.module.purap.document.UaVendorCreditMemoDocument;
++
++/**
++ * Override the validator from baseline with one which is aware of the new documents with a payment method code.
++ * 
++ * @author jonathan
++ */
++public class UaAccountsPayableBankCodeValidation extends AccountsPayableBankCodeValidation {
++//    private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(UaAccountsPayableBankCodeValidation.class);
++
++    /**
++     * @see org.kuali.kfs.sys.document.validation.Validation#validate(org.kuali.kfs.sys.document.validation.event.AttributedDocumentEvent)
++     */
++    public boolean validate(AttributedDocumentEvent event) {
++        AccountsPayableDocumentBase apDocument = (AccountsPayableDocumentBase) getAccountingDocumentForValidation();
++
++        // check if one of the extended UA documents, if so, take the payment method into account, otherwise, revert to baseline behavior
++        boolean isValid = true;
++        if ( apDocument instanceof UaPaymentRequestDocument ) {
++            isValid = BankCodeValidation.validate(apDocument.getBankCode(), ((UaPaymentRequestDocument)apDocument).getPaymentMethodCode(), "document." + PurapPropertyConstants.BANK_CODE, false, true);            
++        } else if ( apDocument instanceof UaVendorCreditMemoDocument ) {
++            isValid = BankCodeValidation.validate(apDocument.getBankCode(), ((UaVendorCreditMemoDocument)apDocument).getPaymentMethodCode(), "document." + PurapPropertyConstants.BANK_CODE, false, true);                        
++        } else {
++            isValid = BankCodeValidation.validate(apDocument.getBankCode(), "document." + PurapPropertyConstants.BANK_CODE, false, true);
++        }
++
++        return isValid;
++    }
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/workflow/CreditMemoNonCheck.xml
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/workflow/CreditMemoNonCheck.xml	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/workflow/CreditMemoNonCheck.xml	(revision 7356)
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<data xmlns="ns:workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ns:workflow resource:WorkflowData">
++  <documentTypes xmlns="ns:workflow/DocumentType" xsi:schemaLocation="ns:workflow/DocumentType resource:DocumentType">
++    <documentType>
++      <name>CMNC</name>
++      <parent>FSLO</parent>
++      <label>Credit Memo - Non-Check</label>
++      <active>true</active>
++      <routingVersion>2</routingVersion>
++      <routePaths />
++    </documentType>
++  </documentTypes>
++</data>
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/workflow/PaymentRequestNonCheck.xml
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/workflow/PaymentRequestNonCheck.xml	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/workflow/PaymentRequestNonCheck.xml	(revision 7356)
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<data xmlns="ns:workflow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="ns:workflow resource:WorkflowData">
++  <documentTypes xmlns="ns:workflow/DocumentType" xsi:schemaLocation="ns:workflow/DocumentType resource:DocumentType">
++    <documentType>
++      <name>PRNC</name>
++      <parent>FSLO</parent>
++      <label>Payment Request - Non-Check</label>
++      <active>true</active>
++      <routingVersion>2</routingVersion>
++      <routePaths />
++    </documentType>
++  </documentTypes>
++</data>
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java	(revision 7356)
+@@ -0,0 +1,119 @@
++package edu.arizona.kfs.module.purap.document;
++
++import org.kuali.kfs.fp.document.DisbursementVoucherConstants;
++import org.kuali.kfs.module.purap.PurapConstants;
++import org.kuali.kfs.module.purap.document.PaymentRequestDocument;
++import org.kuali.kfs.sys.KFSConstants;
++import org.kuali.kfs.sys.businessobject.Bank;
++import org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntry;
++import org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntrySequenceHelper;
++import org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntrySourceDetail;
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.rice.kew.util.KEWConstants;
++import org.kuali.rice.kns.document.authorization.DocumentAuthorizer;
++import org.kuali.rice.kns.service.DocumentHelperService;
++import org.kuali.rice.kns.service.ParameterConstants.COMPONENT;
++import org.kuali.rice.kns.util.GlobalVariables;
++import org.kuali.rice.kns.util.KNSConstants;
++
++import edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService;
++
++/**
++ * Overrides the prepareForSave method to ensure that the bank code is synchronized with the payment method.
++ * 
++ * MOD-PA2000-01
++ * 
++ * @author jonathan
++ */
++@COMPONENT( component = "PaymentRequest" )
++public class UaPaymentRequestDocument extends PaymentRequestDocument {
++    private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(UaPaymentRequestDocument.class);
++
++    public static String DOCUMENT_TYPE_NON_CHECK = "PRNC";
++    
++    // default this value to "C" to preserve baseline behavior
++    protected String paymentMethodCode = "C"; // check
++    private static UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService;
++
++    /**
++     * Gets the paymentMethodCode attribute. 
++     * @return Returns the paymentMethodCode.
++     */
++    public String getPaymentMethodCode() {
++        return paymentMethodCode;
++    }
++
++    /**
++     * Sets the paymentMethodCode attribute value.
++     * @param paymentMethodCode The paymentMethodCode to set.
++     */
++    public void setPaymentMethodCode(String paymentMethodCode) {
++        this.paymentMethodCode = paymentMethodCode;
++    }
++    
++    @Override
++    public void prepareForSave() {
++        super.prepareForSave();
++        
++        // First, only do this if the document is in initiated status - after that, we don't want to 
++        // accidentally reset the bank code
++        if ( KEWConstants.ROUTE_HEADER_INITIATED_CD.equals( getDocumentHeader().getWorkflowDocument().getRouteHeader().getDocRouteStatus() )
++                || KEWConstants.ROUTE_HEADER_SAVED_CD.equals( getDocumentHeader().getWorkflowDocument().getRouteHeader().getDocRouteStatus() ) ) {
++            // need to check whether the user has the permission to edit the bank code
++            // if so, don't synchronize since we can't tell whether the value coming in
++            // was entered by the user or not.
++            DocumentAuthorizer docAuth = SpringContext.getBean(DocumentHelperService.class).getDocumentAuthorizer(this);
++            if ( !docAuth.isAuthorizedByTemplate(this, 
++                    KFSConstants.ParameterNamespaces.KFS, 
++                    KFSConstants.PermissionTemplate.EDIT_BANK_CODE.name, 
++                    GlobalVariables.getUserSession().getPrincipalId()  ) ) {
++                synchronizeBankCodeWithPaymentMethod();        
++            } else {
++                // ensure that the name is updated properly
++                refreshReferenceObject( "bank" );
++            }
++        }        
++    }
++
++    protected void synchronizeBankCodeWithPaymentMethod() {
++        Bank bank = getPaymentMethodGeneralLedgerPendingEntryService().getBankForPaymentMethod( getPaymentMethodCode() );
++        if ( bank != null ) {
++            setBankCode(bank.getBankCode());
++            setBank(bank);
++        } else {
++            // no bank code, no bank needed
++            setBankCode(null);
++            setBank(null);
++        }
++    }
++
++    protected UaPaymentMethodGeneralLedgerPendingEntryService getPaymentMethodGeneralLedgerPendingEntryService() {
++        if ( paymentMethodGeneralLedgerPendingEntryService == null ) {
++            paymentMethodGeneralLedgerPendingEntryService = SpringContext.getBean(UaPaymentMethodGeneralLedgerPendingEntryService.class);
++        }
++        return paymentMethodGeneralLedgerPendingEntryService;
++    }
++
++    public boolean generateDocumentGeneralLedgerPendingEntries(GeneralLedgerPendingEntrySequenceHelper sequenceHelper) {
++        if (getGeneralLedgerPendingEntries() == null || getGeneralLedgerPendingEntries().size() < 2) {
++            LOG.warn("No gl entries for accounting lines.");
++            return true;
++        }
++//        LOG.debug("generateDocumentGeneralLedgerPendingEntries()");
++        getPaymentMethodGeneralLedgerPendingEntryService().generatePaymentMethodSpecificDocumentGeneralLedgerPendingEntries(
++                this,getPaymentMethodCode(),getBankCode(), KNSConstants.DOCUMENT_PROPERTY_NAME + "." + "bankCode", getGeneralLedgerPendingEntry(0), false, false, sequenceHelper);
++        
++        return true;
++    }
++    
++    @Override
++    public void customizeExplicitGeneralLedgerPendingEntry(GeneralLedgerPendingEntrySourceDetail postable, GeneralLedgerPendingEntry explicitEntry) {
++        super.customizeExplicitGeneralLedgerPendingEntry(postable, explicitEntry);
++        // if the document is not processed using PDP, then the cash entries need to be created instead of liability
++        // so, switch the document type so the offset generation uses a cash offset object code
++        if ( !getPaymentMethodGeneralLedgerPendingEntryService().isPaymentMethodProcessedUsingPdp(getPaymentMethodCode())) {
++            explicitEntry.setFinancialDocumentTypeCode(DOCUMENT_TYPE_NON_CHECK);
++        }
++    }
++    
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaVendorCreditMemoDocument.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaVendorCreditMemoDocument.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaVendorCreditMemoDocument.java	(revision 7356)
+@@ -0,0 +1,130 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.module.purap.document;
++
++import org.kuali.kfs.fp.document.DisbursementVoucherConstants;
++import org.kuali.kfs.module.purap.document.VendorCreditMemoDocument;
++import org.kuali.kfs.sys.KFSConstants;
++import org.kuali.kfs.sys.businessobject.Bank;
++import org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntry;
++import org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntrySequenceHelper;
++import org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntrySourceDetail;
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.rice.kew.util.KEWConstants;
++import org.kuali.rice.kns.document.authorization.DocumentAuthorizer;
++import org.kuali.rice.kns.service.DocumentHelperService;
++import org.kuali.rice.kns.service.ParameterConstants.COMPONENT;
++import org.kuali.rice.kns.util.GlobalVariables;
++import org.kuali.rice.kns.util.KNSConstants;
++
++import edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService;
++
++/**
++ * KITT-592 - added payment method code and supporting logic
++ * 
++ * @author jonathan
++ */
++@COMPONENT( component = "VendorCreditMemo" )
++public class UaVendorCreditMemoDocument extends VendorCreditMemoDocument {
++
++    public static String DOCUMENT_TYPE_NON_CHECK = "CMNC";
++
++    protected String paymentMethodCode = "C"; // check
++    private static UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService;
++
++    /**
++     * Gets the paymentMethodCode attribute. 
++     * @return Returns the paymentMethodCode.
++     */
++    public String getPaymentMethodCode() {
++        return paymentMethodCode;
++    }
++
++    /**
++     * Sets the paymentMethodCode attribute value.
++     * @param paymentMethodCode The paymentMethodCode to set.
++     */
++    public void setPaymentMethodCode(String paymentMethodCode) {
++        this.paymentMethodCode = paymentMethodCode;
++    }
++
++    @Override
++    public void prepareForSave() {
++        super.prepareForSave();
++        
++        // First, only do this if the document is in initiated status - after that, we don't want to 
++        // accidentally reset the bank code
++        if ( KEWConstants.ROUTE_HEADER_INITIATED_CD.equals( getDocumentHeader().getWorkflowDocument().getRouteHeader().getDocRouteStatus() )
++                || KEWConstants.ROUTE_HEADER_SAVED_CD.equals( getDocumentHeader().getWorkflowDocument().getRouteHeader().getDocRouteStatus() ) ) {
++            // need to check whether the user has the permission to edit the bank code
++            // if so, don't synchronize since we can't tell whether the value coming in
++            // was entered by the user or not.
++            DocumentAuthorizer docAuth = SpringContext.getBean(DocumentHelperService.class).getDocumentAuthorizer(this);
++            if ( !docAuth.isAuthorizedByTemplate(this, 
++                    KFSConstants.ParameterNamespaces.KFS, 
++                    KFSConstants.PermissionTemplate.EDIT_BANK_CODE.name, 
++                    GlobalVariables.getUserSession().getPrincipalId()  ) ) {
++                synchronizeBankCodeWithPaymentMethod();        
++            } else {
++                // ensure that the name is updated properly
++                refreshReferenceObject( "bank" );
++            }
++        }        
++    }
++
++    protected void synchronizeBankCodeWithPaymentMethod() {
++        Bank bank = getPaymentMethodGeneralLedgerPendingEntryService().getBankForPaymentMethod( getPaymentMethodCode() );
++        if ( bank != null ) {
++            setBankCode(bank.getBankCode());
++            setBank(bank);
++        } else {
++            // no bank code, no bank needed
++            setBankCode(null);
++            setBank(null);
++        }
++    }
++
++    @Override
++    public void customizeExplicitGeneralLedgerPendingEntry(GeneralLedgerPendingEntrySourceDetail postable, GeneralLedgerPendingEntry explicitEntry) {
++        super.customizeExplicitGeneralLedgerPendingEntry(postable, explicitEntry);
++        // if the document is not processed using PDP, then the cash entries need to be created instead of liability
++        // so, switch the document type so the offset generation uses a cash offset object code
++        if ( !getPaymentMethodGeneralLedgerPendingEntryService().isPaymentMethodProcessedUsingPdp(getPaymentMethodCode())) {
++            explicitEntry.setFinancialDocumentTypeCode(DOCUMENT_TYPE_NON_CHECK);
++        }
++    }
++
++    public boolean generateDocumentGeneralLedgerPendingEntries(GeneralLedgerPendingEntrySequenceHelper sequenceHelper) {
++        if (getGeneralLedgerPendingEntries() == null || getGeneralLedgerPendingEntries().size() < 2) {
++            LOG.warn("No gl entries for accounting lines.");
++            return true;
++        }
++//        LOG.debug("generateDocumentGeneralLedgerPendingEntries()");
++        getPaymentMethodGeneralLedgerPendingEntryService().generatePaymentMethodSpecificDocumentGeneralLedgerPendingEntries(
++                this,getPaymentMethodCode(),getBankCode(), KNSConstants.DOCUMENT_PROPERTY_NAME + "." + "bankCode", getGeneralLedgerPendingEntry(0), true, true, sequenceHelper);
++        
++        return true;
++    }
++    
++    
++    protected UaPaymentMethodGeneralLedgerPendingEntryService getPaymentMethodGeneralLedgerPendingEntryService() {
++        if ( paymentMethodGeneralLedgerPendingEntryService == null ) {
++            paymentMethodGeneralLedgerPendingEntryService = SpringContext.getBean(UaPaymentMethodGeneralLedgerPendingEntryService.class);
++        }
++        return paymentMethodGeneralLedgerPendingEntryService;
++    }
++    
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/ojb-purap.xml
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/ojb-purap.xml	(revision 7355)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/ojb-purap.xml	(revision 7356)
+@@ -623,4 +623,307 @@
+     
+ </class-descriptor> 
+ 
++<!-- Disable the base classes (cause errors earlier) -->
++<class-descriptor class="org.kuali.kfs.module.purap.document.PaymentRequestDocument" table="OLD_PAY_REQ_OBJ_USED" />
++<class-descriptor class="org.kuali.kfs.module.purap.document.VendorCreditMemoDocument" table="OLD_CRDT_MEMO_OBJ_USED" />
++
++<!-- MOD-PA2000-01: Added Payment method code -->
++<class-descriptor class="edu.arizona.kfs.module.purap.document.UaPaymentRequestDocument" table="AP_PMT_RQST_T">
++    <field-descriptor name="purapDocumentIdentifier" column="PMT_RQST_ID" jdbc-type="INTEGER" primarykey="true" index="true" autoincrement="true" sequence-name="PMT_RQST_ID"/>
++    <field-descriptor name="objectId" column="OBJ_ID" jdbc-type="VARCHAR" index="true"/>
++    <field-descriptor name="versionNumber" column="VER_NBR" jdbc-type="BIGINT" locking="true"/>
++    <field-descriptor name="documentNumber" column="FDOC_NBR" jdbc-type="VARCHAR" index="true"/>
++    <field-descriptor name="statusCode" column="PMT_RQST_STAT_CD" jdbc-type="VARCHAR" index="true"/>
++    <field-descriptor name="purchaseOrderIdentifier" column="PO_ID" jdbc-type="INTEGER" index="true"/>
++    <field-descriptor name="postingYear" column="PO_ENCUM_FSCL_YR" jdbc-type="INTEGER"/>
++    <field-descriptor name="recurringPaymentTypeCode" column="PO_CLSIF_TYP_DESC" jdbc-type="VARCHAR"/>
++    <field-descriptor name="invoiceDate" column="INV_DT" jdbc-type="DATE"/>
++    <field-descriptor name="invoiceNumber" column="INV_NBR" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorInvoiceAmount" column="VNDR_INV_AMT" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++    <field-descriptor name="vendorPaymentTermsCode" column="VNDR_PMT_TERMS_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorShippingPaymentTermsCode" column="VNDR_SHP_PMT_TERM_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorCustomerNumber" column="VNDR_CUST_NBR" jdbc-type="VARCHAR"/>
++    <field-descriptor name="paymentRequestPayDate" column="PMT_RQST_PAY_DT" jdbc-type="DATE"/>
++    <field-descriptor name="paymentRequestCostSourceCode" column="PMT_RQST_CST_SRC_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="paymentRequestedCancelIndicator" column="PMT_RQST_CNCL_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="paymentAttachmentIndicator" column="PMT_ATT_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="immediatePaymentIndicator" column="IMD_PMT_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="holdIndicator" column="PMT_HLD_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="noteLine1Text" column="PMT_NTE_LN1_TXT" jdbc-type="VARCHAR"/>
++    <field-descriptor name="noteLine2Text" column="PMT_NTE_LN2_TXT" jdbc-type="VARCHAR"/>
++    <field-descriptor name="noteLine3Text" column="PMT_NTE_LN3_TXT" jdbc-type="VARCHAR"/>
++    <field-descriptor name="specialHandlingInstructionLine1Text" column="PMT_SPCL_HANDLG_INSTRC_LN1_TXT" jdbc-type="VARCHAR"/>
++    <field-descriptor name="specialHandlingInstructionLine2Text" column="PMT_SPCL_HANDLG_INSTRC_LN2_TXT" jdbc-type="VARCHAR"/>
++    <field-descriptor name="specialHandlingInstructionLine3Text" column="PMT_SPCL_HANDLG_INSTRC_LN3_TXT" jdbc-type="VARCHAR"/>
++    <field-descriptor name="paymentPaidTimestamp" column="PMT_PD_DT" jdbc-type="TIMESTAMP"/>
++    <field-descriptor name="paymentRequestElectronicInvoiceIndicator" column="PMT_RQST_ELCTRNC_INV_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="vendorHeaderGeneratedIdentifier" column="VNDR_HDR_GNRTD_ID" jdbc-type="INTEGER"/>
++    <field-descriptor name="vendorDetailAssignedIdentifier" column="VNDR_DTL_ASND_ID" jdbc-type="INTEGER"/>
++    <field-descriptor name="vendorName" column="VNDR_NM" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorLine1Address" column="VNDR_LN1_ADDR" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorLine2Address" column="VNDR_LN2_ADDR" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorCityName" column="VNDR_CTY_NM" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorStateCode" column="VNDR_ST_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorPostalCode" column="VNDR_PSTL_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorCountryCode" column="VNDR_CNTRY_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="extractedTimestamp" column="PMT_EXTRT_DT" jdbc-type="TIMESTAMP"/>
++    <field-descriptor name="accountsPayableProcessorIdentifier" column="AP_PRCSR_ID" jdbc-type="VARCHAR"/>
++    <field-descriptor name="accountsPayableRequestCancelIdentifier" column="AP_RQST_CNCL_ID" jdbc-type="VARCHAR"/>
++    <field-descriptor name="lastActionPerformedByPersonId" column="AP_HLD_ID" jdbc-type="VARCHAR"/>
++    <field-descriptor name="processingCampusCode" column="PRCS_CMP_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="accountsPayableApprovalTimestamp" column="AP_APRVL_DT" jdbc-type="TIMESTAMP"/>
++    <field-descriptor name="originalVendorHeaderGeneratedIdentifier" column="ORIG_VNDR_HDR_GNRTD_ID" jdbc-type="INTEGER"/>
++    <field-descriptor name="originalVendorDetailAssignedIdentifier" column="ORIG_VNDR_DTL_ASND_ID" jdbc-type="INTEGER"/>
++    <field-descriptor name="alternateVendorHeaderGeneratedIdentifier" column="ALTRNT_VNDR_HDR_GNRTD_ID" jdbc-type="INTEGER"/>
++    <field-descriptor name="alternateVendorDetailAssignedIdentifier" column="ALTRNT_VNDR_DTL_ASND_ID" jdbc-type="INTEGER"/>   
++    <field-descriptor name="continuationAccountIndicator" column="CONT_ACCT_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="accountsPayablePurchasingDocumentLinkIdentifier" column="AP_PUR_DOC_LNK_ID" jdbc-type="INTEGER"/>
++    <field-descriptor name="closePurchaseOrderIndicator" column="CLOSE_PO_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="reopenPurchaseOrderIndicator" column="REOPEN_PO_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="vendorAddressInternationalProvinceName" column="VNDR_ADDR_INTL_PROV_NM" jdbc-type="VARCHAR"/>
++    <field-descriptor name="receivingDocumentRequiredIndicator" column="RCVNG_DOC_REQ_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="paymentRequestPositiveApprovalIndicator" column="PMT_RQST_PSTV_APRVL_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++	<field-descriptor name="useTaxIndicator" column="USE_TAX_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++    <field-descriptor name="bankCode" column="BNK_CD" jdbc-type="VARCHAR" />
++	<field-descriptor name="taxClassificationCode" column="TAX_CLSIF_CD" jdbc-type="VARCHAR" />
++	<field-descriptor name="taxFederalPercent" column="FTX_PCT" jdbc-type="DECIMAL" />
++	<field-descriptor name="taxStatePercent" column="STX_PCT" jdbc-type="DECIMAL" />
++	<field-descriptor name="taxCountryCode" column="TAX_CNTRY_CD" jdbc-type="VARCHAR" />
++	<field-descriptor name="taxGrossUpIndicator" column="GRS_UP_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++	<field-descriptor name="taxExemptTreatyIndicator" column="TRTY_EXMPT_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++	<field-descriptor name="taxForeignSourceIndicator" column="FRGN_SRC_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++	<field-descriptor name="taxSpecialW4Amount" column="SPCL_W4_INC_AMT" jdbc-type="DECIMAL" />
++	<field-descriptor name="taxUSAIDPerDiemIndicator" column="USAID_DIEM_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++	<field-descriptor name="taxOtherExemptIndicator" column="INC_TAX_EXMPT_CD_OTHR_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++	<field-descriptor name="taxNQIId" column="NQI_CUST_TAX_ID" jdbc-type="VARCHAR" />
++	<field-descriptor name="vendorAttentionName" column="VNDR_ATTN_NM" jdbc-type="VARCHAR" />
++
++	<!-- MOD-PA2000-01: Added Payment method code -->
++    <field-descriptor name="paymentMethodCode" column="PMT_MTHD_CD" jdbc-type="VARCHAR"/>
++    
++    
++    <!-- COMMON TO ALL DOCUMENTS -->
++    <reference-descriptor name="documentHeader" class-ref="org.kuali.kfs.sys.businessobject.FinancialSystemDocumentHeader" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++        <foreignkey field-ref="documentNumber" />
++    </reference-descriptor>
++
++    <reference-descriptor name="vendorDetail" class-ref="org.kuali.kfs.vnd.businessobject.VendorDetail" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="vendorHeaderGeneratedIdentifier" />
++        <foreignkey field-ref="vendorDetailAssignedIdentifier" />
++    </reference-descriptor>
++    <reference-descriptor name="status" class-ref="org.kuali.kfs.module.purap.businessobject.PaymentRequestStatus" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="statusCode" />
++    </reference-descriptor>
++    <collection-descriptor name="items" proxy="true" element-class-ref="org.kuali.kfs.module.purap.businessobject.PaymentRequestItem" collection-class="org.apache.ojb.broker.util.collections.ManageableArrayList" auto-retrieve="true" auto-update="object" auto-delete="object">
++        <inverse-foreignkey field-ref="purapDocumentIdentifier" />
++        <query-customizer class="org.kuali.kfs.module.purap.dataaccess.impl.PurapItemQueryCustomizer">
++            <attribute
++                attribute-name="orderByField.itemLineNumber"
++                attribute-value="ASC"
++            />
++        </query-customizer> 
++    </collection-descriptor>
++<!--<reference-descriptor name="purchaseOrderDocument" class-ref="org.kuali.kfs.module.purap.document.PurchaseOrderDocument" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="purchaseOrderIdentifier" />
++    </reference-descriptor>
++-->
++    <reference-descriptor name="vendorShippingPaymentTerms" class-ref="org.kuali.kfs.vnd.businessobject.ShippingPaymentTerms" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="vendorShippingPaymentTermsCode" />
++    </reference-descriptor>
++    <reference-descriptor name="vendorPaymentTerms" class-ref="org.kuali.kfs.vnd.businessobject.PaymentTermType" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="vendorPaymentTermsCode" />
++    </reference-descriptor>
++    <reference-descriptor name="paymentRequestCostSource" class-ref="org.kuali.kfs.vnd.businessobject.PurchaseOrderCostSource" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="paymentRequestCostSourceCode" />
++    </reference-descriptor>
++    <reference-descriptor name="recurringPaymentType" class-ref="org.kuali.kfs.module.purap.businessobject.RecurringPaymentType" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="recurringPaymentTypeCode" />
++    </reference-descriptor>
++    <reference-descriptor name="bank" class-ref="org.kuali.kfs.sys.businessobject.Bank" auto-retrieve="true" auto-update="none" auto-delete="none"  proxy="true" >
++    	<foreignkey field-ref="bankCode" />
++    </reference-descriptor>
++    <reference-descriptor name="processingCampus" class-ref="org.kuali.kfs.vnd.businessobject.CampusParameter" auto-retrieve="true" auto-update="none" auto-delete="none"  proxy="true" >
++    	<foreignkey field-ref="processingCampusCode" />
++    </reference-descriptor>    
++   <!--  
++   <reference-descriptor name="incomeClass" class-ref="org.kuali.kfs.fp.businessobject.TaxIncomeClassCode" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true">
++    	<foreignkey field-ref="taxClassificationCode" />
++    </reference-descriptor>
++-->
++    <!-- Do not set this collection to auto save or delete; it needs to be saved by a specific process in the GL entry creation (hjs) -->
++   <collection-descriptor name="generalLedgerPendingEntries" proxy="true" element-class-ref="org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntry" collection-class="org.apache.ojb.broker.util.collections.ManageableArrayList" auto-retrieve="true" auto-update="none" auto-delete="none">
++        <orderby name="transactionLedgerEntrySequenceNumber" sort="ASC" />
++        <query-customizer class="org.kuali.kfs.sys.dataaccess.impl.OjbQueryCustomizer">
++            <attribute attribute-name="documentNumber" attribute-value="parent.documentNumber" />
++        </query-customizer>
++    </collection-descriptor>
++
++</class-descriptor>
++
++<class-descriptor class="edu.arizona.kfs.module.purap.document.UaVendorCreditMemoDocument" table="AP_CRDT_MEMO_T">
++    <field-descriptor name="purapDocumentIdentifier" column="CRDT_MEMO_ID" jdbc-type="INTEGER" primarykey="true" index="true" autoincrement="true" sequence-name="CRDT_MEMO_ID"/>
++    <field-descriptor name="objectId" column="OBJ_ID" jdbc-type="VARCHAR" index="true"/>
++    <field-descriptor name="versionNumber" column="VER_NBR" jdbc-type="BIGINT" locking="true"/>
++    <field-descriptor name="documentNumber" column="FDOC_NBR" jdbc-type="VARCHAR" index="true"/>
++    <field-descriptor name="vendorHeaderGeneratedIdentifier" column="VNDR_HDR_GNRTD_ID" jdbc-type="INTEGER" index="true"/>
++    <field-descriptor name="vendorDetailAssignedIdentifier" column="VNDR_DTL_ASND_ID" jdbc-type="INTEGER" index="true"/>
++    <field-descriptor name="vendorCustomerNumber" column="VNDR_CUST_NBR" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorName" column="VNDR_NM" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorLine1Address" column="VNDR_LN1_ADDR" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorLine2Address" column="VNDR_LN2_ADDR" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorCityName" column="VNDR_CTY_NM" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorStateCode" column="VNDR_ST_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorPostalCode" column="VNDR_PSTL_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="vendorCountryCode" column="VNDR_CNTRY_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="purchaseOrderIdentifier" column="PO_ID" jdbc-type="INTEGER" index="true"/>
++    <field-descriptor name="postingYear" column="PO_ENCUM_FSCL_YR" jdbc-type="INTEGER"/>
++    <field-descriptor name="paymentRequestIdentifier" column="PMT_RQST_ID" jdbc-type="INTEGER" index="true"/>
++    <field-descriptor name="statusCode" column="CRDT_MEMO_STAT_CD" jdbc-type="VARCHAR" index="true"/>
++    <field-descriptor name="creditMemoNumber" column="CRDT_MEMO_NBR" jdbc-type="VARCHAR"/>
++    <field-descriptor name="creditMemoDate" column="CRDT_MEMO_DT" jdbc-type="DATE"/>
++    <field-descriptor name="creditMemoAmount" column="CRDT_MEMO_AMT" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++    <field-descriptor name="noteLine1Text" column="CRDT_MEMO_NTE_LN1_TXT" jdbc-type="VARCHAR"/>
++    <field-descriptor name="noteLine2Text" column="CRDT_MEMO_NTE_LN2_TXT" jdbc-type="VARCHAR"/>
++    <field-descriptor name="noteLine3Text" column="CRDT_MEMO_NTE_LN3_TXT" jdbc-type="VARCHAR"/>
++    <field-descriptor name="creditMemoPaidTimestamp" column="CRDT_MEMO_PD_TS" jdbc-type="TIMESTAMP"/>
++    <field-descriptor name="holdIndicator" column="CRDT_HLD_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="accountsPayableProcessorIdentifier" column="AP_PRCSR_ID" jdbc-type="VARCHAR"/>
++    <field-descriptor name="processingCampusCode" column="PRCS_CMP_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="accountsPayableApprovalTimestamp" column="AP_APRVL_DT" jdbc-type="TIMESTAMP"/>
++    <field-descriptor name="itemMiscellaneousCreditDescription" column="ITM_MISC_CRDT_DESC" jdbc-type="VARCHAR"/>
++    <field-descriptor name="extractedTimestamp" column="CRDT_MEMO_EXTRT_DT" jdbc-type="TIMESTAMP"/>
++    <field-descriptor name="accountsPayablePurchasingDocumentLinkIdentifier" column="AP_PUR_DOC_LNK_ID" jdbc-type="INTEGER"/>
++    <field-descriptor name="lastActionPerformedByPersonId" column="AP_HLD_ID" jdbc-type="VARCHAR"/>
++    <field-descriptor name="continuationAccountIndicator" column="CONT_ACCT_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="closePurchaseOrderIndicator" column="CLOSE_PO_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="reopenPurchaseOrderIndicator" column="REOPEN_PO_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="vendorAddressInternationalProvinceName" column="VNDR_ADDR_INTL_PROV_NM" jdbc-type="VARCHAR"/>
++	<field-descriptor name="useTaxIndicator" column="USE_TAX_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++    <field-descriptor name="bankCode" column="BNK_CD" jdbc-type="VARCHAR" />
++    <field-descriptor name="vendorAttentionName" column="VNDR_ATTN_NM" jdbc-type="VARCHAR" />
++    
++	<!-- MOD-PA2000-01: Added Payment method code -->
++    <field-descriptor name="paymentMethodCode" column="PMT_MTHD_CD" jdbc-type="VARCHAR"/>
++    
++    <reference-descriptor name="documentHeader" class-ref="org.kuali.kfs.sys.businessobject.FinancialSystemDocumentHeader" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
++        <foreignkey field-ref="documentNumber" />
++    </reference-descriptor>
++    <reference-descriptor name="vendorDetail" class-ref="org.kuali.kfs.vnd.businessobject.VendorDetail" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="vendorHeaderGeneratedIdentifier" />
++        <foreignkey field-ref="vendorDetailAssignedIdentifier" />
++    </reference-descriptor>
++<!--
++    <reference-descriptor name="purchaseOrderDocument" class-ref="org.kuali.kfs.module.purap.document.PurchaseOrderDocument" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="purchaseOrderIdentifier" />
++    </reference-descriptor>
++    <reference-descriptor name="paymentRequestDocument" class-ref="org.kuali.kfs.module.purap.document.PaymentRequestDocument" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="paymentRequestIdentifier" />
++    </reference-descriptor>
++-->
++    <reference-descriptor name="status" class-ref="org.kuali.kfs.module.purap.businessobject.CreditMemoStatus" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="statusCode" />
++    </reference-descriptor>
++    <reference-descriptor name="bank" class-ref="org.kuali.kfs.sys.businessobject.Bank" auto-retrieve="true" auto-update="none" auto-delete="none"  proxy="true" >
++    	<foreignkey field-ref="bankCode" />
++    </reference-descriptor>
++    <reference-descriptor name="processingCampus" class-ref="org.kuali.kfs.vnd.businessobject.CampusParameter" auto-retrieve="true" auto-update="none" auto-delete="none"  proxy="true" >
++    	<foreignkey field-ref="processingCampusCode" />
++    </reference-descriptor>  
++    <collection-descriptor name="items" proxy="true" element-class-ref="org.kuali.kfs.module.purap.businessobject.CreditMemoItem" collection-class="org.apache.ojb.broker.util.collections.ManageableArrayList" auto-retrieve="true" auto-update="object" auto-delete="object">
++        <inverse-foreignkey field-ref="purapDocumentIdentifier" />
++        <query-customizer class="org.kuali.kfs.module.purap.dataaccess.impl.PurapItemQueryCustomizer">
++    	    <attribute
++            	attribute-name="orderByField.itemLineNumber"
++            	attribute-value="ASC"
++        	/>
++    	</query-customizer> 
++    </collection-descriptor>
++
++   <collection-descriptor name="generalLedgerPendingEntries" proxy="true" element-class-ref="org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntry" collection-class="org.apache.ojb.broker.util.collections.ManageableArrayList" auto-retrieve="true" auto-update="none" auto-delete="none">
++        <orderby name="transactionLedgerEntrySequenceNumber" sort="ASC" />
++        <query-customizer class="org.kuali.kfs.sys.dataaccess.impl.OjbQueryCustomizer">
++            <attribute attribute-name="documentNumber" attribute-value="parent.documentNumber" />
++        </query-customizer>
++    </collection-descriptor>
++
++</class-descriptor>
++
++
++<!-- Descriptors copied because they referenced the original class names -->
++<class-descriptor class="org.kuali.kfs.module.purap.businessobject.PaymentRequestItem" table="AP_PMT_RQST_ITM_T">
++    <field-descriptor name="itemIdentifier" column="PMT_RQST_ITM_ID" jdbc-type="INTEGER" primarykey="true" index="true" autoincrement="true" sequence-name="PMT_RQST_ITM_ID"/>
++    <field-descriptor name="objectId" column="OBJ_ID" jdbc-type="VARCHAR" index="true"/>
++    <field-descriptor name="versionNumber" column="VER_NBR" jdbc-type="BIGINT" locking="true"/>
++    <field-descriptor name="purapDocumentIdentifier" column="PMT_RQST_ID" jdbc-type="INTEGER" index="true"/>
++    <field-descriptor name="itemLineNumber" column="ITM_LN_NBR" jdbc-type="INTEGER" index="true"/>
++    <field-descriptor name="itemTypeCode" column="ITM_TYP_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="itemDescription" column="ITM_DESC" jdbc-type="VARCHAR"/>
++    <field-descriptor name="itemCatalogNumber" column="ITM_CATLG_NBR" jdbc-type="VARCHAR"/>
++    <field-descriptor name="itemAuxiliaryPartIdentifier" column="ITM_AUX_PART_ID" jdbc-type="VARCHAR"/>
++    <field-descriptor name="itemUnitOfMeasureCode" column="ITM_UOM_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="itemQuantity" column="ITM_INV_QTY" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++    <field-descriptor name="itemUnitPrice" column="ITM_UNIT_PRC" jdbc-type="DECIMAL"/>
++    <field-descriptor name="purchaseOrderItemUnitPrice" column="PO_ITM_UNIT_PRC" jdbc-type="DECIMAL"/>
++    <field-descriptor name="extendedPrice" column="ITM_EXTND_PRC" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++    <field-descriptor name="itemAssignedToTradeInIndicator" column="ITM_ASND_TO_TRADE_IN_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="itemOutstandingInvoiceQuantity" column="ITM_OSTND_INV_QTY" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++    <field-descriptor name="itemOutstandingInvoiceAmount" column="ITM_OSTND_INV_AMT" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion" /> 
++    <field-descriptor name="itemSalesTaxAmount" column="ITM_TAX_AMT" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++    <field-descriptor name="capitalAssetTransactionTypeCode" column="CPTL_AST_TRN_TYP_CD" jdbc-type="VARCHAR"/>    
++    <reference-descriptor name="purapDocument" class-ref="edu.arizona.kfs.module.purap.document.UaPaymentRequestDocument" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="purapDocumentIdentifier" />
++    </reference-descriptor>
++    <reference-descriptor name="itemType" class-ref="org.kuali.kfs.module.purap.businessobject.ItemType" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="itemTypeCode" />
++    </reference-descriptor>
++    <!-- the account deletion is handled within our buildDeletionAwareLists, setting auto-delete=none as a workaround to Optimistic Locking Exception for now -->
++    <collection-descriptor name="sourceAccountingLines" proxy="true" element-class-ref="org.kuali.kfs.module.purap.businessobject.PaymentRequestAccount" collection-class="org.apache.ojb.broker.util.collections.ManageableArrayList" auto-retrieve="true" auto-update="object" auto-delete="none">
++        <orderby name="accountNumber" sort="ASC" />
++        <orderby name="financialObjectCode" sort="ASC" />
++        <inverse-foreignkey field-ref="itemIdentifier" />
++    </collection-descriptor>
++    <collection-descriptor name="useTaxItems" proxy="true" element-class-ref="org.kuali.kfs.module.purap.businessobject.PaymentRequestItemUseTax" collection-class="org.apache.ojb.broker.util.collections.ManageableArrayList" auto-retrieve="true" auto-update="object" auto-delete="object">
++        <inverse-foreignkey field-ref="itemIdentifier" />
++    </collection-descriptor>        
++</class-descriptor>
++
++
++<class-descriptor class="org.kuali.kfs.module.purap.businessobject.CreditMemoItem" table="AP_CRDT_MEMO_ITM_T">
++    <field-descriptor name="itemIdentifier" column="CRDT_MEMO_ITM_ID" jdbc-type="INTEGER" primarykey="true" index="true" autoincrement="true" sequence-name="CRDT_MEMO_ITM_ID"/>
++    <field-descriptor name="objectId" column="OBJ_ID" jdbc-type="VARCHAR" index="true"/>
++    <field-descriptor name="versionNumber" column="VER_NBR" jdbc-type="BIGINT" locking="true"/>
++    <field-descriptor name="purapDocumentIdentifier" column="CRDT_MEMO_ID" jdbc-type="INTEGER" index="true"/>
++    <field-descriptor name="itemLineNumber" column="ITM_LN_NBR" jdbc-type="INTEGER" index="true"/>
++    <field-descriptor name="itemTypeCode" column="ITM_TYP_CD" jdbc-type="VARCHAR"/>
++    <field-descriptor name="itemQuantity" column="ITM_CRDT_QTY" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++    <field-descriptor name="itemUnitPrice" column="ITM_UNT_PRC" jdbc-type="DECIMAL"/>
++    <field-descriptor name="extendedPrice" column="ITM_EXTND_PRC" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++    <field-descriptor name="itemAssignedToTradeInIndicator" column="ITM_ASND_TO_TRADE_IN_IND" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion"/>
++    <field-descriptor name="itemDescription" column="ITM_DESC" jdbc-type="VARCHAR"/>
++    <field-descriptor name="poInvoicedTotalQuantity" column="PO_INV_TOT_QTY" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++    <field-descriptor name="poUnitPrice" column="PO_UNT_PRC" jdbc-type="DECIMAL"/>
++    <field-descriptor name="poTotalAmount" column="PO_EXTND_PRC" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++    <field-descriptor name="preqInvoicedTotalQuantity" column="PMT_RQST_INV_TOT_QTY" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++    <field-descriptor name="preqUnitPrice" column="PMT_RQST_UNT_PRC" jdbc-type="DECIMAL"/>
++    <field-descriptor name="itemSalesTaxAmount" column="ITM_TAX_AMT" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++    <field-descriptor name="preqTotalAmount" column="PMT_RQST_EXTND_PRC" jdbc-type="DECIMAL" conversion="org.kuali.rice.kns.util.OjbKualiDecimalFieldConversion"/>
++	<field-descriptor name="capitalAssetTransactionTypeCode" column="CPTL_AST_TRN_TYP_CD" jdbc-type="VARCHAR"/>    
++    <reference-descriptor name="itemType" class-ref="org.kuali.kfs.module.purap.businessobject.ItemType" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="itemTypeCode" />
++    </reference-descriptor>
++    <!-- the account deletion is handled within our buildDeletionAwareLists, setting auto-delete=none as a workaround to Optimistic Locking Exception for now -->
++    <collection-descriptor name="sourceAccountingLines" proxy="true" element-class-ref="org.kuali.kfs.module.purap.businessobject.CreditMemoAccount" collection-class="org.apache.ojb.broker.util.collections.ManageableArrayList" auto-retrieve="true" auto-update="object" auto-delete="none">
++        <orderby name="accountNumber" sort="ASC" />
++        <orderby name="financialObjectCode" sort="ASC" />
++        <inverse-foreignkey field-ref="itemIdentifier" />
++    </collection-descriptor>
++    <collection-descriptor name="useTaxItems" proxy="true" element-class-ref="org.kuali.kfs.module.purap.businessobject.CreditMemoItemUseTax" collection-class="org.apache.ojb.broker.util.collections.ManageableArrayList" auto-retrieve="true" auto-update="object" auto-delete="object">
++        <inverse-foreignkey field-ref="itemIdentifier" />
++    </collection-descriptor>        
++    <reference-descriptor name="purapDocument" class-ref="edu.arizona.kfs.module.purap.document.UaVendorCreditMemoDocument" auto-retrieve="true" auto-update="none" auto-delete="none" proxy="true" >
++        <foreignkey field-ref="purapDocumentIdentifier" />
++	</reference-descriptor>    
++</class-descriptor>
++
++
+ </descriptor-repository>
+Index: financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag
+===================================================================
+--- financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag	(revision 7355)
++++ financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag	(revision 7356)
+@@ -122,16 +122,46 @@
+ 			<tr>
+ 	            <sys:bankLabel align="right"/>
+                 <sys:bankControl property="document.bankCode" objectProperty="document.bank" readOnly="${not fullEntryMode}"/>
+-                <th align=right valign=middle class="bord-l-b">
+-                    <div align="right">&nbsp;</div>
+-                </th>
+-                <td align=left valign=middle class="datacell">
+-                    &nbsp;
+-                </td>
+-                
+-            </tr>
+-            
++<%-- MOD-PA2000-01: Baseline Modification Start --%>
++                    <th align=right valign=middle class="bord-l-b">
++                        <div align="right"><kul:htmlAttributeLabel attributeEntry="${documentAttributes.paymentMethodCode}" /></div>
++                    </th>
++                    <td align=left valign=middle class="datacell">
++                        <kul:htmlControlAttribute 
++                        	attributeEntry="${documentAttributes.paymentMethodCode}" property="document.paymentMethodCode" 
++                        	readOnly="${not fullEntryMode}"
++                        	onchange="paymentMethodChanged( this.value );" />
++                    </td>
++<%-- MOD-PA2000-01: Baseline Modification End --%>
++            </tr>            
+ 		</table> 
+     </div>
++<%-- MOD-PA2000-01: Baseline Modification Start --%>
++<c:if test="${fullEntryMode}">
++	<script type="text/javascript" src="dwr/interface/UaPaymentMethodGeneralLedgerPendingEntryService.js"></script>
++	<script type="text/javascript">
++		function paymentMethodChanged(selectedMethod) {
++		
++			if ( selectedMethod != "" ) {
++				var dwrReply = {
++					callback:function(data) {
++					if ( data != null && typeof data == 'object' ) {
++							setRecipientValue( "document.bankCode", data.bankCode );
++							setRecipientValue( "document.bank", data.bankName );
++						} else {
++							setRecipientValue( "document.bankCode", "" );
++							setRecipientValue( "document.bank", "" );
++						}
++					},
++					errorHandler:function( errorMessage ) { 
++						window.status = errorMessage;
++					}
++				};
++				UaPaymentMethodGeneralLedgerPendingEntryService.getBankForPaymentMethod( selectedMethod, dwrReply );
++			}
++		}	
++	</script>
++</c:if>
++<%-- MOD-PA2000-01: Baseline Modification End --%>
+     
+ </kul:tab>
+Index: financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/paymentRequestInvoiceInfo.tag
+===================================================================
+--- financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/paymentRequestInvoiceInfo.tag	(revision 7355)
++++ financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/paymentRequestInvoiceInfo.tag	(revision 7356)
+@@ -166,14 +166,47 @@
+ 			<tr>
+ 	                <sys:bankLabel align="right"/>
+                     <sys:bankControl property="document.bankCode" objectProperty="document.bank" readOnly="${not (fullEntryMode or editPreExtract)}"/>
++<%-- MOD-PA2000-01: Baseline Modification Start --%>
+                     <th align=right valign=middle class="bord-l-b">
+-                        <div align="right">&nbsp;</div>
++                        <div align="right"><kul:htmlAttributeLabel attributeEntry="${documentAttributes.paymentMethodCode}" /></div>
+                     </th>
+                     <td align=left valign=middle class="datacell">
+-                        &nbsp;
++                        <kul:htmlControlAttribute 
++                        	attributeEntry="${documentAttributes.paymentMethodCode}" property="document.paymentMethodCode" 
++                        	readOnly="${not (fullEntryMode or editPreExtract)}" tabindexOverride="${tabindexOverrideBase + 4}"
++                        	onchange="paymentMethodChanged( this.value );" />
+                     </td>
++<%-- MOD-PA2000-01: Baseline Modification End --%>
+                 
+             </tr>
++
++<%-- MOD-PA2000-01: Baseline Modification Start --%>
++<c:if test="${(fullEntryMode or editPreExtract)}">
++	<script type="text/javascript" src="dwr/interface/UaPaymentMethodGeneralLedgerPendingEntryService.js"></script>
++	<script type="text/javascript">
++		function paymentMethodChanged(selectedMethod) {
++		
++			if ( selectedMethod != "" ) {
++				var dwrReply = {
++					callback:function(data) {
++					if ( data != null && typeof data == 'object' ) {
++							setRecipientValue( "document.bankCode", data.bankCode );
++							setRecipientValue( "document.bank", data.bankName );
++						} else {
++							setRecipientValue( "document.bankCode", "" );
++							setRecipientValue( "document.bank", "" );
++						}
++					},
++					errorHandler:function( errorMessage ) { 
++						window.status = errorMessage;
++					}
++				};
++				UaPaymentMethodGeneralLedgerPendingEntryService.getBankForPaymentMethod( selectedMethod, dwrReply );
++			}
++		}	
++	</script>
++</c:if>
++<%-- MOD-PA2000-01: Baseline Modification End --%>
+             
+ 		</table> 
+ 		

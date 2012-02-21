@@ -1,0 +1,101 @@
+Index: financial-system/kfs/trunk/work/src/org/kuali/kfs/sys/document/validation/impl/BankCodeValidation.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/org/kuali/kfs/sys/document/validation/impl/BankCodeValidation.java	(revision 7515)
++++ financial-system/kfs/trunk/work/src/org/kuali/kfs/sys/document/validation/impl/BankCodeValidation.java	(revision 7516)
+@@ -37,6 +37,8 @@
+  */
+ public class BankCodeValidation {
+ 
++    protected static final String WARNING_BANK_NOT_REQUIRED = "warning.document.disbursementvoucher.bank.not.required";
++    protected static final String ERROR_BANK_REQUIRED_PER_PAYMENT_METHOD = "error.document.disbursementvoucher.bank.required";
+     private static UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService;
+ 
+     /**
+@@ -118,13 +120,13 @@
+         if ( bankCodeNeedsPopulation && StringUtils.isBlank( bankCode ) ) {
+             // error
+             if ( addMessages ) {
+-                GlobalVariables.getMessageMap().putError( bankCodeProperty, "error.document.disbursementvoucher.bank.required", paymentMethodCode);
++                GlobalVariables.getMessageMap().putError( bankCodeProperty, ERROR_BANK_REQUIRED_PER_PAYMENT_METHOD, paymentMethodCode);
+             }
+             return false;
+         } else if ( !bankCodeNeedsPopulation && StringUtils.isNotBlank( bankCode ) ) {
+             // if the bank code on the document is not blank but no bank code is specified for the payment method, blank and warn the user.
+             if ( addMessages ) {
+-                GlobalVariables.getMessageMap().putWarning( bankCodeProperty, "warning.document.disbursementvoucher.bank.not.required", paymentMethodCode);
++                GlobalVariables.getMessageMap().putWarning( bankCodeProperty, WARNING_BANK_NOT_REQUIRED, paymentMethodCode);
+             }
+         }
+         return true;
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java	(revision 7515)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java	(revision 7516)
+@@ -302,8 +302,8 @@
+                 return false;
+             }
+             apOffsetEntry.setFinancialObjectTypeCode(objectCode.getFinancialObjectTypeCode());       
+-            apOffsetEntry.setTransactionLedgerEntryAmount(offsetAmount);
+-            apOffsetEntry.setTransactionDebitCreditCode(KFSConstants.GL_CREDIT_CODE);
++            apOffsetEntry.setTransactionLedgerEntryAmount(offsetAmount.abs());
++            apOffsetEntry.setTransactionDebitCreditCode(offsetAmount.isNegative()?KFSConstants.GL_DEBIT_CODE:KFSConstants.GL_CREDIT_CODE);
+             apOffsetEntry.setFinancialBalanceTypeCode(KFSConstants.BALANCE_TYPE_ACTUAL);
+ 
+             document.addPendingEntry(apOffsetEntry);
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java	(revision 7515)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java	(revision 7516)
+@@ -42,7 +42,7 @@
+         // check if one of the extended UA documents, if so, take the payment method into account, otherwise, revert to baseline behavior
+         boolean isValid = true;
+         if ( apDocument instanceof UaPaymentRequestDocument ) {
+-            isValid = BankCodeValidation.validate(apDocument.getBankCode(), ((UaPaymentRequestDocument)apDocument).getPaymentMethodCode(), "document." + PurapPropertyConstants.BANK_CODE, false, true);            
++            isValid = BankCodeValidation.validate(apDocument.getBankCode(), "document." + PurapPropertyConstants.BANK_CODE, ((UaPaymentRequestDocument)apDocument).getPaymentMethodCode(), false, true);            
+             if ( isValid ) {
+                 // clear out the bank code on the document if not needed (per the message set by the call above)
+                 if ( StringUtils.isNotBlank(apDocument.getBankCode())
+@@ -52,7 +52,7 @@
+                 }
+             }
+         } else if ( apDocument instanceof UaVendorCreditMemoDocument ) {
+-            isValid = BankCodeValidation.validate(apDocument.getBankCode(), ((UaVendorCreditMemoDocument)apDocument).getPaymentMethodCode(), "document." + PurapPropertyConstants.BANK_CODE, false, true);                        
++            isValid = BankCodeValidation.validate(apDocument.getBankCode(), "document." + PurapPropertyConstants.BANK_CODE,  ((UaVendorCreditMemoDocument)apDocument).getPaymentMethodCode(), false, true);                        
+             if ( isValid ) {
+                 // clear out the bank code on the document if not needed (per the message set by the call above)
+                 if ( StringUtils.isNotBlank(apDocument.getBankCode())
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/VendorCreditMemoPaymentMethodCodeValidation.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/VendorCreditMemoPaymentMethodCodeValidation.java	(revision 7515)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/VendorCreditMemoPaymentMethodCodeValidation.java	(revision 7516)
+@@ -32,6 +32,8 @@
+  */
+ public class VendorCreditMemoPaymentMethodCodeValidation extends GenericValidation {
+ 
++    protected static final String ERROR_PAYMENTMETHODCODE_MUSTMATCHPREQ = "error.document.creditmemo.paymentmethodcode.mustmatchpreq";
++
+     public boolean validate(AttributedDocumentEvent event) {
+         if ( event.getDocument() instanceof UaVendorCreditMemoDocument ) {
+             UaVendorCreditMemoDocument doc = (UaVendorCreditMemoDocument) event.getDocument();
+@@ -44,7 +46,7 @@
+                     // check if the PMC on this document is the same
+                     String preqPaymentMethodCode = ((UaPaymentRequestDocument)preqDoc).getPaymentMethodCode();
+                     if ( !StringUtils.equals(preqPaymentMethodCode, doc.getPaymentMethodCode() ) ) {
+-                        GlobalVariables.getMessageMap().putError("paymentMethodCode", "error.document.creditmemo.paymentmethodcode.mustmatchpreq", preqPaymentMethodCode);
++                        GlobalVariables.getMessageMap().putError("document.paymentMethodCode", ERROR_PAYMENTMETHODCODE_MUSTMATCHPREQ, preqPaymentMethodCode);
+                         return false;
+                     }
+                 }
+Index: financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag
+===================================================================
+--- financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag	(revision 7515)
++++ financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag	(revision 7516)
+@@ -22,7 +22,7 @@
+ <c:set var="fullDocumentEntryCompleted" value="${not empty KualiForm.editingMode['fullDocumentEntryCompleted']}" />
+ <c:set var="purchaseOrderAttributes" value="${DataDictionary.PurchaseOrderDocument.attributes}" />
+ 
+-<kul:tab tabTitle="Credit Memo Info" defaultOpen="true">
++<kul:tab tabTitle="Credit Memo Info" defaultOpen="true" tabErrorKey="document.bankCode,document.paymentMethodCode">
+    
+     <div class="tab-container" align=center>
+             <h3>Credit Memo Info</h3>

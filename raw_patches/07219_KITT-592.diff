@@ -1,0 +1,13 @@
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/web/struts/DisbursementVoucherForm.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/web/struts/DisbursementVoucherForm.java	(revision 7218)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/web/struts/DisbursementVoucherForm.java	(revision 7219)
+@@ -36,7 +36,7 @@
+     public DisbursementVoucherForm() {
+         super();
+         try {
+-            setDocument( (DisbursementVoucherDocument)SpringContext.getBean(DataDictionaryService.class).getDocumentClassByTypeName(getDocTypeName()).newInstance() );
++            setDocument( (DisbursementVoucherDocument)SpringContext.getBean(DataDictionaryService.class).getDocumentClassByTypeName(getDefaultDocumentTypeName()).newInstance() );
+         }
+         catch (Exception ex) {
+             ex.printStackTrace();

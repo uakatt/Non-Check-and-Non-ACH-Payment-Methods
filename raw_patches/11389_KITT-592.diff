@@ -1,0 +1,42 @@
+Index: financial-system/kfs-cfg-dbs/branches/3.0-576/latest/dat/FP_PMT_MTHD_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/branches/3.0-576/latest/dat/FP_PMT_MTHD_T.xml	(revision 11388)
++++ financial-system/kfs-cfg-dbs/branches/3.0-576/latest/dat/FP_PMT_MTHD_T.xml	(revision 11389)
+@@ -1,37 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+- 
+-<databaseChangeLog
+-  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+-  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+-         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+- 
+-  <changeSet id="20100204jk-2" author="jhkeller">
+-    <!-- Initial data for the payment method table -->
+-    <sql splitStatements="false" endDelimiter=""><![CDATA[ 
+-BEGIN		
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('C', 'C', 1, 'Check', '0002', 'N', 'Y', 'N', 'Y', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('H', 'H', 1, 'ACH', '0013', 'N', 'Y', 'N', 'Y', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('F', 'F', 1, 'Foreign Draft', '0001', 'Y', 'N', 'N', 'N', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('W', 'W', 1, 'Wire Charge', '0001', 'Y', 'N', 'N', 'N', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('A', 'A', 1, 'AP Credit Card', NULL, 'N', 'N', 'N', 'Y', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('B', 'B', 1, 'Bookstore', NULL, 'N', 'N', 'Y', 'N', 'Y');
+-	
+-	INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
+-	  VALUES('S', 'S', 1, 'AzBW Store', NULL, 'N', 'N', 'Y', 'N', 'Y');	
+-END;
+-]]>
+-    </sql>
+-  </changeSet>
+-</databaseChangeLog>

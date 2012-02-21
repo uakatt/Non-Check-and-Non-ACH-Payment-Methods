@@ -1,0 +1,151 @@
+Index: financial-system/kfs-cfg-dbs/trunk/update.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/update.xml	(revision 7976)
++++ financial-system/kfs-cfg-dbs/trunk/update.xml	(revision 7977)
+@@ -2,4 +2,5 @@
+ <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
++	<include file="update/KITT-592-3.xml"/>
+ </databaseChangeLog>
+\ No newline at end of file
+Index: financial-system/kfs-cfg-dbs/trunk/update/KITT-592-3.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/update/KITT-592-3.xml	(revision 0)
++++ financial-system/kfs-cfg-dbs/trunk/update/KITT-592-3.xml	(revision 7977)
+@@ -0,0 +1,135 @@
++<?xml version="1.0" encoding="UTF-8"?>
++ 
++<databaseChangeLog
++  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
++  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
++         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
++
++  <include file="latest/tab/FP_PMT_MTHD_CHART_T.xml" />
++ 
++  <changeSet id="20100218-1" author="jhkeller">
++    <addColumn tableName="AP_PMT_RQST_T">
++    	<column name="PMT_MTHD_CD" type="CHAR(1)" defaultValue="P" />    	
++    </addColumn>
++    <addColumn tableName="AP_CRDT_MEMO_T">
++    	<column name="PMT_MTHD_CD" type="CHAR(1)" defaultValue="P" />    	
++    </addColumn>
++  </changeSet>
++
++  <include file="latest/dat/FP_OFFSET_DEFN_T.xml" />
++  <include file="latest/dat/FP_PMT_MTHD_T.xml" />
++  <include file="latest/dat/FP_PMT_MTHD_CHART_T.xml" />
++
++  <changeSet author="jhkeller" id="20100204jk-1" runAlways="true">
++    <sql splitStatements="false" endDelimiter=""><![CDATA[
++    	DECLARE
++    		PaymentMethodParent NUMBER;
++    		LedgerOnlyParent    NUMBER;
++    	BEGIN
++    		SELECT doc_typ_id
++    			INTO PaymentMethodParent
++    			FROM krew_doc_typ_t
++    			WHERE doc_typ_nm = 'FPSM'
++    			  AND cur_ind = 1;
++    		SELECT doc_typ_id
++    			INTO LedgerOnlyParent
++    			FROM krew_doc_typ_t
++    			WHERE doc_typ_nm = 'FSLO'
++    			  AND cur_ind = 1;
++			INSERT INTO krew_doc_typ_t(DOC_TYP_ID, PARNT_ID, DOC_TYP_NM, DOC_TYP_VER_NBR, ACTV_IND, CUR_IND, LBL, RTE_VER_NBR, VER_NBR, OBJ_ID)
++			  VALUES(krew_doc_hdr_s.NEXTVAL, PaymentMethodParent, 'PMCD', 0, 1, 1, 'Payment Method', '2', 1, SYS_GUID());
++			INSERT INTO krew_doc_typ_t(DOC_TYP_ID, PARNT_ID, DOC_TYP_NM, DOC_TYP_VER_NBR, ACTV_IND, CUR_IND, LBL, RTE_VER_NBR, VER_NBR, OBJ_ID)
++			  VALUES(krew_doc_hdr_s.NEXTVAL, LedgerOnlyParent, 'DVNC', 0, 1, 1, 'Disbursement Voucher - Non Check', '2', 1, SYS_GUID());
++			INSERT INTO krew_doc_typ_t(DOC_TYP_ID, PARNT_ID, DOC_TYP_NM, DOC_TYP_VER_NBR, ACTV_IND, CUR_IND, LBL, RTE_VER_NBR, VER_NBR, OBJ_ID)
++			  VALUES(krew_doc_hdr_s.NEXTVAL, LedgerOnlyParent, 'PRNC', 0, 1, 1, 'Payment Request - Non Check', '2', 1, SYS_GUID());
++			INSERT INTO krew_doc_typ_t(DOC_TYP_ID, PARNT_ID, DOC_TYP_NM, DOC_TYP_VER_NBR, ACTV_IND, CUR_IND, LBL, RTE_VER_NBR, VER_NBR, OBJ_ID)
++			  VALUES(krew_doc_hdr_s.NEXTVAL, LedgerOnlyParent, 'CMNC', 0, 1, 1, 'Credit Memo - Non Check', '2', 1, SYS_GUID());
++			COMMIT;
++		END;   
++]]></sql>
++  </changeSet>
++  <changeSet author="jhkeller" id="20100210jk-5" runAlways="true">
++    <sql splitStatements="false" endDelimiter=""><![CDATA[
++DECLARE
++    PROCEDURE update_dt_acct_orghier( DocTypeCode IN VARCHAR2 ) IS
++        CurrDocTypeId NUMBER;
++        NextDocTypeId NUMBER;
++        RouteNodeId1 NUMBER;
++        RouteNodeId2 NUMBER;
++        RouteNodeId3 NUMBER;
++    BEGIN
++        -- document type
++        SELECT doc_typ_id INTO CurrDocTypeId FROM KREW_DOC_TYP_T WHERE DOC_TYP_NM = DocTypeCode AND CUR_IND = 1;
++        SELECT krew_doc_hdr_s.NEXTVAL INTO NextDocTypeId FROM dual;
++        INSERT INTO KREW_DOC_TYP_T(
++            DOC_TYP_ID, PARNT_ID, DOC_TYP_NM, DOC_TYP_VER_NBR, ACTV_IND, CUR_IND, LBL, PREV_DOC_TYP_VER_NBR, DOC_HDR_ID, DOC_TYP_DESC, DOC_HDLR_URL, POST_PRCSR, JNDI_URL, BLNKT_APPR_PLCY, ADV_DOC_SRCH_URL, CSTM_ACTN_LIST_ATTRIB_CLS_NM, CSTM_ACTN_EMAIL_ATTRIB_CLS_NM, CSTM_DOC_NTE_ATTRIB_CLS_NM, RTE_VER_NBR, NOTIFY_ADDR, SVC_NMSPC, EMAIL_XSL, SEC_XML, VER_NBR, BLNKT_APPR_GRP_ID, RPT_GRP_ID, GRP_ID, HELP_DEF_URL, OBJ_ID )
++            (
++                SELECT NextDocTypeId, PARNT_ID, DOC_TYP_NM, DOC_TYP_VER_NBR + 1, ACTV_IND, CUR_IND, LBL, CurrDocTypeId, NULL, DOC_TYP_DESC, DOC_HDLR_URL, POST_PRCSR, JNDI_URL, BLNKT_APPR_PLCY, ADV_DOC_SRCH_URL, CSTM_ACTN_LIST_ATTRIB_CLS_NM, CSTM_ACTN_EMAIL_ATTRIB_CLS_NM, CSTM_DOC_NTE_ATTRIB_CLS_NM, RTE_VER_NBR, NOTIFY_ADDR, SVC_NMSPC, EMAIL_XSL, SEC_XML, 1, BLNKT_APPR_GRP_ID, RPT_GRP_ID, GRP_ID, HELP_DEF_URL, SYS_GUID() 
++                    FROM KREW_DOC_TYP_T
++                    WHERE DOC_TYP_ID = CurrDocTypeId
++            );
++        UPDATE KREW_DOC_TYP_T
++           SET CUR_IND = 0
++         WHERE DOC_TYP_ID = CurrDocTypeId;
++        -- Route nodes
++        SELECT krew_rte_node_s.NEXTVAL INTO RouteNodeId1 FROM dual;
++        SELECT krew_rte_node_s.NEXTVAL INTO RouteNodeId2 FROM dual;
++        SELECT krew_rte_node_s.NEXTVAL INTO RouteNodeId3 FROM dual;
++        INSERT INTO KREW_RTE_NODE_T(RTE_NODE_ID, DOC_TYP_ID, NM, TYP, 
++                RTE_MTHD_NM, RTE_MTHD_CD, FNL_APRVR_IND, MNDTRY_RTE_IND, 
++                ACTVN_TYP, BRCH_PROTO_ID, VER_NBR, CONTENT_FRAGMENT, GRP_ID) 
++            VALUES(RouteNodeId1, NextDocTypeId, 'AdHoc', 'org.kuali.rice.kew.engine.node.InitialNode', 
++                NULL, NULL, 0, 0, 
++                'S', NULL, 1, NULL, NULL);
++        INSERT INTO KREW_RTE_NODE_T(RTE_NODE_ID, DOC_TYP_ID, NM, TYP, 
++                RTE_MTHD_NM, RTE_MTHD_CD, FNL_APRVR_IND, MNDTRY_RTE_IND, 
++                ACTVN_TYP, BRCH_PROTO_ID, VER_NBR, CONTENT_FRAGMENT, GRP_ID) 
++            VALUES(RouteNodeId2, NextDocTypeId, 'Account', 'org.kuali.rice.kew.engine.node.RoleNode', 
++                'org.kuali.rice.kew.role.RoleRouteModule', 'RM', 0, 0, 
++                'P', NULL, 1, NULL, NULL);
++        INSERT INTO KREW_RTE_NODE_T(RTE_NODE_ID, DOC_TYP_ID, NM, TYP, 
++                RTE_MTHD_NM, RTE_MTHD_CD, FNL_APRVR_IND, MNDTRY_RTE_IND, 
++                ACTVN_TYP, BRCH_PROTO_ID, VER_NBR, CONTENT_FRAGMENT, GRP_ID) 
++            VALUES(RouteNodeId3, NextDocTypeId, 'OrganizationHierarchy', 'org.kuali.rice.kew.engine.node.RoleNode', 
++                'org.kuali.rice.kew.role.RoleRouteModule', 'RM', 0, 0, 
++                'P', NULL, 1, NULL, NULL);
++        -- Link the nodes
++        INSERT INTO KREW_RTE_NODE_LNK_T(FROM_RTE_NODE_ID, TO_RTE_NODE_ID) 
++            VALUES(RouteNodeId1, RouteNodeId2);
++        INSERT INTO KREW_RTE_NODE_LNK_T(FROM_RTE_NODE_ID, TO_RTE_NODE_ID) 
++            VALUES(RouteNodeId2, RouteNodeId3);
++        -- main routing branch
++        INSERT INTO KREW_DOC_TYP_PROC_T(DOC_TYP_PROC_ID, DOC_TYP_ID, INIT_RTE_NODE_ID, NM, INIT_IND, VER_NBR) 
++            VALUES( krew_rte_node_s.NEXTVAL, NextDocTypeId, RouteNodeId1, 'PRIMARY', 1, 1);
++        -- Add the route node configuration parameters
++        INSERT INTO KREW_RTE_NODE_CFG_PARM_T(RTE_NODE_CFG_PARM_ID, RTE_NODE_ID, KEY_CD, VAL) 
++            VALUES(krew_rte_node_cfg_parm_s.NEXTVAL, RouteNodeId1, 'contentFragment', '<start name="AdHoc"/>');
++        INSERT INTO KREW_RTE_NODE_CFG_PARM_T(RTE_NODE_CFG_PARM_ID, RTE_NODE_ID, KEY_CD, VAL) 
++            VALUES(krew_rte_node_cfg_parm_s.NEXTVAL, RouteNodeId1, 'ruleSelector', 'Template');
++
++        INSERT INTO KREW_RTE_NODE_CFG_PARM_T(RTE_NODE_CFG_PARM_ID, RTE_NODE_ID, KEY_CD, VAL) 
++            VALUES(krew_rte_node_cfg_parm_s.NEXTVAL, RouteNodeId2, 'contentFragment', '<role name="Account"><qualifierResolverClass>org.kuali.rice.kns.workflow.attribute.DataDictionaryQualifierResolver</qualifierResolverClass><activationType>P</activationType></role>');
++        INSERT INTO KREW_RTE_NODE_CFG_PARM_T(RTE_NODE_CFG_PARM_ID, RTE_NODE_ID, KEY_CD, VAL) 
++            VALUES(krew_rte_node_cfg_parm_s.NEXTVAL, RouteNodeId2, 'ruleSelector', 'Template');
++        INSERT INTO KREW_RTE_NODE_CFG_PARM_T(RTE_NODE_CFG_PARM_ID, RTE_NODE_ID, KEY_CD, VAL) 
++            VALUES(krew_rte_node_cfg_parm_s.NEXTVAL, RouteNodeId2, 'activationType', 'P');
++        INSERT INTO KREW_RTE_NODE_CFG_PARM_T(RTE_NODE_CFG_PARM_ID, RTE_NODE_ID, KEY_CD, VAL) 
++            VALUES(krew_rte_node_cfg_parm_s.NEXTVAL, RouteNodeId2, 'qualifierResolverClass', 'org.kuali.rice.kns.workflow.attribute.DataDictionaryQualifierResolver');
++
++        INSERT INTO KREW_RTE_NODE_CFG_PARM_T(RTE_NODE_CFG_PARM_ID, RTE_NODE_ID, KEY_CD, VAL) 
++            VALUES(krew_rte_node_cfg_parm_s.NEXTVAL, RouteNodeId3, 'contentFragment', '<role name="OrganizationHierarchy"><qualifierResolverClass>org.kuali.rice.kns.workflow.attribute.DataDictionaryQualifierResolver</qualifierResolverClass><activationType>P</activationType></role>');
++        INSERT INTO KREW_RTE_NODE_CFG_PARM_T(RTE_NODE_CFG_PARM_ID, RTE_NODE_ID, KEY_CD, VAL) 
++            VALUES(krew_rte_node_cfg_parm_s.NEXTVAL, RouteNodeId3, 'ruleSelector', 'Template');
++        INSERT INTO KREW_RTE_NODE_CFG_PARM_T(RTE_NODE_CFG_PARM_ID, RTE_NODE_ID, KEY_CD, VAL) 
++            VALUES(krew_rte_node_cfg_parm_s.NEXTVAL, RouteNodeId3, 'activationType', 'P');
++        INSERT INTO KREW_RTE_NODE_CFG_PARM_T(RTE_NODE_CFG_PARM_ID, RTE_NODE_ID, KEY_CD, VAL) 
++            VALUES(krew_rte_node_cfg_parm_s.NEXTVAL, RouteNodeId3, 'qualifierResolverClass', 'org.kuali.rice.kns.workflow.attribute.DataDictionaryQualifierResolver');
++    END;
++BEGIN
++    update_dt_acct_orghier( 'ALOC' );
++    update_dt_acct_orghier( 'CASM' );
++END;
++]]></sql>
++  </changeSet>
++</databaseChangeLog>

@@ -1,0 +1,51 @@
+Index: financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml	(revision 10226)
++++ financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml	(revision 10227)
+@@ -181,5 +181,45 @@
+ 			<dropColumn tableName="PUR_VNDR_DTL_EXT_T" columnName="DFLT_B2B_PMT_MTHD_CD" />
+ 		</rollback>
+     </changeSet>
++	<changeSet author="jhkeller" id="KITT-592-GL_OFFSET_DEFN-DATA-DVNC">
++		<sql>
++INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
++(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'DVNC', FIN_COA_CD, SYS_GUID(), 1
++	FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF'
++)
++		</sql>
++		<rollback>
++			<sql>
++				DELETE FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVNC'
++			</sql>
++		</rollback>
++    </changeSet>
++	<changeSet author="jhkeller" id="KITT-592-GL_OFFSET_DEFN-DATA-PRNC">
++		<sql>
++INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
++(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'PRNC', FIN_COA_CD, SYS_GUID(), 1
++	FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF'
++)
++		</sql>
++		<rollback>
++			<sql>
++				DELETE FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'PRNC'
++			</sql>
++		</rollback>
++    </changeSet>
++	<changeSet author="jhkeller" id="KITT-592-GL_OFFSET_DEFN-DATA-CMNC">
++		<sql>
++INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
++(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'CMNC', FIN_COA_CD, SYS_GUID(), 1
++	FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF'
++)
++		</sql>
++		<rollback>
++			<sql>
++				DELETE FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'CMNC'
++			</sql>
++		</rollback>
++    </changeSet>
++    
+ </databaseChangeLog>   
+       
+\ No newline at end of file

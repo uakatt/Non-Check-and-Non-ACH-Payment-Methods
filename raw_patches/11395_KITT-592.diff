@@ -1,0 +1,48 @@
+Index: financial-system/kfs-cfg-dbs/branches/3.0-576/latest/tab/FP_PMT_MTHD_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/branches/3.0-576/latest/tab/FP_PMT_MTHD_T.xml	(revision 11394)
++++ financial-system/kfs-cfg-dbs/branches/3.0-576/latest/tab/FP_PMT_MTHD_T.xml	(revision 11395)
+@@ -1,42 +0,0 @@
+-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+-    <changeSet  author="jhkeller" id="20100210jk-1">
+-    <changeSet author="jhkeller" id="KITT-592-FP_PMT_MTHD_T"> 
+-        <createTable tableName="FP_PMT_MTHD_T"> 
+-            <column name="PMT_MTHD_CD" type="CHAR(1)"> 
+-                <constraints nullable="false" primaryKey="true" 
+-                    primaryKeyName="FP_PMT_MTHD_TP1" /> 
+-            </column> 
+-            <column name="OBJ_ID" type="VARCHAR2(36)"> 
+-                <constraints nullable="false" unique="true" 
+-                    uniqueConstraintName="FP_PMT_MTHD_TC0" /> 
+-            </column> 
+-            <column name="VER_NBR" type="NUMBER(8,0)"> 
+-                <constraints nullable="false" /> 
+-            </column> 
+-            <column name="PMT_MTHD_NM" type="VARCHAR2(40)" /> 
+-            <column name="BNK_CD" type="VARCHAR2(4)" /> 
+-            <column name="FEE_IND" type="CHAR(1)" defaultValue="N"> 
+-                <constraints nullable="false" /> 
+-            </column> 
+-            <column name="PDP_IND" type="CHAR(1)" defaultValue="N"> 
+-                <constraints nullable="false" /> 
+-            </column> 
+-            <column name="INTERDEPT_IND" type="CHAR(1)" defaultValue="N"> 
+-                <constraints nullable="false" /> 
+-            </column> 
+-            <column name="CLR_ACCT_IND" type="CHAR(1)" defaultValue="N"> 
+-                <constraints nullable="false" /> 
+-            </column> 
+-            <column name="DV_DISPLAY_IND" type="CHAR(1)" defaultValue="N"> 
+-                <constraints nullable="false" /> 
+-            </column> 
+-            <column name="VENDOR_DISPLAY_IND" type="CHAR(1)" defaultValue="N"> 
+-                <constraints nullable="false" /> 
+-            </column> 
+-            <column name="ACTIVE_IND" type="CHAR(1)" defaultValue="Y"> 
+-                <constraints nullable="false" /> 
+-            </column> 
+-        </createTable> 
+-	</changeSet>
+-</databaseChangeLog>
+-    
+\ No newline at end of file

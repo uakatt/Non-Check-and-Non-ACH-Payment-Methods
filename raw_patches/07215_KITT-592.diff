@@ -1,0 +1,340 @@
+Index: financial-system/kfs-cfg-dbs/trunk/install/tab/FP_PMT_MTHD_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/install/tab/FP_PMT_MTHD_T.xml	(revision 0)
++++ financial-system/kfs-cfg-dbs/trunk/install/tab/FP_PMT_MTHD_T.xml	(revision 7215)
+@@ -0,0 +1,67 @@
++<?xml version="1.0" encoding="UTF-8"?>
++ 
++<databaseChangeLog
++  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
++  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
++         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
++ 
++  <changeSet id="20100118-1" author="jhkeller">
++    <createTable tableName="FP_PMT_MTHD_T">
++      <column name="PMT_MTHD_CD"  type="CHAR(1)" >
++        <constraints nullable="false" primaryKey="true" primaryKeyName="FP_PMT_MTHD_TP1" />
++      </column>
++      <column name="OBJ_ID" type="varchar2(36)">
++        <constraints nullable="false" unique="true" uniqueConstraintName="FP_PMT_MTHD_TC0" />
++      </column>
++      <column name="VER_NBR" type="NUMBER(8,0)">
++        <constraints nullable="false" />
++      </column>
++      <column name="PMT_MTHD_NM"           type="VARCHAR2(40)"  />
++      <column name="BNK_CD"                type="VARCHAR2(4)"   />
++      <column name="FEE_IND"               type="CHAR(1)" defaultValue="N">
++      	<constraints nullable="false" />
++      </column>
++      <column name="PDP_IND"               type="CHAR(1)" defaultValue="N">
++      	<constraints nullable="false" />
++      </column>
++      <column name="INTERDEPT_IND"               type="CHAR(1)" defaultValue="N">
++      	<constraints nullable="false" />
++      </column>
++      <column name="CLR_ACCT_IND"               type="CHAR(1)" defaultValue="N">
++      	<constraints nullable="false" />
++      </column>
++      <column name="ACTIVE_IND"               type="CHAR(1)" defaultValue="Y">
++      	<constraints nullable="false" />
++      </column>
++    </createTable>
++    <addForeignKeyConstraint baseColumnNames="BNK_CD"
++                             baseTableName="FP_PMT_MTHD_T"
++                             constraintName="FP_PMT_MTHD_TR1"
++                             referencedColumnNames="BNK_CD"
++                             referencedTableName="FP_BANK_T"/>
++    <!-- Initial data for the payment method table -->
++    <sql><![CDATA[ 
++INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
++  VALUES('C', 'C', 1, 'Check', '0002', 'N', 'Y', 'N', 'Y', 'Y');
++
++INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
++  VALUES('H', 'H', 1, 'ACH', '0013', 'N', 'Y', 'N', 'Y', 'Y');
++
++INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
++  VALUES('F', 'F', 1, 'Foreign Draft', '0001', 'Y', 'N', 'N', 'N', 'Y');
++
++INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
++  VALUES('W', 'W', 1, 'Wire Charge', '0001', 'Y', 'N', 'N', 'N', 'Y');
++
++INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
++  VALUES('A', 'A', 1, 'AP Credit Card', NULL, 'N', 'N', 'N', 'Y', 'Y');
++
++INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
++  VALUES('B', 'B', 1, 'Bookstore', NULL, 'N', 'N', 'Y', 'N', 'Y');
++
++INSERT INTO FP_PMT_MTHD_T(PMT_MTHD_CD, OBJ_ID, VER_NBR, PMT_MTHD_NM, BNK_CD, FEE_IND, PDP_IND, INTERDEPT_IND, CLR_ACCT_IND, ACTIVE_IND)
++  VALUES('S', 'S', 1, 'AzBW Store', NULL, 'N', 'N', 'Y', 'N', 'Y');
++]]>
++  </changeSet> 
++</databaseChangeLog>
+Index: financial-system/kfs-cfg-dbs/trunk/install/tab/FP_PMT_MTHD_CHART_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/install/tab/FP_PMT_MTHD_CHART_T.xml	(revision 0)
++++ financial-system/kfs-cfg-dbs/trunk/install/tab/FP_PMT_MTHD_CHART_T.xml	(revision 7215)
+@@ -0,0 +1,98 @@
++<?xml version="1.0" encoding="UTF-8"?>
++ 
++<databaseChangeLog
++  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
++  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
++         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
++ 
++  <changeSet id="20100118-2" author="jhkeller">
++    <createTable tableName="FP_PMT_MTHD_CHART_T">
++      <column name="PMT_MTHD_CD"  type="CHAR(1)" >
++        <constraints nullable="false" primaryKey="true" primaryKeyName="FP_PMT_MTHD_CHART_TP1" />
++      </column>
++      <column name="FIN_COA_CD"  type="VARCHAR2(2)" >
++        <constraints nullable="false" primaryKey="true" primaryKeyName="FP_PMT_MTHD_CHART_TP1" />
++      </column>
++      <column name="EFF_DT"  type="DATE" >
++        <constraints nullable="false" primaryKey="true" primaryKeyName="FP_PMT_MTHD_CHART_TP1" />
++      </column>
++      <column name="OBJ_ID" type="varchar2(36)">
++        <constraints nullable="false" unique="true" uniqueConstraintName="FP_PMT_MTHD_TC0" />
++      </column>
++      <column name="VER_NBR" type="NUMBER(8,0)">
++        <constraints nullable="false" />
++      </column>
++      <column name="fee_inc_fin_coa_cd"           type="VARCHAR2(2)"  />
++      <column name="fee_inc_account_nbr"                type="VARCHAR2(7)"   />
++      <column name="fee_inc_obj_cd"                type="VARCHAR2(4)"   />
++      <column name="fee_exp_obj_cd"                type="VARCHAR2(4)"   />
++      <column name="fee_amt"                type="NUMBER(19,2)"   />
++      <column name="clr_fin_coa_cd"                type="VARCHAR2(2)"   />
++      <column name="clr_account_nbr"                type="VARCHAR2(7)"   />
++      <column name="clr_obj_cd"                type="VARCHAR2(4)"   />
++      <column name="ACTIVE_IND"               type="CHAR(1)" defaultValue="Y">
++      	<constraints nullable="false" />
++      </column>
++    </createTable>
++    <addForeignKeyConstraint baseColumnNames="pmt_mthd_cd"
++                             baseTableName="fp_pmt_mthd_chart_t"
++                             constraintName="fp_pmt_mthd_chart_tr1"
++                             referencedColumnNames="pmt_mthd_cd"
++                             referencedTableName="fp_pmt_mthd_t"/>
++    <addForeignKeyConstraint constraintName="fp_pmt_mthd_chart_tr2"
++    						 baseTableName="fp_pmt_mthd_chart_t"
++    						 baseColumnNames="fin_coa_cd"
++                             referencedTableName="ca_chart_t"
++                             referencedColumnNames="fin_coa_cd"
++                             />
++    <addForeignKeyConstraint constraintName="fp_pmt_mthd_chart_tr3"
++    						 baseTableName="fp_pmt_mthd_chart_t"
++    						 baseColumnNames="fee_inc_fin_coa_cd"
++                             referencedTableName="ca_chart_t"
++                             referencedColumnNames="fin_coa_cd"
++                             />
++    <addForeignKeyConstraint constraintName="fp_pmt_mthd_chart_tr4"
++    						 baseTableName="fp_pmt_mthd_chart_t"
++    						 baseColumnNames="fee_inc_fin_coa_cd,fee_inc_account_nbr"
++                             referencedTableName="ca_account_t"
++                             referencedColumnNames="fin_coa_cd,account_nbr"
++                             />
++    <addForeignKeyConstraint constraintName="fp_pmt_mthd_chart_tr5"
++    						 baseTableName="fp_pmt_mthd_chart_t"
++    						 baseColumnNames="clr_fin_coa_cd"
++                             referencedTableName="ca_chart_t"
++                             referencedColumnNames="fin_coa_cd"
++                             />
++    <addForeignKeyConstraint constraintName="fp_pmt_mthd_chart_tr6"
++    						 baseTableName="fp_pmt_mthd_chart_t"
++    						 baseColumnNames="clr_fin_coa_cd,clr_account_nbr"
++                             referencedTableName="ca_account_t"
++                             referencedColumnNames="fin_coa_cd,account_nbr"
++                             />
++    <!-- Initial data for the payment method table -->
++    <sql><![CDATA[ 
++INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
++  VALUES('C', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'C-UA', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Y');
++
++INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
++  VALUES('H', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'H-UA', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Y');
++
++INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
++  VALUES('F', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'F-UA', 1, 'UA', '2558300', '3140', '5780', 5, NULL, NULL, NULL, 'Y');
++
++INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
++  VALUES('W', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'W-UA', 1, 'UA', '2558300', '3140', '5780', 15, NULL, NULL, NULL, 'Y');
++
++INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
++  VALUES('A', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'A-UA', 1, NULL, NULL, NULL, NULL, NULL, 'UA', '2899900', '9175', 'Y');
++
++INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
++  VALUES('B', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'B-UA', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Y');
++
++INSERT INTO FP_PMT_MTHD_CHART_T(PMT_MTHD_CD, FIN_COA_CD, EFF_DT, OBJ_ID, VER_NBR, FEE_INC_FIN_COA_CD, FEE_INC_ACCOUNT_NBR, FEE_INC_OBJ_CD, FEE_EXP_OBJ_CD, FEE_AMT, CLR_FIN_COA_CD, CLR_ACCOUNT_NBR, CLR_OBJ_CD, ACTIVE_IND)
++  VALUES('S', 'UA', TO_DATE('2009-07-01 00:00:00','YYYY-MM-DD HH24:MI:SS'), 'S-UA', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Y');
++]]>
++    </sql>
++  </changeSet>
++</databaseChangeLog>
+Index: financial-system/kfs-cfg-dbs/trunk/install/tab/AP_PMT_RQST_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/install/tab/AP_PMT_RQST_T.xml	(revision 0)
++++ financial-system/kfs-cfg-dbs/trunk/install/tab/AP_PMT_RQST_T.xml	(revision 7215)
+@@ -0,0 +1,104 @@
++<?xml version="1.0" encoding="UTF-8"?>
++ 
++<databaseChangeLog
++  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
++  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
++         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
++ 
++  <changeSet id="20100119-1" author="jhkeller">
++        <createTable tableName="ap_pmt_rqst_t">
++            <column defaultValueNumeric="0" name="PMT_RQST_ID" type="decimal(9,0)">
++                <constraints nullable="false" primaryKey="true"/>
++            </column>
++            <column name="OBJ_ID" type="VARCHAR(36)">
++                <constraints nullable="false"/>
++            </column>
++            <column defaultValueNumeric="1" name="VER_NBR" type="decimal(8,0)">
++                <constraints nullable="false"/>
++            </column>
++            <column name="PMT_RQST_STAT_CD" type="VARCHAR(4)">
++                <constraints nullable="false"/>
++            </column>
++            <column name="FDOC_NBR" type="VARCHAR(14)">
++                <constraints nullable="false"/>
++            </column>
++            <column name="PO_ID" type="decimal(9,0)">
++                <constraints nullable="false"/>
++            </column>
++            <column name="PO_ENCUM_FSCL_YR" type="decimal(4,0)">
++                <constraints nullable="false"/>
++            </column>
++            <column name="PO_CLSIF_TYP_DESC" type="VARCHAR(4)"/>
++            <column name="INV_DT" type="DATETIME">
++                <constraints nullable="false"/>
++            </column>
++            <column name="INV_NBR" type="VARCHAR(25)"/>
++            <column name="VNDR_INV_AMT" type="decimal(19,2)"/>
++            <column name="VNDR_PMT_TERMS_CD" type="VARCHAR(5)"/>
++            <column name="VNDR_SHP_PMT_TERM_CD" type="VARCHAR(4)"/>
++            <column name="VNDR_CUST_NBR" type="VARCHAR(30)"/>
++            <column name="PMT_RQST_PAY_DT" type="DATETIME"/>
++            <column name="PMT_RQST_CST_SRC_CD" type="VARCHAR(4)">
++                <constraints nullable="false"/>
++            </column>
++            <column name="PMT_RQST_CNCL_IND" type="VARCHAR(1)"/>
++            <column name="PMT_ATT_IND" type="VARCHAR(1)"/>
++            <column name="IMD_PMT_IND" type="VARCHAR(1)"/>
++            <column name="PMT_HLD_IND" type="VARCHAR(1)"/>
++            <column name="PMT_NTE_LN1_TXT" type="VARCHAR(90)"/>
++            <column name="PMT_NTE_LN2_TXT" type="VARCHAR(90)"/>
++            <column name="PMT_NTE_LN3_TXT" type="VARCHAR(90)"/>
++            <column name="PMT_SPCL_HANDLG_INSTRC_LN1_TXT" type="VARCHAR(90)"/>
++            <column name="PMT_SPCL_HANDLG_INSTRC_LN2_TXT" type="VARCHAR(90)"/>
++            <column name="PMT_SPCL_HANDLG_INSTRC_LN3_TXT" type="VARCHAR(90)"/>
++            <column name="PMT_PD_DT" type="DATETIME"/>
++            <column name="PMT_RQST_ELCTRNC_INV_IND" type="VARCHAR(1)"/>
++            <column name="VNDR_HDR_GNRTD_ID" type="decimal(10,0)"/>
++            <column name="VNDR_DTL_ASND_ID" type="decimal(10,0)"/>
++            <column name="VNDR_NM" type="VARCHAR(45)"/>
++            <column name="VNDR_LN1_ADDR" type="VARCHAR(45)"/>
++            <column name="VNDR_LN2_ADDR" type="VARCHAR(45)"/>
++            <column name="VNDR_CTY_NM" type="VARCHAR(45)"/>
++            <column name="VNDR_ST_CD" type="VARCHAR(2)"/>
++            <column name="VNDR_PSTL_CD" type="VARCHAR(20)"/>
++            <column name="VNDR_CNTRY_CD" type="VARCHAR(2)"/>
++            <column name="PMT_EXTRT_DT" type="DATETIME"/>
++            <column name="AP_PRCSR_ID" type="VARCHAR(40)">
++                <constraints nullable="false"/>
++            </column>
++            <column name="AP_RQST_CNCL_ID" type="VARCHAR(40)"/>
++            <column name="AP_HLD_ID" type="VARCHAR(40)"/>
++            <column name="PRCS_CMP_CD" type="VARCHAR(2)"/>
++            <column name="AP_APRVL_DT" type="DATETIME"/>
++            <column name="ORIG_VNDR_HDR_GNRTD_ID" type="decimal(10,0)"/>
++            <column name="ORIG_VNDR_DTL_ASND_ID" type="decimal(10,0)"/>
++            <column name="ALTRNT_VNDR_HDR_GNRTD_ID" type="decimal(10,0)"/>
++            <column name="ALTRNT_VNDR_DTL_ASND_ID" type="decimal(10,0)"/>
++            <column name="CONT_ACCT_IND" type="VARCHAR(1)"/>
++            <column name="AP_PUR_DOC_LNK_ID" type="decimal(10,0)"/>
++            <column name="CLOSE_PO_IND" type="VARCHAR(1)"/>
++            <column name="REOPEN_PO_IND" type="VARCHAR(1)"/>
++            <column name="VNDR_ADDR_INTL_PROV_NM" type="VARCHAR(45)"/>
++            <column name="RCVNG_DOC_REQ_IND" type="VARCHAR(1)"/>
++            <column name="PMT_RQST_PSTV_APRVL_IND" type="VARCHAR(1)"/>
++            <column defaultValue="Y" name="USE_TAX_IND" type="VARCHAR(1)">
++                <constraints nullable="false"/>
++            </column>
++            <column name="BNK_CD" type="VARCHAR(4)"/>
++            <column name="TAX_CLSIF_CD" type="VARCHAR(50)"/>
++            <column name="FTX_PCT" type="decimal(10,8)"/>
++            <column name="STX_PCT" type="decimal(10,8)"/>
++            <column name="TAX_CNTRY_CD" type="VARCHAR(10)"/>
++            <column name="GRS_UP_IND" type="VARCHAR(1)"/>
++            <column name="TRTY_EXMPT_IND" type="VARCHAR(1)"/>
++            <column name="FRGN_SRC_IND" type="VARCHAR(1)"/>
++            <column name="SPCL_W4_INC_AMT" type="decimal(19,2)"/>
++            <column name="USAID_DIEM_IND" type="VARCHAR(1)"/>
++            <column name="INC_TAX_EXMPT_CD_OTHR_IND" type="VARCHAR(1)"/>
++            <column name="NQI_CUST_TAX_ID" type="VARCHAR(50)"/>
++            <column name="VNDR_ATTN_NM" type="VARCHAR(45)"/>
++		    <column name="PMT_MTHD_CD"  type="CHAR(1)" />            
++        </createTable>
++  </changeSet>
++</databaseChangeLog>
+\ No newline at end of file
+Index: financial-system/kfs-cfg-dbs/trunk/install/tab/AP_CRDT_MEMO_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/install/tab/AP_CRDT_MEMO_T.xml	(revision 7214)
++++ financial-system/kfs-cfg-dbs/trunk/install/tab/AP_CRDT_MEMO_T.xml	(revision 7215)
+@@ -49,7 +49,7 @@
+             <column defaultValue="N" name="CRDT_HLD_IND" type="VARCHAR2(1 BYTE)">
+                 <constraints nullable="false"/>
+             </column>
+-            <column name="AP_PRCSR_ID" type="VARCHAR2(11 BYTE)">
++            <column name="AP_PRCSR_ID" type="VARCHAR2(40 BYTE)">
+                 <constraints nullable="false"/>
+             </column>
+             <column name="PRCS_CMP_CD" type="VARCHAR2(2 BYTE)">
+@@ -59,7 +59,7 @@
+             <column name="ITM_MISC_CRDT_DESC" type="VARCHAR2(255 BYTE)"/>
+             <column name="CRDT_MEMO_EXTRT_DT" type="DATE"/>
+             <column name="AP_PUR_DOC_LNK_ID" type="NUMBER(10,0)"/>
+-            <column name="AP_HLD_ID" type="VARCHAR2(11 BYTE)"/>
++            <column name="AP_HLD_ID" type="VARCHAR2(40 BYTE)"/>
+             <column name="CONT_ACCT_IND" type="VARCHAR2(1 BYTE)"/>
+             <column name="CLOSE_PO_IND" type="VARCHAR2(1 BYTE)"/>
+             <column name="REOPEN_PO_IND" type="VARCHAR2(1 BYTE)"/>
+@@ -69,6 +69,7 @@
+             </column>
+             <column name="BNK_CD" type="VARCHAR2(4 BYTE)"/>
+             <column name="VNDR_ATTN_NM" type="VARCHAR2(45 BYTE)"/>
++		    <column name="PMT_MTHD_CD"  type="CHAR(1)" />            
+         </createTable>
+     </changeSet>
+ </databaseChangeLog>
+Index: financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_OFFSET_DEFN_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_OFFSET_DEFN_T.xml	(revision 0)
++++ financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_OFFSET_DEFN_T.xml	(revision 7215)
+@@ -0,0 +1,20 @@
++<?xml version="1.0" encoding="UTF-8"?>
++ 
++<databaseChangeLog
++  xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
++  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
++         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
++ 
++  <changeSet id="20100119-2" author="jhkeller">
++
++<!-- Since adding the new document type code, need to ensure that the needed offset entries are in place. -->
++    <sql><![CDATA[ 
++INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
++	(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'DVNC', FIN_COA_CD, SYS_GUID(), 1
++		FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF'
++	);
++]]>    
++    </sql>
++  </changeSet>
++</databaseChangeLog>

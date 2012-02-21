@@ -1,0 +1,161 @@
+Index: financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java
+===================================================================
+--- financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java	(revision 10228)
++++ financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java	(revision 10229)
+@@ -38,7 +38,7 @@
+  */
+ public class PaymentMethodsForDVValuesFinder extends PaymentMethodValuesFinder {
+     static {
+-        filterCriteria.put("interdepartmentalPayment", "N");
++        filterCriteria.put("displayOnDisbursementVoucherDocument", "Y");
+     }
+     
+ }
+Index: financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForVendorValuesFinder.java
+===================================================================
+--- financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForVendorValuesFinder.java	(revision 0)
++++ financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForVendorValuesFinder.java	(revision 10229)
+@@ -0,0 +1,44 @@
++/*
++ * Copyright 2007 The Kuali Foundation
++ * 
++ * Licensed under the Educational Community License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl2.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.fp.businessobject.options;
++
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.rice.core.util.KeyLabelPair;
++import org.kuali.rice.kns.lookup.keyvalues.KeyValuesBase;
++import org.kuali.rice.kns.service.BusinessObjectService;
++
++import edu.arizona.kfs.fp.businessobject.PaymentMethod;
++
++/**
++ * This class returns list of payment method key value pairs.
++ * 
++ * Customization for UA: addition of "A" type for credit card payments.
++ * 
++ * @author jonathan
++ * @see org.kuali.kfs.fp.businessobject.options.PaymentMethodValuesFinder
++ */
++public class PaymentMethodsForVendorValuesFinder extends PaymentMethodValuesFinder {
++    static {
++        filterCriteria.put("displayOnVendorDocument", "Y");
++    }
++    
++}
+Index: financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/PaymentMethod.java
+===================================================================
+--- financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/PaymentMethod.java	(revision 10228)
++++ financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/PaymentMethod.java	(revision 10229)
+@@ -35,6 +35,8 @@
+     protected boolean processedUsingPdp;
+     protected boolean interdepartmentalPayment;
+     protected boolean offsetUsingClearingAccount;
++    protected boolean displayOnDisbursementVoucherDocument;
++    protected boolean displayOnVendorDocument;
+     protected boolean active = true;
+     
+     protected List<PaymentMethodChart> paymentMethodCharts = new TypedArrayList(PaymentMethodChart.class);
+@@ -154,5 +156,21 @@
+         }
+         return null;
+     }
++
++    public boolean isDisplayOnDisbursementVoucherDocument() {
++        return displayOnDisbursementVoucherDocument;
++    }
++
++    public void setDisplayOnDisbursementVoucherDocument(boolean displayOnDisbursementVoucherDocument) {
++        this.displayOnDisbursementVoucherDocument = displayOnDisbursementVoucherDocument;
++    }
++
++    public boolean isDisplayOnVendorDocument() {
++        return displayOnVendorDocument;
++    }
++
++    public void setDisplayOnVendorDocument(boolean displayOnVendorDocument) {
++        this.displayOnVendorDocument = displayOnVendorDocument;
++    }
+     
+ }
+Index: financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/ojb-fp.xml
+===================================================================
+--- financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/ojb-fp.xml	(revision 10228)
++++ financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/ojb-fp.xml	(revision 10229)
+@@ -605,6 +605,8 @@
+     <field-descriptor name="processedUsingPdp"          column="pdp_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
+     <field-descriptor name="interdepartmentalPayment"   column="interdept_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
+     <field-descriptor name="offsetUsingClearingAccount" column="clr_acct_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++    <field-descriptor name="displayOnDisbursementVoucherDocument" column="dv_display_ind"     jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
++    <field-descriptor name="displayOnVendorDocument"              column="vendor_display_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
+     <field-descriptor name="active"                     column="active_ind" jdbc-type="VARCHAR" conversion="org.kuali.rice.kns.util.OjbCharBooleanConversion" />
+     <reference-descriptor name="bank" class-ref="org.kuali.kfs.sys.businessobject.Bank" auto-retrieve="true" auto-update="object" auto-delete="object" proxy="true" >
+         <foreignkey field-ref="bankCode" />
+@@ -739,8 +741,8 @@
+         <inverse-foreignkey field-ref="documentNumber" />
+     </collection-descriptor>
+ </class-descriptor>
++<!-- END MOD -->
+ 
+-
+ <class-descriptor class="edu.arizona.kfs.fp.businessobject.ProcurementCardTranShipSvc" table="FP_PRCRMNT_TRN_SHIP_T">
+     <field-descriptor name="transactionSequenceRowNumber" column="TRN_SEQ_ROW_NBR" jdbc-type="INTEGER" primarykey="true" index="true" />
+     <field-descriptor name="sequenceRowNumber" column="SEQ_ROW_NBR" jdbc-type="INTEGER" primarykey="true" index="true" autoincrement="true" sequence-name="FP_PRCRMNT_TRN_SHIP_SEQ" />
+Index: financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/spring-purap.xml
+===================================================================
+--- financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/spring-purap.xml	(revision 10228)
++++ financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/spring-purap.xml	(revision 10229)
+@@ -38,13 +38,6 @@
+                 <value>edu/arizona/kfs/module/purap/document/datadictionary</value>
+ 			</list>
+ 		</property>
+-        <!-- jhkeller - added missing property needed when BOs/docs
+-             are defined in an institution module -->
+-        <property name="packagePrefixes">
+-          <list merge="true">
+-            <value>edu.arizona.kfs.module.purap</value>
+-          </list>
+-        </property>
+ 		<property name="databaseRepositoryFilePaths">
+ 			<list merge="true">
+ 				<value>edu/arizona/kfs/module/purap/ojb-purap.xml</value>
+@@ -169,22 +162,6 @@
+         <property name="dateTimeService" ref="dateTimeService" />
+ 	</bean>
+ 
+-	<bean id="electronicInvoiceInputFileType" class="org.kuali.kfs.module.purap.batch.ElectronicInvoiceInputFileType">
+-    	<property name="directoryPath">
+-	       <value>${staging.directory}/purap/electronicInvoice</value>
+-	    </property>
+-	    <property name="fileExtension">
+-	       <value>xml</value>
+-	    </property>
+-	    <property name="digestorRulesFileName">
+-	       <value>edu/arizona/kfs/module/purap/batch/electronicInvoiceDigesterRules.xml</value>
+-	    </property>
+-	    <property name="schemaLocation">
+-	       <value>${externalizable.static.content.url}/xsd/purap/uaElectronicInvoice.xsd</value>
+-	    </property>
+-	</bean>
+-
+-
+ 	<import resource="document/validation/configuration/PurapValidatorOverrides.xml" />
+ 
+ </beans>

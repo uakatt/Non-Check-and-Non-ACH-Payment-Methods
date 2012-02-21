@@ -1,0 +1,62 @@
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java	(revision 11848)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java	(revision 11849)
+@@ -19,6 +19,7 @@
+ import java.util.Collection;
+ import java.util.Iterator;
+ 
++import org.apache.commons.lang.StringUtils;
+ import org.kuali.kfs.module.purap.PurapConstants;
+ import org.kuali.kfs.module.purap.document.VendorCreditMemoDocument;
+ import org.kuali.kfs.module.purap.document.service.impl.CreditMemoServiceImpl;
+@@ -27,13 +28,16 @@
+ import org.kuali.kfs.sys.businessobject.Bank;
+ import org.kuali.kfs.sys.context.SpringContext;
+ import org.kuali.kfs.sys.service.BankService;
++import org.kuali.kfs.vnd.businessobject.VendorDetail;
+ import org.kuali.rice.kew.exception.WorkflowException;
+ import org.kuali.rice.kns.exception.ValidationException;
++import org.kuali.rice.kns.util.ObjectUtils;
+ 
+ import edu.arizona.kfs.fp.businessobject.options.PaymentMethodValuesFinder;
+ import edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService;
+ import edu.arizona.kfs.module.purap.document.UaPaymentRequestDocument;
+ import edu.arizona.kfs.module.purap.document.UaVendorCreditMemoDocument;
++import edu.arizona.kfs.vnd.businessobject.VendorDetailExtension;
+ 
+ public class UaCreditMemoServiceImpl extends CreditMemoServiceImpl {
+     private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(UaCreditMemoServiceImpl.class);
+@@ -137,4 +141,32 @@
+         this.paymentMethodGeneralLedgerPendingEntryService = paymentMethodGeneralLedgerPendingEntryService;
+     }
+     
++    /** KITT-592
++     * 
++     * Update to baseline method to additionally set the payment method when building the document.
++     * This method calls the needed method for each of the init methods.  After which, the vendor will
++     * be set and we can get the payment method code.
++     */
++    @Override
++    public void populateDocumentAfterInit(VendorCreditMemoDocument cmDocument) {
++        super.populateDocumentAfterInit(cmDocument);
++        if ( cmDocument instanceof UaVendorCreditMemoDocument ) {
++            // if there is a payment request document, pull the payment method from there
++            if ( ObjectUtils.isNotNull( cmDocument.getPaymentRequestDocument() )
++                    && cmDocument.getPaymentRequestDocument() instanceof UaPaymentRequestDocument ) {
++                ((UaVendorCreditMemoDocument)cmDocument).setPaymentMethodCode(
++                        ((UaPaymentRequestDocument)cmDocument.getPaymentRequestDocument()).getPaymentMethodCode() );
++            } else { // otherwise, go back to the vendor
++                VendorDetail vd = vendorService.getVendorDetail(cmDocument.getVendorHeaderGeneratedIdentifier(), cmDocument.getVendorDetailAssignedIdentifier());
++                if (vd != null
++                        && ObjectUtils.isNotNull(vd.getExtension()) ) {
++                    if ( vd.getExtension() instanceof VendorDetailExtension
++                            && StringUtils.isNotBlank( ((VendorDetailExtension)vd.getExtension()).getDefaultB2BPaymentMethodCode() ) ) {
++                        ((UaVendorCreditMemoDocument)cmDocument).setPaymentMethodCode(
++                                ((VendorDetailExtension)vd.getExtension()).getDefaultB2BPaymentMethodCode() );
++                    }
++                }
++            }
++        }
++    }
+ }

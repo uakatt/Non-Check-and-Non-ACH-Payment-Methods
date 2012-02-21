@@ -1,0 +1,711 @@
+Index: work/src/org/kuali/kfs/fp/batch/service/impl/DisbursementVoucherExtractServiceImpl.java
+===================================================================
+--- work/src/org/kuali/kfs/fp/batch/service/impl/DisbursementVoucherExtractServiceImpl.java	(revision 7354)
++++ work/src/org/kuali/kfs/fp/batch/service/impl/DisbursementVoucherExtractServiceImpl.java	(revision 7355)
+@@ -16,7 +16,6 @@
+ package org.kuali.kfs.fp.batch.service.impl;
+ 
+ import java.sql.Timestamp;
+-import java.text.ParseException;
+ import java.util.ArrayList;
+ import java.util.Collection;
+ import java.util.Date;
+@@ -63,6 +62,7 @@
+ import org.kuali.rice.kim.bo.Person;
+ import org.kuali.rice.kim.service.PersonService;
+ import org.kuali.rice.kns.service.BusinessObjectService;
++import org.kuali.rice.kns.service.DataDictionaryService;
+ import org.kuali.rice.kns.service.DateTimeService;
+ import org.kuali.rice.kns.service.DocumentService;
+ import org.kuali.rice.kns.service.ParameterEvaluator;
+@@ -567,7 +567,7 @@
+         Collection<DisbursementVoucherDocument> list = new ArrayList<DisbursementVoucherDocument>();
+ 
+         try {
+-            Collection<DisbursementVoucherDocument> docs = SpringContext.getBean(FinancialSystemDocumentService.class).findByDocumentHeaderStatusCode(DisbursementVoucherDocument.class, statusCode);
++            Collection<DisbursementVoucherDocument> docs = SpringContext.getBean(FinancialSystemDocumentService.class).findByDocumentHeaderStatusCode(SpringContext.getBean(DataDictionaryService.class).getDocumentClassByTypeName("DV"), statusCode);
+             for (DisbursementVoucherDocument element : docs) {
+                 String dvdCampusCode = element.getCampusCode();
+ 
+Index: work/src/org/kuali/kfs/fp/document/validation/impl/DisbursementVoucherBankCodeValidation.java
+===================================================================
+--- work/src/org/kuali/kfs/fp/document/validation/impl/DisbursementVoucherBankCodeValidation.java	(revision 7354)
++++ work/src/org/kuali/kfs/fp/document/validation/impl/DisbursementVoucherBankCodeValidation.java	(revision 7355)
+@@ -15,6 +15,7 @@
+  */
+ package org.kuali.kfs.fp.document.validation.impl;
+ 
++import org.apache.commons.lang.StringUtils;
+ import org.kuali.kfs.fp.document.DisbursementVoucherDocument;
+ import org.kuali.kfs.sys.KFSPropertyConstants;
+ import org.kuali.kfs.sys.document.AccountingDocument;
+@@ -35,8 +36,15 @@
+         
+         DisbursementVoucherDocument dvDocument = (DisbursementVoucherDocument) accountingDocumentForValidation;
+         
+-        boolean isValid = BankCodeValidation.validate(dvDocument.getDisbVchrBankCode(), KFSPropertyConstants.DISB_VCHR_BANK_CODE, false, true);
+-
++        boolean isValid = BankCodeValidation.validate(dvDocument.getDisbVchrBankCode(), "document." + KFSPropertyConstants.DISB_VCHR_BANK_CODE, dvDocument.getDisbVchrPaymentMethodCode(), false, true);
++        if ( isValid ) {
++            // clear out the bank code on the document if not needed (per the message set by the call above)
++            if ( StringUtils.isNotBlank(dvDocument.getDisbVchrBankCode())
++                    && !BankCodeValidation.doesBankCodeNeedToBePopulated(dvDocument.getDisbVchrPaymentMethodCode()) ) {
++                dvDocument.setBank(null);
++                dvDocument.setDisbVchrBankCode(null);                
++            }
++        }
+         return isValid;
+     }
+ 
+Index: work/src/org/kuali/kfs/module/purap/service/impl/PurapGeneralLedgerServiceImpl.java
+===================================================================
+--- work/src/org/kuali/kfs/module/purap/service/impl/PurapGeneralLedgerServiceImpl.java	(revision 7354)
++++ work/src/org/kuali/kfs/module/purap/service/impl/PurapGeneralLedgerServiceImpl.java	(revision 7355)
+@@ -507,6 +507,11 @@
+ 
+             }
+ 
++            // MOD-PA2000-01 
++            // generate any document level GL entries (offsets or fee charges)
++            // we would only want to do this when booking the actuals (not the encumbrances)
++            cm.generateDocumentGeneralLedgerPendingEntries(sequenceHelper);
++            
+             // manually save cm account change tables (CAMS needs this)
+             if (!isCancel) {
+                 SpringContext.getBean(PurapAccountRevisionService.class).saveCreditMemoAccountRevisions(cm.getItems(), cm.getPostingYearFromPendingGLEntries(), cm.getPostingPeriodCodeFromPendingGLEntries());
+Index: work/src/org/kuali/kfs/module/purap/document/service/impl/CreditMemoServiceImpl.java
+===================================================================
+--- work/src/org/kuali/kfs/module/purap/document/service/impl/CreditMemoServiceImpl.java	(revision 7354)
++++ work/src/org/kuali/kfs/module/purap/document/service/impl/CreditMemoServiceImpl.java	(revision 7355)
+@@ -89,19 +89,19 @@
+ public class CreditMemoServiceImpl implements CreditMemoService {
+     private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(CreditMemoServiceImpl.class);
+ 
+-    private AccountsPayableService accountsPayableService;
+-    private CreditMemoDao creditMemoDao;
+-    private DataDictionaryService dataDictionaryService;
+-    private DocumentService documentService;
+-    private KualiConfigurationService kualiConfigurationService;
+-    private NoteService noteService;
+-    private PaymentRequestService paymentRequestService;
+-    private PurapAccountingService purapAccountingService;
+-    private PurapGeneralLedgerService purapGeneralLedgerService;
+-    private PurapService purapService;
+-    private PurchaseOrderService purchaseOrderService;
+-    private VendorService vendorService;
+-    private WorkflowDocumentService workflowDocumentService;
++    protected AccountsPayableService accountsPayableService;
++    protected CreditMemoDao creditMemoDao;
++    protected DataDictionaryService dataDictionaryService;
++    protected DocumentService documentService;
++    protected KualiConfigurationService kualiConfigurationService;
++    protected NoteService noteService;
++    protected PaymentRequestService paymentRequestService;
++    protected PurapAccountingService purapAccountingService;
++    protected PurapGeneralLedgerService purapGeneralLedgerService;
++    protected PurapService purapService;
++    protected PurchaseOrderService purchaseOrderService;
++    protected VendorService vendorService;
++    protected WorkflowDocumentService workflowDocumentService;
+     
+ 
+     public void setAccountsPayableService(AccountsPayableService accountsPayableService) {
+Index: work/src/org/kuali/kfs/sys/document/validation/impl/BankCodeValidation.java
+===================================================================
+--- work/src/org/kuali/kfs/sys/document/validation/impl/BankCodeValidation.java	(revision 7354)
++++ work/src/org/kuali/kfs/sys/document/validation/impl/BankCodeValidation.java	(revision 7355)
+@@ -15,6 +15,8 @@
+  */
+ package org.kuali.kfs.sys.document.validation.impl;
+ 
++import java.util.List;
++
+ import org.apache.commons.lang.StringUtils;
+ import org.kuali.kfs.sys.KFSKeyConstants;
+ import org.kuali.kfs.sys.KFSPropertyConstants;
+@@ -25,11 +27,18 @@
+ import org.kuali.rice.kns.util.GlobalVariables;
+ import org.kuali.rice.kns.util.ObjectUtils;
+ 
++import edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService;
++
+ /**
+  * Performs bank code validation.
++ * 
++ * Modified for MOD-PA2000-01 (KITT-592) to add conditional validation based on the payment method code
++ * 
+  */
+ public class BankCodeValidation {
+ 
++    private static UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService;
++
+     /**
+      * Performs required, exists, and active validation of bank code. Also validates bank for deposit or disbursement indicator if
+      * requested. .
+@@ -41,36 +50,56 @@
+      * @return true if bank code passes all validations, false if any fail
+      */
+     public static boolean validate(String bankCode, String bankCodeProperty, boolean requireDeposit, boolean requireDisbursement) {
+-        String bankCodeLabel = SpringContext.getBean(DataDictionaryService.class).getAttributeLabel(Bank.class, KFSPropertyConstants.BANK_CODE);
++        return validate(bankCode, bankCodeProperty, null, requireDeposit, requireDisbursement);
++    }
++    
++    /**
++     * Performs required, exists, and active validation of bank code. Also validates bank for deposit or disbursement indicator if
++     * requested. .
++     * 
++     * @param bankCode value to validate
++     * @param bankCodeProperty property to associate errors with
++     * @param required true if the bank code is required
++     * @param requireDeposit true if the bank code should support deposits
++     * @param requireDisbursement true if the bank code should support disbursements
++     * @return true if bank code passes all validations, false if any fail
++     */
++    public static boolean validate(String bankCode, String bankCodeProperty, String paymentMethodCode, boolean requireDeposit, boolean requireDisbursement) {
+ 
+         // if bank specification is not enabled, no need to validate bank code
+         if (!SpringContext.getBean(BankService.class).isBankSpecificationEnabled()) {
+             return true;
+         }
+ 
++        Bank bank = SpringContext.getBean(BankService.class).getByPrimaryId(bankCode);
+         // required check
+-        if (StringUtils.isBlank(bankCode)) {
+-            GlobalVariables.getMessageMap().putError(bankCodeProperty, KFSKeyConstants.ERROR_REQUIRED, bankCodeLabel);
+-
+-            return false;
++        // if the payment method code is blank, then revert to the baseline behavior
++        if ( StringUtils.isBlank(paymentMethodCode) ) {
++            if (StringUtils.isBlank(bankCode)) {
++                String bankCodeLabel = SpringContext.getBean(DataDictionaryService.class).getAttributeLabel(Bank.class, KFSPropertyConstants.BANK_CODE);
++                GlobalVariables.getMessageMap().putError(bankCodeProperty, KFSKeyConstants.ERROR_REQUIRED, bankCodeLabel);    
++                return false;
++            }            
++            if (ObjectUtils.isNull(bank)) {
++                GlobalVariables.getMessageMap().putError(bankCodeProperty, KFSKeyConstants.ERROR_DOCUMENT_BANKACCMAINT_INVALID_BANK);
++                return false;
++            }            
++        } else {
++            if ( !checkBankCodePopulation(bankCode, paymentMethodCode, bankCodeProperty, true) ) {
++                return false;
++            }
+         }
+ 
+-        Bank bank = SpringContext.getBean(BankService.class).getByPrimaryId(bankCode);
+         
+-        if (ObjectUtils.isNull(bank)) {
+-            GlobalVariables.getMessageMap().putError(bankCodeProperty, KFSKeyConstants.ERROR_DOCUMENT_BANKACCMAINT_INVALID_BANK);
+-            return false;
+-        }
+-        
+         // validate deposit
+-        if (requireDeposit && !bank.isBankDepositIndicator()) {
++        if (bank != null && requireDeposit && !bank.isBankDepositIndicator()) {
+             GlobalVariables.getMessageMap().putError(bankCodeProperty, KFSKeyConstants.Bank.ERROR_DEPOSIT_NOT_SUPPORTED);
+ 
+             return false;
+         }
+ 
+         // validate disbursement
+-        if (requireDisbursement && !bank.isBankDisbursementIndicator()) {
++        if (bank != null && requireDisbursement && !bank.isBankDisbursementIndicator()) {
+             GlobalVariables.getMessageMap().putError(bankCodeProperty, KFSKeyConstants.Bank.ERROR_DISBURSEMENT_NOT_SUPPORTED);
+ 
+             return false;
+@@ -79,4 +108,33 @@
+         return true;
+     }
+ 
++    public static boolean doesBankCodeNeedToBePopulated( String paymentMethodCode ) {
++        return getPaymentMethodGeneralLedgerPendingEntryService().getBankForPaymentMethod(paymentMethodCode) != null;
++    }
++    
++    public static boolean checkBankCodePopulation( String bankCode, String paymentMethodCode, String bankCodeProperty, boolean addMessages ) {
++        boolean bankCodeNeedsPopulation = doesBankCodeNeedToBePopulated(paymentMethodCode);
++        // if the payment method uses a bank code and none has been filled in (the user blanked it), throw an error
++        if ( bankCodeNeedsPopulation && StringUtils.isBlank( bankCode ) ) {
++            // error
++            if ( addMessages ) {
++                GlobalVariables.getMessageMap().putError( bankCodeProperty, "error.document.disbursementvoucher.bank.required", paymentMethodCode);
++            }
++            return false;
++        } else if ( !bankCodeNeedsPopulation && StringUtils.isNotBlank( bankCode ) ) {
++            // if the bank code on the document is not blank but no bank code is specified for the payment method, blank and warn the user.
++            if ( addMessages ) {
++                GlobalVariables.getMessageMap().putWarning( bankCodeProperty, "warning.document.disbursementvoucher.bank.not.required", paymentMethodCode);
++            }
++        }
++        return true;
++    }
++
++    protected static UaPaymentMethodGeneralLedgerPendingEntryService getPaymentMethodGeneralLedgerPendingEntryService() {
++        if ( paymentMethodGeneralLedgerPendingEntryService == null ) {
++            paymentMethodGeneralLedgerPendingEntryService = SpringContext.getBean(UaPaymentMethodGeneralLedgerPendingEntryService.class);
++        }
++        return paymentMethodGeneralLedgerPendingEntryService;
++    }
++    
+ }
+Index: work/src/arizona-ApplicationResources.properties
+===================================================================
+--- work/src/arizona-ApplicationResources.properties	(revision 7354)
++++ work/src/arizona-ApplicationResources.properties	(revision 7355)
+@@ -45,3 +45,7 @@
+ warning.document.paymentmethod.clearing.chart.notrequired=When the clearing indicator is not set, there is no need to fill in the clearing account chart.
+ warning.document.paymentmethod.clearing.account.notrequired=When the clearing indicator is not set, there is no need to fill in the clearing account.
+ warning.document.paymentmethod.clearing.object.notrequired=When the clearing indicator is not set, there is no need to fill in the clearing object code.
++
++# Additional DV document messages
++error.document.disbursementvoucher.bank.required=A bank code is required for payment method {0}.
++warning.document.disbursementvoucher.bank.not.required=Bank codes are not required on payment method {0}, the entered value has been removed.
+Index: work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java	(revision 7354)
++++ work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java	(revision 7355)
+@@ -73,11 +73,13 @@
+      */
+     @CacheNoCopy
+     public boolean isPaymentMethodProcessedUsingPdp(String paymentMethodCode) {
+-        if ( paymentMethodCode != null ) {
++        if ( StringUtils.isNotBlank( paymentMethodCode ) ) {
+             PaymentMethod pm = getBusinessObjectService().findBySinglePrimaryKey(PaymentMethod.class, paymentMethodCode);
+             if ( pm != null ) {
+                 return pm.isProcessedUsingPdp();
+             }
++        } else {
++            LOG.warn("blank/null payment method code passed into isPaymentMethodProcessedUsingPdp");
+         }
+         return false;
+     }
+@@ -88,7 +90,7 @@
+      * @see edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService#getBankForPaymentMethod(java.lang.String)
+      */
+     public Bank getBankForPaymentMethod(String paymentMethodCode) {
+-        if ( paymentMethodCode != null ) {
++        if ( StringUtils.isNotBlank( paymentMethodCode ) ) {
+             PaymentMethod pm = getBusinessObjectService().findBySinglePrimaryKey(PaymentMethod.class, paymentMethodCode);
+             if ( pm != null ) {
+                 // if no bank code, short circuit and return null
+@@ -96,32 +98,13 @@
+                     return pm.getBank();
+                 }
+             }
++        } else {
++            LOG.warn("null payment method code passed into getBankForPaymentMethod");
+         }
+         return null;
+     }
+     
+-//    private ThreadLocal<Map<String,PaymentMethod>> paymentMethodCache = new ThreadLocal<Map<String,PaymentMethod>>();
+-    
+     /**
+-     * 
+-     */
+-//    protected PaymentMethod getPaymentMethod( String paymentMethodCode ) {
+-//        // if the cache has not been initialized, don't attempt to use it
+-//        if ( paymentMethodCache.get() == null ) {
+-//            return getBusinessObjectService().findBySinglePrimaryKey(PaymentMethod.class, paymentMethodCode);
+-//        }
+-//        // otherwise, pull from the thread local cache if possible
+-//        Map<String,PaymentMethod> localPMCache = paymentMethodCache.get();
+-//        if ( localPMCache.containsKey( paymentMethodCode ) ) {
+-//            return localPMCache.get(paymentMethodCode);
+-//        } else {
+-//            PaymentMethod pm = getBusinessObjectService().findBySinglePrimaryKey(PaymentMethod.class, paymentMethodCode);
+-//            localPMCache.put(paymentMethodCode, pm);
+-//            return pm;
+-//        }
+-//    }
+-    
+-    /**
+      * Generates additional document-level GL entries for the DV, depending on the payment method code. 
+      * 
+      * Return true if GLPE's are generated successfully (i.e. there are either 0 GLPE's or 1 GLPE in disbursement voucher document)
+@@ -132,7 +115,7 @@
+      */
+     public boolean generatePaymentMethodSpecificDocumentGeneralLedgerPendingEntries(
+             AccountingDocument document, String paymentMethodCode, String bankCode, String bankCodePropertyName, 
+-            String documentTypeCode, GeneralLedgerPendingEntry templatePendingEntry, 
++            GeneralLedgerPendingEntry templatePendingEntry, 
+             boolean feesWaived, boolean reverseCharge, GeneralLedgerPendingEntrySequenceHelper sequenceHelper) {
+                  
+         PaymentMethod pm = getBusinessObjectService().findBySinglePrimaryKey(PaymentMethod.class, paymentMethodCode);
+@@ -152,7 +135,7 @@
+         }
+         
+         if ( !pm.isProcessedUsingPdp() && StringUtils.isNotBlank( bankCode ) ) {
+-            generateDocumentBankOffsetEntries(document,bankCode,bankCodePropertyName,documentTypeCode, sequenceHelper);
++            generateDocumentBankOffsetEntries(document,bankCode,bankCodePropertyName,templatePendingEntry.getFinancialDocumentTypeCode(), sequenceHelper);
+         }
+         
+         return true;
+Index: work/src/edu/arizona/kfs/fp/service/UaPaymentMethodGeneralLedgerPendingEntryService.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/service/UaPaymentMethodGeneralLedgerPendingEntryService.java	(revision 7354)
++++ work/src/edu/arizona/kfs/fp/service/UaPaymentMethodGeneralLedgerPendingEntryService.java	(revision 7355)
+@@ -55,7 +55,6 @@
+             String paymentMethodCode,
+             String bankCode, 
+             String bankCodePropertyName, // for error messages
+-            String documentTypeCode, // for GL entries
+             GeneralLedgerPendingEntry templatePendingEntry,
+             boolean feesWaived,
+             boolean reverseCharge,
+Index: work/src/edu/arizona/kfs/fp/batch/service/impl/UaDisbursementVoucherExtractServiceImpl.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/batch/service/impl/UaDisbursementVoucherExtractServiceImpl.java	(revision 0)
++++ work/src/edu/arizona/kfs/fp/batch/service/impl/UaDisbursementVoucherExtractServiceImpl.java	(revision 7355)
+@@ -0,0 +1,80 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.fp.batch.service.impl;
++
++import java.util.ArrayList;
++import java.util.Collection;
++
++import org.kuali.kfs.fp.batch.service.impl.DisbursementVoucherExtractServiceImpl;
++import org.kuali.kfs.fp.document.DisbursementVoucherConstants;
++import org.kuali.kfs.fp.document.DisbursementVoucherDocument;
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.kfs.sys.document.service.FinancialSystemDocumentService;
++import org.kuali.rice.kew.exception.WorkflowException;
++import org.kuali.rice.kns.service.DataDictionaryService;
++
++import edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService;
++
++/**
++ * Override the extract payments method to use the new payment method table information.
++ * 
++ */
++public class UaDisbursementVoucherExtractServiceImpl extends DisbursementVoucherExtractServiceImpl {
++    private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(UaDisbursementVoucherExtractServiceImpl.class);
++
++    private UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService;
++    
++    
++    /**
++     * 
++     * @see org.kuali.kfs.fp.batch.service.impl.DisbursementVoucherExtractServiceImpl#getListByDocumentStatusCodeCampus(java.lang.String, java.lang.String)
++     */
++    @Override
++    protected Collection<DisbursementVoucherDocument> getListByDocumentStatusCodeCampus(String statusCode, String campusCode) {        
++        LOG.debug("getListByDocumentStatusCodeCampus() started");
++
++        Collection<DisbursementVoucherDocument> list = new ArrayList<DisbursementVoucherDocument>();
++
++        try {
++            Collection<DisbursementVoucherDocument> docs = SpringContext.getBean(FinancialSystemDocumentService.class).findByDocumentHeaderStatusCode(SpringContext.getBean(DataDictionaryService.class).getDocumentClassByTypeName("DV"), statusCode);
++            for (DisbursementVoucherDocument doc : docs) {
++                String docCampusCode = doc.getCampusCode();
++
++                if (docCampusCode.equals(campusCode) 
++                        && getPaymentMethodGeneralLedgerPendingEntryService().isPaymentMethodProcessedUsingPdp(doc.getDisbVchrPaymentMethodCode())) {
++                    list.add(doc);
++                }
++            }
++        } catch (WorkflowException we) {
++            LOG.error("Could not load Disbursement Voucher Documents with status code = " + statusCode + ": " + we);
++            throw new RuntimeException("Could not load Disbursement Voucher Documents with status code = " + statusCode, we);
++        }
++
++        return list;
++    }
++
++
++    protected UaPaymentMethodGeneralLedgerPendingEntryService getPaymentMethodGeneralLedgerPendingEntryService() {
++        if ( paymentMethodGeneralLedgerPendingEntryService == null ) {
++            paymentMethodGeneralLedgerPendingEntryService = SpringContext.getBean(UaPaymentMethodGeneralLedgerPendingEntryService.class);
++        }
++        return paymentMethodGeneralLedgerPendingEntryService;
++    }
++
++    public void setPaymentMethodGeneralLedgerPendingEntryService(UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService) {
++        this.paymentMethodGeneralLedgerPendingEntryService = paymentMethodGeneralLedgerPendingEntryService;
++    }
++}
+Index: work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml	(revision 7354)
++++ work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml	(revision 7355)
+@@ -29,10 +29,10 @@
+ 		by all uses.
+ 	-->
+ 	<bean name="PaymentMethodSelectControl" parent="SelectControlDefinition"
+-		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodValuesFinder" />
++		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodValuesFinder" p:includeKeyInLabel="true" />
+ 		
+ 	<bean name="PaymentMethodNonInterdepartmentalSelectControl" parent="SelectControlDefinition"
+-		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodValuesFinderNonInterdepartmental" />
++		p:valuesFinderClass="edu.arizona.kfs.fp.businessobject.options.PaymentMethodValuesFinderNonInterdepartmental" p:includeKeyInLabel="true" />
+ 
+   <bean id="PaymentMethodAttribute-SelectControl" parent="PaymentMethod-paymentMethodCode" p:control-ref="PaymentMethodSelectControl" />
+   <bean id="PaymentMethodAttribute-NonInterdepartmentalSelectControl" parent="PaymentMethod-paymentMethodCode" p:control-ref="PaymentMethodSelectControl" />
+Index: work/src/edu/arizona/kfs/fp/spring-fp.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/spring-fp.xml	(revision 7354)
++++ work/src/edu/arizona/kfs/fp/spring-fp.xml	(revision 7355)
+@@ -194,5 +194,32 @@
+ 	
+ 	<bean id="uaPaymentMethodGeneralLedgerPendingEntryService" class="edu.arizona.kfs.fp.service.impl.UaPaymentMethodGeneralLedgerPendingEntryServiceImpl" />
+ 	
++	<bean id="disbursementVoucherExtractService" class="edu.arizona.kfs.fp.batch.service.impl.UaDisbursementVoucherExtractServiceImpl">
++		<property name="parameterService">
++			<ref bean="parameterService"/>
++		</property>
++		<property name="disbursementVoucherDao">
++			<ref bean="disbursementVoucherDao"/>
++		</property>
++		<property name="dateTimeService">
++			<ref bean="dateTimeService"/>
++		</property>
++		<property name="customerProfileService">
++			<ref bean="pdpCustomerProfileService"/>
++		</property>
++		<property name="paymentFileService">
++			<ref bean="paymentFileService"/>
++		</property>
++		<property name="paymentGroupService">
++			<ref bean="pdpPaymentGroupService"/>
++		</property>
++		<property name="businessObjectService">
++			<ref bean="businessObjectService"/>
++		</property>
++		<property name="paymentFileEmailService">
++			<ref bean="pdpEmailService"/>
++		</property>
++	</bean>
++	
+ </beans>
+ 
+Index: work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml	(revision 7354)
++++ work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml	(revision 7355)
+@@ -72,7 +72,9 @@
+         <bean parent="MaintainableFieldDefinition" p:name="processedUsingPdp"/>
+         <bean parent="MaintainableFieldDefinition" p:name="interdepartmentalPayment"/>
+         <bean parent="MaintainableFieldDefinition" p:name="offsetUsingClearingAccount"/>
++        <!-- 
+         <bean parent="MaintainableFieldDefinition" p:name="active"/>
++         -->
+       </list>
+     </property>
+   </bean>
+Index: work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml	(revision 7354)
++++ work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml	(revision 7355)
+@@ -22,6 +22,11 @@
+ 		<property name="control" ref="PaymentMethodNonInterdepartmentalSelectControl" />
+ 	</bean>
+   
++    <!-- bank code is now optional -->
++    <bean id="DisbursementVoucherDocument-disbVchrBankCode" parent="DisbursementVoucherDocument-disbVchrBankCode-parentBean">
++  		<property name="required" value="false" />
++ 	</bean>
++  
+   <!-- workflow attributes for routing -->
+   <bean id="DisbursementVoucherDocument-workflowAttributes" parent="DisbursementVoucherDocument-workflowAttributes-parentBean">
+   	<property name="routingTypeDefinitions">
+Index: work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java	(revision 7354)
++++ work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java	(revision 7355)
+@@ -56,7 +56,8 @@
+ 
+         // First, only do this if the document is in initiated status - after that, we don't want to 
+         // accidentally reset the bank code
+-        if ( KEWConstants.ROUTE_HEADER_INITIATED_CD.equals( getDocumentHeader().getWorkflowDocument().getRouteHeader().getDocRouteStatus() ) ) {
++        if ( KEWConstants.ROUTE_HEADER_INITIATED_CD.equals( getDocumentHeader().getWorkflowDocument().getRouteHeader().getDocRouteStatus() )
++                || KEWConstants.ROUTE_HEADER_SAVED_CD.equals( getDocumentHeader().getWorkflowDocument().getRouteHeader().getDocRouteStatus() ) ) {
+             // need to check whether the user has the permission to edit the bank code
+             // if so, don't synchronize since we can't tell whether the value coming in
+             // was entered by the user or not.        
+@@ -75,6 +76,10 @@
+         Bank bank = getPaymentMethodGeneralLedgerPendingEntryService().getBankForPaymentMethod( getDisbVchrPaymentMethodCode() );
+         if ( bank != null ) {
+             setDisbVchrBankCode(bank.getBankCode());
++        } else {
++            // no bank code, no bank needed
++            setDisbVchrBankCode(null);
++            setBank(null);
+         }
+     }
+     
+@@ -94,11 +99,8 @@
+     public void customizeExplicitGeneralLedgerPendingEntry(GeneralLedgerPendingEntrySourceDetail accountingLine, GeneralLedgerPendingEntry explicitEntry) {
+ 
+         /* change document type based on payment method to pick up different offsets */
+-        if (DisbursementVoucherConstants.PAYMENT_METHOD_CHECK.equals(getDisbVchrPaymentMethodCode())) {
++        if ( getPaymentMethodGeneralLedgerPendingEntryService().isPaymentMethodProcessedUsingPdp(getDisbVchrPaymentMethodCode())) {
+             explicitEntry.setFinancialDocumentTypeCode(DisbursementVoucherConstants.DOCUMENT_TYPE_CHECKACH);
+-        } else if ( DisbursementVoucherConstants.PAYMENT_METHOD_DRAFT.equals( getDisbVchrPaymentMethodCode() ) 
+-                || DisbursementVoucherConstants.PAYMENT_METHOD_WIRE.equals( getDisbVchrPaymentMethodCode() ) ) {
+-            explicitEntry.setFinancialDocumentTypeCode(DisbursementVoucherConstants.DOCUMENT_TYPE_WTFD);
+         } else { // wire transfer or foreign draft
+             explicitEntry.setFinancialDocumentTypeCode(DOCUMENT_TYPE_DV_NON_CHECK);
+         }
+@@ -127,7 +129,8 @@
+         // waive any fees only for wire charges when the waiver flag is set
+         boolean feesWaived = DisbursementVoucherConstants.PAYMENT_METHOD_WIRE.equals(getDisbVchrPaymentMethodCode()) 
+                 && getDvWireTransfer().isDisbursementVoucherWireTransferFeeWaiverIndicator();
+-        getPaymentMethodGeneralLedgerPendingEntryService().generatePaymentMethodSpecificDocumentGeneralLedgerPendingEntries(this,getDisbVchrPaymentMethodCode(), getDisbVchrBankCode(),KNSConstants.DOCUMENT_PROPERTY_NAME + "." + KFSPropertyConstants.DISB_VCHR_BANK_CODE,DisbursementVoucherConstants.DOCUMENT_TYPE_WTFD, getGeneralLedgerPendingEntry(0), feesWaived, false, sequenceHelper);
++
++        getPaymentMethodGeneralLedgerPendingEntryService().generatePaymentMethodSpecificDocumentGeneralLedgerPendingEntries(this,getDisbVchrPaymentMethodCode(), getDisbVchrBankCode(),KNSConstants.DOCUMENT_PROPERTY_NAME + "." + KFSPropertyConstants.DISB_VCHR_BANK_CODE, getGeneralLedgerPendingEntry(0), feesWaived, false, sequenceHelper);
+         
+         return true;
+     }
+Index: work/src/edu/arizona/kfs/fp/document/validation/impl/PaymentMethodRule.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/document/validation/impl/PaymentMethodRule.java	(revision 7354)
++++ work/src/edu/arizona/kfs/fp/document/validation/impl/PaymentMethodRule.java	(revision 7355)
+@@ -27,6 +27,24 @@
+ 
+ public class PaymentMethodRule extends KfsMaintenanceDocumentRuleBase {
+ 
++    public static final String WARNING_CLEARING_OBJECT_NOTREQUIRED = "warning.document.paymentmethod.clearing.object.notrequired";
++    public static final String WARNING_CLEARING_ACCOUNT_NOTREQUIRED = "warning.document.paymentmethod.clearing.account.notrequired";
++    public static final String WARNING_CLEARING_CHART_NOTREQUIRED = "warning.document.paymentmethod.clearing.chart.notrequired";
++    public static final String ERROR_CLEARING_OBJECT_REQUIRED = "error.document.paymentmethod.clearing.object.required";
++    public static final String ERROR_CLEARING_ACCOUNT_REQUIRED = "error.document.paymentmethod.clearing.account.required";
++    public static final String ERROR_CLEARING_CHART_REQUIRED = "error.document.paymentmethod.clearing.chart.required";
++    public static final String ERROR_EFFECTIVEDATE_INPAST = "error.document.paymentmethod.effectivedate.inpast";
++    public static final String WARNING_FEE_AMOUNT_NOTREQUIRED = "warning.document.paymentmethod.fee.amount.notrequired";
++    public static final String WARNING_FEE_EXPOBJ_NOTREQUIRED = "warning.document.paymentmethod.fee.expobj.notrequired";
++    public static final String WARNING_FEE_INCOBJ_NOTREQUIRED = "warning.document.paymentmethod.fee.incobj.notrequired";
++    public static final String WARNING_FEE_ACCOUNT_NOTREQUIRED = "warning.document.paymentmethod.fee.account.notrequired";
++    public static final String WARNING_FEE_CHART_NOTREQUIRED = "warning.document.paymentmethod.fee.chart.notrequired";
++    public static final String ERROR_FEE_AMOUNT_REQUIRED = "error.document.paymentmethod.fee.amount.required";
++    public static final String ERROR_FEE_EXPOBJ_REQUIRED = "error.document.paymentmethod.fee.expobj.required";
++    public static final String ERROR_FEE_INCOBJ_REQUIRED = "error.document.paymentmethod.fee.incobj.required";
++    public static final String ERROR_FEE_ACCOUNT_REQUIRED = "error.document.paymentmethod.fee.account.required";
++    public static final String ERROR_FEE_CHART_REQUIRED = "error.document.paymentmethod.fee.chart.required";
++
+     @Override
+     protected boolean processCustomRouteDocumentBusinessRules(MaintenanceDocument document) {
+         boolean continueRouting = super.processCustomRouteDocumentBusinessRules(document);
+@@ -55,7 +73,7 @@
+     protected boolean isNewEffectiveDateInFuture( PaymentMethodChart paymentMethodChart ) {        
+         // check if new, if so, they must have a future date
+         if ( paymentMethodChart.getEffectiveDate().before( getDateTimeService().getCurrentDate() ) ) {
+-            GlobalVariables.getMessageMap().putError("effectiveDate", "error.document.paymentmethod.effectivedate.inpast", (String[])null);            
++            GlobalVariables.getMessageMap().putError("effectiveDate", ERROR_EFFECTIVEDATE_INPAST, (String[])null);            
+             return false;
+         }
+         return true;
+@@ -65,40 +83,40 @@
+         boolean result = true;
+         if ( paymentMethod.isAssessedFees() ) {
+             if ( StringUtils.isEmpty( paymentMethodChart.getFeeIncomeChartOfAccountsCode() ) ) {
+-                GlobalVariables.getMessageMap().putError("feeIncomeChartOfAccountsCode", "error.document.paymentmethod.fee.chart.required", (String[])null);
++                GlobalVariables.getMessageMap().putError("feeIncomeChartOfAccountsCode", ERROR_FEE_CHART_REQUIRED, (String[])null);
+                 result = false;
+             }
+             if ( StringUtils.isEmpty( paymentMethodChart.getFeeIncomeAccountNumber() ) ) {
+-                GlobalVariables.getMessageMap().putError("feeIncomeAccountNumber", "error.document.paymentmethod.fee.account.required", (String[])null);
++                GlobalVariables.getMessageMap().putError("feeIncomeAccountNumber", ERROR_FEE_ACCOUNT_REQUIRED, (String[])null);
+                 result = false;
+             }
+             if ( StringUtils.isEmpty( paymentMethodChart.getFeeIncomeFinancialObjectCode() ) ) {
+-                GlobalVariables.getMessageMap().putError("feeIncomeFinancialObjectCode", "error.document.paymentmethod.fee.incobj.required", (String[])null);
++                GlobalVariables.getMessageMap().putError("feeIncomeFinancialObjectCode", ERROR_FEE_INCOBJ_REQUIRED, (String[])null);
+                 result = false;
+             }
+             if ( StringUtils.isEmpty( paymentMethodChart.getFeeExpenseFinancialObjectCode() ) ) {
+-                GlobalVariables.getMessageMap().putError("feeExpenseFinancialObjectCode", "error.document.paymentmethod.fee.expobj.required", (String[])null);
++                GlobalVariables.getMessageMap().putError("feeExpenseFinancialObjectCode", ERROR_FEE_EXPOBJ_REQUIRED, (String[])null);
+                 result = false;
+             }
+             if ( StringUtils.isEmpty( paymentMethodChart.getFeeIncomeChartOfAccountsCode() ) ) {
+-                GlobalVariables.getMessageMap().putError("feeAmount", "error.document.paymentmethod.fee.amount.required", (String[])null);
++                GlobalVariables.getMessageMap().putError("feeAmount", ERROR_FEE_AMOUNT_REQUIRED, (String[])null);
+                 result = false;
+             }
+         } else {
+             if ( StringUtils.isNotEmpty( paymentMethodChart.getFeeIncomeChartOfAccountsCode() ) ) {
+-                GlobalVariables.getMessageMap().putWarning("feeIncomeChartOfAccountsCode", "warning.document.paymentmethod.fee.chart.notrequired", (String[])null);
++                GlobalVariables.getMessageMap().putWarning("feeIncomeChartOfAccountsCode", WARNING_FEE_CHART_NOTREQUIRED, (String[])null);
+             }
+             if ( StringUtils.isNotEmpty( paymentMethodChart.getFeeIncomeAccountNumber() ) ) {
+-                GlobalVariables.getMessageMap().putWarning("feeIncomeAccountNumber", "warning.document.paymentmethod.fee.account.notrequired", (String[])null);
++                GlobalVariables.getMessageMap().putWarning("feeIncomeAccountNumber", WARNING_FEE_ACCOUNT_NOTREQUIRED, (String[])null);
+             }
+             if ( StringUtils.isNotEmpty( paymentMethodChart.getFeeIncomeFinancialObjectCode() ) ) {
+-                GlobalVariables.getMessageMap().putWarning("feeIncomeFinancialObjectCode", "warning.document.paymentmethod.fee.incobj.notrequired", (String[])null);
++                GlobalVariables.getMessageMap().putWarning("feeIncomeFinancialObjectCode", WARNING_FEE_INCOBJ_NOTREQUIRED, (String[])null);
+             }
+             if ( StringUtils.isNotEmpty( paymentMethodChart.getFeeExpenseFinancialObjectCode() ) ) {
+-                GlobalVariables.getMessageMap().putWarning("feeExpenseFinancialObjectCode", "warning.document.paymentmethod.fee.expobj.notrequired", (String[])null);
++                GlobalVariables.getMessageMap().putWarning("feeExpenseFinancialObjectCode", WARNING_FEE_EXPOBJ_NOTREQUIRED, (String[])null);
+             }
+             if ( StringUtils.isNotEmpty( paymentMethodChart.getFeeIncomeChartOfAccountsCode() ) ) {
+-                GlobalVariables.getMessageMap().putWarning("feeAmount", "warning.document.paymentmethod.fee.amount.notrequired", (String[])null);
++                GlobalVariables.getMessageMap().putWarning("feeAmount", WARNING_FEE_AMOUNT_NOTREQUIRED, (String[])null);
+             }
+         }        
+         return result;
+@@ -108,26 +126,26 @@
+         boolean result = true;
+         if ( paymentMethod.isOffsetUsingClearingAccount() ) {
+             if ( StringUtils.isEmpty( paymentMethodChart.getClearingChartOfAccountsCode() ) ) {
+-                GlobalVariables.getMessageMap().putError("clearingChartOfAccountsCode", "error.document.paymentmethod.clearing.chart.required", (String[])null);
++                GlobalVariables.getMessageMap().putError("clearingChartOfAccountsCode", ERROR_CLEARING_CHART_REQUIRED, (String[])null);
+                 result = false;
+             }
+             if ( StringUtils.isEmpty( paymentMethodChart.getClearingAccountNumber() ) ) {
+-                GlobalVariables.getMessageMap().putError("clearingAccountNumber", "error.document.paymentmethod.clearing.account.required", (String[])null);
++                GlobalVariables.getMessageMap().putError("clearingAccountNumber", ERROR_CLEARING_ACCOUNT_REQUIRED, (String[])null);
+                 result = false;
+             }
+             if ( StringUtils.isEmpty( paymentMethodChart.getClearingFinancialObjectCode() ) ) {
+-                GlobalVariables.getMessageMap().putError("clearingFinancialObjectCode", "error.document.paymentmethod.clearing.object.required", (String[])null);
++                GlobalVariables.getMessageMap().putError("clearingFinancialObjectCode", ERROR_CLEARING_OBJECT_REQUIRED, (String[])null);
+                 result = false;
+             }
+         } else {
+             if ( StringUtils.isNotEmpty( paymentMethodChart.getClearingChartOfAccountsCode() ) ) {
+-                GlobalVariables.getMessageMap().putWarning("clearingChartOfAccountsCode", "warning.document.paymentmethod.clearing.chart.notrequired", (String[])null);
++                GlobalVariables.getMessageMap().putWarning("clearingChartOfAccountsCode", WARNING_CLEARING_CHART_NOTREQUIRED, (String[])null);
+             }
+             if ( StringUtils.isNotEmpty( paymentMethodChart.getClearingAccountNumber() ) ) {
+-                GlobalVariables.getMessageMap().putWarning("clearingAccountNumber", "warning.document.paymentmethod.clearing.account.notrequired", (String[])null);
++                GlobalVariables.getMessageMap().putWarning("clearingAccountNumber", WARNING_CLEARING_ACCOUNT_NOTREQUIRED, (String[])null);
+             }
+             if ( StringUtils.isNotEmpty( paymentMethodChart.getClearingFinancialObjectCode() ) ) {
+-                GlobalVariables.getMessageMap().putWarning("clearingFinancialObjectCode", "warning.document.paymentmethod.clearing.object.notrequired", (String[])null);
++                GlobalVariables.getMessageMap().putWarning("clearingFinancialObjectCode", WARNING_CLEARING_OBJECT_NOTREQUIRED, (String[])null);
+             }
+         }        
+         return result;
+Index: work/web-root/WEB-INF/tags/fp/dvMessages.tag
+===================================================================
+--- work/web-root/WEB-INF/tags/fp/dvMessages.tag	(revision 7354)
++++ work/web-root/WEB-INF/tags/fp/dvMessages.tag	(revision 7355)
+@@ -28,10 +28,11 @@
+ 		var dwrReply = {
+ 			callback:function(data) {
+ 			if ( data != null && typeof data == 'object' ) {
+-					setRecipientValue( "document.disbVchrBankCode", data.bankCode )
+-					setRecipientValue( "document.bank", data.bankName )
++					setRecipientValue( "document.disbVchrBankCode", data.bankCode );
++					setRecipientValue( "document.bank", data.bankName );
+ 				} else {
+-					window.status = "Unable to find bank code for payment method: " + selectedMethod;			
++					setRecipientValue( "document.disbVchrBankCode", "" );
++					setRecipientValue( "document.bank", "" );
+ 				}
+ 			},
+ 			errorHandler:function( errorMessage ) { 

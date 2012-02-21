@@ -1,0 +1,56 @@
+Index: work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java	(revision 11823)
++++ work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java	(revision 11824)
+@@ -15,6 +15,7 @@
+  */
+ package edu.arizona.kfs.fp.document;
+ 
++import org.apache.commons.lang.StringUtils;
+ import org.apache.log4j.Logger;
+ import org.kuali.kfs.fp.document.DisbursementVoucherConstants;
+ import org.kuali.kfs.fp.document.DisbursementVoucherDocument;
+@@ -25,15 +26,19 @@
+ import org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntrySequenceHelper;
+ import org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntrySourceDetail;
+ import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.kfs.vnd.businessobject.VendorAddress;
++import org.kuali.kfs.vnd.businessobject.VendorDetail;
+ import org.kuali.rice.kew.util.KEWConstants;
+ import org.kuali.rice.kns.document.authorization.DocumentAuthorizer;
+ import org.kuali.rice.kns.service.DocumentHelperService;
+ import org.kuali.rice.kns.service.ParameterConstants.COMPONENT;
+ import org.kuali.rice.kns.util.GlobalVariables;
+ import org.kuali.rice.kns.util.KNSConstants;
++import org.kuali.rice.kns.util.ObjectUtils;
+ 
+ import edu.arizona.kfs.fp.businessobject.options.PaymentMethodValuesFinder;
+ import edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService;
++import edu.arizona.kfs.vnd.businessobject.VendorDetailExtension;
+ 
+ /**
+  * Document class override to ensure that the bank code is synchronized with the
+@@ -150,5 +155,22 @@
+         }
+         return paymentMethodGeneralLedgerPendingEntryService;
+     }
+-
++    
++    /** KITT-592
++     * 
++     * Update to baseline method to additionally set the payment method when a vendor is selected.
++     * 
++     */
++    @Override
++    public void templateVendor(VendorDetail vendor, VendorAddress vendorAddress) {
++        super.templateVendor(vendor, vendorAddress);
++        if ( vendor != null ) {
++            if ( ObjectUtils.isNotNull( vendor.getExtension() ) 
++                    && vendor.getExtension() instanceof VendorDetailExtension ) {
++                if ( StringUtils.isNotBlank(((VendorDetailExtension)vendor.getExtension()).getDefaultB2BPaymentMethodCode())) {
++                    disbVchrPaymentMethodCode = ((VendorDetailExtension)vendor.getExtension()).getDefaultB2BPaymentMethodCode();
++                }
++            }
++        }
++    }
+ }

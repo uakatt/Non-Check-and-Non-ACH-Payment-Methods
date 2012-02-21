@@ -1,0 +1,67 @@
+Index: financial-system/kfs-cfg-dbs/trunk/latest/dat/GL_OFFSET_DEFN_T.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/latest/dat/GL_OFFSET_DEFN_T.xml	(revision 8055)
++++ financial-system/kfs-cfg-dbs/trunk/latest/dat/GL_OFFSET_DEFN_T.xml	(revision 8056)
+@@ -6,34 +6,36 @@
+   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+  
+-  <changeSet id="20100119-2" author="jhkeller" runAlways="true">
++  <changeSet id="20100224-1" author="jhkeller">
+ 
+ <!-- Since adding the new document type code, need to ensure that the needed offset entries are in place. -->
+-    <sql><![CDATA[ 
+-INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
+-	(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'DVNC', FIN_COA_CD, SYS_GUID(), 1
+-		FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF'
+-	);
+-
+-INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
+-	(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'PRNC', FIN_COA_CD, SYS_GUID(), 1
+-		FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF' AND FIN_BALANCE_TYP_CD = 'AC'
+-	);
+-
+-INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
+-	(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'PRNC', FIN_COA_CD, SYS_GUID(), 1
+-		FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'PREQ' AND FIN_BALANCE_TYP_CD = 'EX'
+-	);
+-
+-INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
+-	(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'CMNC', FIN_COA_CD, SYS_GUID(), 1
+-		FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF' AND FIN_BALANCE_TYP_CD = 'AC'
+-	);
+-
+-INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
+-	(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'CMNC', FIN_COA_CD, SYS_GUID(), 1
+-		FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'CM' AND FIN_BALANCE_TYP_CD = 'EX'
+-	);
++    <sql splitStatements="false" endDelimiter=""><![CDATA[ 
++BEGIN
++	INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
++		(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'DVNC', FIN_COA_CD, SYS_GUID(), 1
++			FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF'
++		);
++	
++	INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
++		(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'PRNC', FIN_COA_CD, SYS_GUID(), 1
++			FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF' AND FIN_BALANCE_TYP_CD = 'AC'
++		);
++	
++	INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
++		(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'PRNC', FIN_COA_CD, SYS_GUID(), 1
++			FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'PREQ' AND FIN_BALANCE_TYP_CD = 'EX'
++		);
++	
++	INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
++		(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'CMNC', FIN_COA_CD, SYS_GUID(), 1
++			FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'DVWF' AND FIN_BALANCE_TYP_CD = 'AC'
++		);
++	
++	INSERT INTO gl_offset_defn_t ( FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, FDOC_TYP_CD, FIN_COA_CD, OBJ_ID, VER_NBR )
++		(SELECT FIN_BALANCE_TYP_CD, FIN_OBJECT_CD, UNIV_FISCAL_YR, 'CMNC', FIN_COA_CD, SYS_GUID(), 1
++			FROM gl_offset_defn_t WHERE fdoc_typ_cd = 'CM' AND FIN_BALANCE_TYP_CD = 'EX'
++		);
++END;
+ ]]>    
+     </sql>
+   </changeSet>

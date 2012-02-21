@@ -1,0 +1,364 @@
+Index: work/src/arizona-ApplicationResources.properties
+===================================================================
+--- work/src/arizona-ApplicationResources.properties	(revision 7497)
++++ work/src/arizona-ApplicationResources.properties	(revision 7498)
+@@ -49,3 +49,5 @@
+ # Additional DV document messages
+ error.document.disbursementvoucher.bank.required=A bank code is required for payment method {0}.
+ warning.document.disbursementvoucher.bank.not.required=Bank codes are not required on payment method {0}, the entered value has been removed.
++
++error.document.creditmemo.paymentmethodcode.mustmatchpreq=When creating a credit memo from a payment request, the payment method codes must match. ({0})
+Index: work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerServiceTest.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerServiceTest.java	(revision 0)
++++ work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerServiceTest.java	(revision 7498)
+@@ -0,0 +1,131 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.fp.service.impl;
++
++import org.kuali.kfs.sys.ConfigureContext;
++import org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntry;
++import org.kuali.kfs.sys.businessobject.GeneralLedgerPendingEntrySequenceHelper;
++import org.kuali.kfs.sys.context.KualiTestBase;
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.kfs.sys.fixture.GeneralLedgerPendingEntryFixture;
++import org.kuali.kfs.sys.fixture.UserNameFixture;
++import org.kuali.kfs.sys.service.UniversityDateService;
++import org.kuali.rice.kns.service.BusinessObjectService;
++import org.kuali.rice.kns.util.KualiDecimal;
++
++import edu.arizona.kfs.fp.businessobject.PaymentMethod;
++import edu.arizona.kfs.fp.document.UaDisbursementVoucherDocument;
++import edu.arizona.kfs.fp.service.UaPaymentMethodGeneralLedgerPendingEntryService;
++
++@ConfigureContext(session=UserNameFixture.khuntley)
++public class UaPaymentMethodGeneralLedgerServiceTest extends KualiTestBase {
++
++    UaPaymentMethodGeneralLedgerPendingEntryServiceImpl service;
++    
++    protected void setUp() throws Exception {
++        super.setUp();
++        service = (UaPaymentMethodGeneralLedgerPendingEntryServiceImpl)SpringContext.getBean(UaPaymentMethodGeneralLedgerPendingEntryService.class);
++    }
++
++    
++    public void testGenerateForeignDraftChargeEntries() {
++        fail("Not yet implemented");
++    }
++
++    public void testGenerateAccountsPayableCreditCardOffsetEntries() {
++        // create the document
++        // 
++        fail("Not yet implemented");
++    }
++
++    public void testGenerateFeeAssessmentEntries() throws Exception {
++        GeneralLedgerPendingEntrySequenceHelper sequenceHelper = new GeneralLedgerPendingEntrySequenceHelper(); 
++        UaDisbursementVoucherDocument document = new UaDisbursementVoucherDocument();
++        document.setPostingYear(SpringContext.getBean(UniversityDateService.class).getCurrentFiscalYear());
++        document.addPendingEntry(GeneralLedgerPendingEntryFixture.EXPECTED_EXPLICIT_SOURCE_PENDING_ENTRY_FOR_EXPENSE.createGeneralLedgerPendingEntry());
++        document.getGeneralLedgerPendingEntry(0).setUniversityFiscalYear(document.getPostingYear());
++        document.getGeneralLedgerPendingEntry(0).setTransactionLedgerEntryAmount(new KualiDecimal("500.00"));
++        PaymentMethod pm = SpringContext.getBean(BusinessObjectService.class).findBySinglePrimaryKey(PaymentMethod.class, "W");
++        // TODO: get the wire charge information for verification
++        
++        service.generateFeeAssessmentEntries(pm, document, document.getGeneralLedgerPendingEntry(0), sequenceHelper, false);
++        //fail("Not yet implemented");
++        
++        for ( GeneralLedgerPendingEntry glpe : document.getGeneralLedgerPendingEntries() ) {
++            System.out.println( glpe.getChartOfAccountsCode() + "/" + glpe.getAccountNumber() + "/" + glpe.getFinancialObjectCode() + "/" + glpe.getTransactionLedgerEntryAmount() + "/" + glpe.getTransactionDebitCreditCode() );
++        }
++        
++    }
++
++//    public void testGenerateDocumentBankOffsetEntries() {
++//        fail("Not yet implemented");
++//    }
++
++//  UaDisbursementVoucherDocument document = getDocumentParameterFixture();
++//  document.setDisbVchrPaymentMethodCode(PaymentMethodValuesFinder.PAYMENT_METHOD_WIRE);
++//  SpringContext.getBean(GeneralLedgerPendingEntryService.class).generateGeneralLedgerPendingEntries(document);
++    
++//    private UaDisbursementVoucherDocument getDocumentParameterFixture() throws Exception {
++//        UaDisbursementVoucherDocument document = DocumentTestUtils.createDocument(SpringContext.getBean(DocumentService.class), UaDisbursementVoucherDocument.class);
++//        DisbursementVoucherPayeeDetail payeeDetail = new DisbursementVoucherPayeeDetail();
++//        payeeDetail.setDisbVchrPayeeIdNumber("1013-0");
++//       // payeeDetail.setDisbVchrAlienPaymentCode(true);
++//        payeeDetail.setDisbursementVoucherPayeeTypeCode("V");
++//        payeeDetail.setDisbVchrPayeeLine1Addr("100 Main St");
++//        payeeDetail.setDisbVchrPayeeCityName("Bloomington");
++//        payeeDetail.setDisbVchrPayeeStateCode("IN");
++//        payeeDetail.setDisbVchrPayeeZipCode("47405");
++//        payeeDetail.setDisbVchrPayeeCountryCode("US");
++//        
++//        payeeDetail.setDisbVchrVendorDetailAssignedIdNumber("0");
++//        payeeDetail.setDisbVchrPayeePersonName("Jerry Neal");
++//        payeeDetail.setDisbVchrPaymentReasonCode("B");
++//        payeeDetail.setDocumentNumber(document.getDocumentNumber());
++//        // payee detail
++//        document.setDvPayeeDetail(payeeDetail);
++//        // payment info
++//        document.setDisbVchrPaymentMethodCode("P");
++//        document.setDisbursementVoucherDueDate(Date.valueOf("2010-01-24"));
++//        document.setDisbursementVoucherDocumentationLocationCode("F");
++//        // contact information
++//        document.setCampusCode("BL");
++//        document.setDisbVchrContactPhoneNumber("808-123-4567");
++//        document.setDisbVchrContactPersonName("aynalem");
++//        document.setDisbVchrCheckStubText("Test DV Check");
++//        document.setDisbVchrBankCode(KualiTestConstants.TestConstants.BankCodeTestData.BANK_CODE);
++//
++//        KualiDecimal amount = KualiDecimal.ZERO;
++//        for (AccountingLineFixture fixture : getSourceAccountingLineParametersFromFixtures()) {
++//            amount = amount.add(fixture.amount);
++//        }
++//        for (AccountingLineFixture fixture : getTargetAccountingLineParametersFromFixtures()) {
++//            amount = amount.add(fixture.amount);
++//        }
++//        document.setDisbVchrCheckTotalAmount(amount);
++//        return document;
++//    }
++//
++//    private List<AccountingLineFixture> getTargetAccountingLineParametersFromFixtures() {
++//        return new ArrayList<AccountingLineFixture>();
++//    }
++//
++//    private List<AccountingLineFixture> getSourceAccountingLineParametersFromFixtures() {
++//        List<AccountingLineFixture> list = new ArrayList<AccountingLineFixture>();
++//        list.add(LINE7);
++//        return list;
++//    }
++    
++}
+Index: work/src/edu/arizona/kfs/fp/service/UaPaymentMethodGeneralLedgerPendingEntryService.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/service/UaPaymentMethodGeneralLedgerPendingEntryService.java	(revision 7497)
++++ work/src/edu/arizona/kfs/fp/service/UaPaymentMethodGeneralLedgerPendingEntryService.java	(revision 7498)
+@@ -68,53 +68,5 @@
+      * @return
+      */
+     boolean isPaymentMethodProcessedUsingPdp( String paymentMethodCode );
+-
+-    /**
+-     * Generates the GL entries to charge the department for the foreign draft and credit the Foreign Draft
+-     * Fee Account as specified by system parameters.
+-     * 
+-     * @param document Document into which to add the generated GL Entries.
+-     * @return <b>true</b> if the GL entries were created properly, <b>false</b> otherwise
+-     */
+-    //boolean generateForeignDraftChargeEntries(AccountingDocument document, GeneralLedgerPendingEntrySequenceHelper sequenceHelper, boolean reverseEntries);
+     
+-    
+-    /**
+-     * Used to generate the needed entries in the AP Credit card clearing account
+-     * when that payment method is used.
+-     * 
+-     * @param document Document into which to add the generated GL Entries.
+-     * @param sequenceHelper helper class to keep track of GLPE sequence
+-     * @return <b>true</b> if the GL entries were created properly, <b>false</b> otherwise
+-     */
+-    //boolean generateAccountsPayableCreditCardOffsetEntries(AccountingDocument document, GeneralLedgerPendingEntrySequenceHelper sequenceHelper);
+-
+-    /**
+-     * Generates the GL entries to charge the department for the wire charge and credit the Wire Charge
+-     * Fee Account as specified by the wire charge table.
+-     * 
+-     * Builds an explicit and offset for the wire charge debit. The account associated with the first accounting is used for the
+-     * debit. The explicit and offset entries for the first accounting line and copied and customized for the wire charge.
+-     * 
+-     * Builds an explicit and offset for the wire charge credit. The account and income object code found in the wire charge table
+-     * is used for the entry.
+-     * 
+-     * @param document Document into which to add the generated GL Entries.
+-     * @param countryCode The country code to which the wire transfer is being made.
+-     * @param sequenceHelper helper class to keep track of GLPE sequence
+-     */
+-//    void generateWireChargeEntries( AccountingDocument document, String countryCode, GeneralLedgerPendingEntrySequenceHelper sequenceHelper, boolean reverseEntries );
+-    
+-    /**
+-     * If bank specification is enabled generates bank offsetting entries for the document amount
+-     * 
+-     * @param document Document into which to add the generated GL Entries.
+-     * @param bankCode the bank code to use for the bank off-setting entries
+-     * @param bankCodePropertyName Property to highlight if there is an error generating these entries.
+-     * @param documentTypeCode Document type code to use on the GL entries.
+-     * @param sequenceHelper helper class to keep track of GLPE sequence
+-     * @return
+-     */
+-//    boolean generateDocumentBankOffsetEntries(AccountingDocument document, String bankCode, String bankCodePropertyName, String documentTypeCode, GeneralLedgerPendingEntrySequenceHelper sequenceHelper);
+-    
+ }
+Index: work/src/edu/arizona/kfs/module/purap/spring-purap.xml
+===================================================================
+--- work/src/edu/arizona/kfs/module/purap/spring-purap.xml	(revision 7497)
++++ work/src/edu/arizona/kfs/module/purap/spring-purap.xml	(revision 7498)
+@@ -84,8 +84,7 @@
+         <property name="paymentMethodGeneralLedgerPendingEntryService" ref="uaPaymentMethodGeneralLedgerPendingEntryService" />
+     </bean>
+ 
+-	<!-- KITT-592: replace the bank code validator with one aware of the documents with a payment method code -->
+-    <bean id="PurchasingAccountsPayable-bankCodeValidation" class="edu.arizona.kfs.module.purap.document.validation.impl.UaAccountsPayableBankCodeValidation" abstract="true"/>
++	<import resource="document/validation/configuration/PurapValidatorOverrides.xml" />
+ 
+ </beans>
+ 
+Index: work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java
+===================================================================
+--- work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java	(revision 7497)
++++ work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java	(revision 7498)
+@@ -15,6 +15,7 @@
+  */
+ package edu.arizona.kfs.module.purap.document.validation.impl;
+ 
++import org.apache.commons.lang.StringUtils;
+ import org.kuali.kfs.module.purap.PurapPropertyConstants;
+ import org.kuali.kfs.module.purap.document.AccountsPayableDocumentBase;
+ import org.kuali.kfs.module.purap.document.validation.impl.AccountsPayableBankCodeValidation;
+@@ -42,8 +43,24 @@
+         boolean isValid = true;
+         if ( apDocument instanceof UaPaymentRequestDocument ) {
+             isValid = BankCodeValidation.validate(apDocument.getBankCode(), ((UaPaymentRequestDocument)apDocument).getPaymentMethodCode(), "document." + PurapPropertyConstants.BANK_CODE, false, true);            
++            if ( isValid ) {
++                // clear out the bank code on the document if not needed (per the message set by the call above)
++                if ( StringUtils.isNotBlank(apDocument.getBankCode())
++                        && !BankCodeValidation.doesBankCodeNeedToBePopulated(((UaPaymentRequestDocument)apDocument).getPaymentMethodCode()) ) {
++                    apDocument.setBank(null);
++                    apDocument.setBankCode(null);                
++                }
++            }
+         } else if ( apDocument instanceof UaVendorCreditMemoDocument ) {
+             isValid = BankCodeValidation.validate(apDocument.getBankCode(), ((UaVendorCreditMemoDocument)apDocument).getPaymentMethodCode(), "document." + PurapPropertyConstants.BANK_CODE, false, true);                        
++            if ( isValid ) {
++                // clear out the bank code on the document if not needed (per the message set by the call above)
++                if ( StringUtils.isNotBlank(apDocument.getBankCode())
++                        && !BankCodeValidation.doesBankCodeNeedToBePopulated(((UaVendorCreditMemoDocument)apDocument).getPaymentMethodCode()) ) {
++                    apDocument.setBank(null);
++                    apDocument.setBankCode(null);                
++                }
++            }
+         } else {
+             isValid = BankCodeValidation.validate(apDocument.getBankCode(), "document." + PurapPropertyConstants.BANK_CODE, false, true);
+         }
+Index: work/src/edu/arizona/kfs/module/purap/document/validation/impl/VendorCreditMemoPaymentMethodCodeValidation.java
+===================================================================
+--- work/src/edu/arizona/kfs/module/purap/document/validation/impl/VendorCreditMemoPaymentMethodCodeValidation.java	(revision 0)
++++ work/src/edu/arizona/kfs/module/purap/document/validation/impl/VendorCreditMemoPaymentMethodCodeValidation.java	(revision 7498)
+@@ -0,0 +1,57 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.module.purap.document.validation.impl;
++
++import org.apache.commons.lang.StringUtils;
++import org.kuali.kfs.module.purap.document.PaymentRequestDocument;
++import org.kuali.kfs.sys.document.validation.GenericValidation;
++import org.kuali.kfs.sys.document.validation.event.AttributedDocumentEvent;
++import org.kuali.rice.kns.util.GlobalVariables;
++
++import edu.arizona.kfs.module.purap.document.UaPaymentRequestDocument;
++import edu.arizona.kfs.module.purap.document.UaVendorCreditMemoDocument;
++
++/**
++ * Validates the payment method code used on credit memo document if it was created
++ * from a payment request document.
++ * 
++ * @author jonathan
++ */
++public class VendorCreditMemoPaymentMethodCodeValidation extends GenericValidation {
++
++    public boolean validate(AttributedDocumentEvent event) {
++        if ( event.getDocument() instanceof UaVendorCreditMemoDocument ) {
++            UaVendorCreditMemoDocument doc = (UaVendorCreditMemoDocument) event.getDocument();
++            // check if from a PREQ document
++            if ( doc.isSourceDocumentPaymentRequest() ) {
++                // load the document
++                PaymentRequestDocument preqDoc = doc.getPaymentRequestDocument();
++                // if a UA PREQ, get the PMC
++                if ( preqDoc instanceof UaPaymentRequestDocument ) {
++                    // check if the PMC on this document is the same
++                    String preqPaymentMethodCode = ((UaPaymentRequestDocument)preqDoc).getPaymentMethodCode();
++                    if ( !StringUtils.equals(preqPaymentMethodCode, doc.getPaymentMethodCode() ) ) {
++                        GlobalVariables.getMessageMap().putError("paymentMethodCode", "error.document.creditmemo.paymentmethodcode.mustmatchpreq", preqPaymentMethodCode);
++                        return false;
++                    }
++                }
++            }
++        }
++        // if not (for some reason) the UA CM document, just return true
++        return true;
++    }
++
++}
+Index: work/src/edu/arizona/kfs/module/purap/document/validation/configuration/PurapValidatorOverrides.xml
+===================================================================
+--- work/src/edu/arizona/kfs/module/purap/document/validation/configuration/PurapValidatorOverrides.xml	(revision 0)
++++ work/src/edu/arizona/kfs/module/purap/document/validation/configuration/PurapValidatorOverrides.xml	(revision 7498)
+@@ -0,0 +1,41 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!--
++ Copyright 2006-2007 The Kuali Foundation.
++ 
++ Licensed under the Educational Community License, Version 1.0 (the "License");
++ you may not use this file except in compliance with the License.
++ You may obtain a copy of the License at
++ 
++ http://www.opensource.org/licenses/ecl1.php
++ 
++ Unless required by applicable law or agreed to in writing, software
++ distributed under the License is distributed on an "AS IS" BASIS,
++ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ See the License for the specific language governing permissions and
++ limitations under the License.
++-->
++<beans xmlns="http://www.springframework.org/schema/beans"
++       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++       xmlns:p="http://www.springframework.org/schema/p"
++       xmlns:aop="http://www.springframework.org/schema/aop"
++       xmlns:tx="http://www.springframework.org/schema/tx"
++       xsi:schemaLocation="http://www.springframework.org/schema/beans
++                           http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
++                           http://www.springframework.org/schema/tx
++                           http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
++                           http://www.springframework.org/schema/aop
++                           http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
++
++
++	<!-- KITT-592: replace the bank code validator with one aware of the documents with a payment method code -->
++    <bean id="PurchasingAccountsPayable-bankCodeValidation" class="edu.arizona.kfs.module.purap.document.validation.impl.UaAccountsPayableBankCodeValidation" abstract="true"/>
++
++	<bean id="VendorCreditMemo-routeDocumentValidation" parent="VendorCreditMemo-routeDocumentValidation-parentBean" scope="prototype">
++		<property name="validations">
++			<list merge="true">
++				<bean class="edu.arizona.kfs.module.purap.document.validation.impl.VendorCreditMemoPaymentMethodCodeValidation" />
++			</list>
++		</property>
++	</bean>
++
++</beans>
+\ No newline at end of file

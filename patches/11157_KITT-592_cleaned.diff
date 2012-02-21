@@ -1,0 +1,276 @@
+Index: work/src/org/kuali/kfs/fp/batch/service/impl/DisbursementVoucherExtractServiceImpl.java
+===================================================================
+--- work/src/org/kuali/kfs/fp/batch/service/impl/DisbursementVoucherExtractServiceImpl.java	(revision 11156)
++++ work/src/org/kuali/kfs/fp/batch/service/impl/DisbursementVoucherExtractServiceImpl.java	(revision 11157)
+@@ -79,16 +79,16 @@
+ public class DisbursementVoucherExtractServiceImpl implements DisbursementVoucherExtractService {
+     private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(DisbursementVoucherExtractServiceImpl.class);
+ 
+-    private PersonService<Person> personService;
+-    private ParameterService parameterService;
+-    private DisbursementVoucherDao disbursementVoucherDao;
+-    private DateTimeService dateTimeService;
+-    private CustomerProfileService customerProfileService;
+-    private PaymentFileService paymentFileService;
+-    private PaymentGroupService paymentGroupService;
+-    private BusinessObjectService businessObjectService;
+-    private PdpEmailService paymentFileEmailService;
+-    private int maxNoteLines;
++    protected PersonService<Person> personService;
++    protected ParameterService parameterService;
++    protected DisbursementVoucherDao disbursementVoucherDao;
++    protected DateTimeService dateTimeService;
++    protected CustomerProfileService customerProfileService;
++    protected PaymentFileService paymentFileService;
++    protected PaymentGroupService paymentGroupService;
++    protected BusinessObjectService businessObjectService;
++    protected PdpEmailService paymentFileEmailService;
++    protected int maxNoteLines;
+ 
+     // This should only be set to true when testing this system. Setting this to true will run the code but
+     // won't set the doc status to extracted
+Index: work/src/edu/arizona/kfs/fp/batch/service/impl/UaDisbursementVoucherExtractServiceImpl.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/batch/service/impl/UaDisbursementVoucherExtractServiceImpl.java	(revision 11156)
++++ work/src/edu/arizona/kfs/fp/batch/service/impl/UaDisbursementVoucherExtractServiceImpl.java	(revision 11157)
+@@ -17,9 +17,11 @@
+ 
+ import java.util.ArrayList;
+ import java.util.Collection;
++import java.util.HashSet;
++import java.util.Set;
+ 
++import org.apache.commons.lang.StringUtils;
+ import org.kuali.kfs.fp.batch.service.impl.DisbursementVoucherExtractServiceImpl;
+-import org.kuali.kfs.fp.document.DisbursementVoucherConstants;
+ import org.kuali.kfs.fp.document.DisbursementVoucherDocument;
+ import org.kuali.kfs.sys.context.SpringContext;
+ import org.kuali.kfs.sys.document.service.FinancialSystemDocumentService;
+@@ -35,7 +37,7 @@
+ public class UaDisbursementVoucherExtractServiceImpl extends DisbursementVoucherExtractServiceImpl {
+     private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(UaDisbursementVoucherExtractServiceImpl.class);
+ 
+-    private UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService;
++    protected UaPaymentMethodGeneralLedgerPendingEntryService paymentMethodGeneralLedgerPendingEntryService;
+     
+     
+     /**
+@@ -53,7 +55,7 @@
+             for (DisbursementVoucherDocument doc : docs) {
+                 String docCampusCode = doc.getCampusCode();
+ 
+-                if (docCampusCode.equals(campusCode) 
++                if (StringUtils.equals( docCampusCode, campusCode ) 
+                         && getPaymentMethodGeneralLedgerPendingEntryService().isPaymentMethodProcessedUsingPdp(doc.getDisbVchrPaymentMethodCode())) {
+                     list.add(doc);
+                 }
+@@ -67,6 +69,29 @@
+     }
+ 
+ 
++    /**
++     * This method retrieves a collection of campus instances representing all the campuses which currently have disbursement
++     * vouchers with the status code provided.
++     * 
++     * @param statusCode The status code to retrieve disbursement vouchers by.
++     * @return A collection of campus codes of all the campuses with disbursement vouchers in the status given.
++     */
++    @Override
++    protected Set<String> getCampusListByDocumentStatusCode(String statusCode) {
++        LOG.debug("getCampusListByDocumentStatusCode() started");
++
++        Set<String> campusSet = new HashSet<String>();
++
++        Collection<DisbursementVoucherDocument> docs = disbursementVoucherDao.getDocumentsByHeaderStatus(statusCode);
++        for (DisbursementVoucherDocument doc : docs) {
++            if ( getPaymentMethodGeneralLedgerPendingEntryService().isPaymentMethodProcessedUsingPdp(doc.getDisbVchrPaymentMethodCode()) ) {
++                campusSet.add(doc.getCampusCode());
++            }
++        }
++
++        return campusSet;
++    }
++
+     protected UaPaymentMethodGeneralLedgerPendingEntryService getPaymentMethodGeneralLedgerPendingEntryService() {
+         if ( paymentMethodGeneralLedgerPendingEntryService == null ) {
+             paymentMethodGeneralLedgerPendingEntryService = SpringContext.getBean(UaPaymentMethodGeneralLedgerPendingEntryService.class);
+Index: work/src/edu/arizona/kfs/fp/spring-fp.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/spring-fp.xml	(revision 11156)
++++ work/src/edu/arizona/kfs/fp/spring-fp.xml	(revision 11157)
+@@ -224,6 +224,8 @@
+ 			<ref bean="pdpEmailService"/>
+ 		</property>
+ 	</bean>
++
++	<bean id="disbursementVoucherDao" class="edu.arizona.kfs.fp.dataaccess.impl.UaDisbursementVoucherDaoOjb" parent="platformAwareDao" />
+ 	
+ 
+ 	<!-- KITT-966 changed to unscheduled -->
+Index: work/src/edu/arizona/kfs/fp/dataaccess/impl/UaDisbursementVoucherDaoOjb.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/dataaccess/impl/UaDisbursementVoucherDaoOjb.java	(revision 0)
++++ work/src/edu/arizona/kfs/fp/dataaccess/impl/UaDisbursementVoucherDaoOjb.java	(revision 11157)
+@@ -0,0 +1,39 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.fp.dataaccess.impl;
++
++import java.util.Collection;
++
++import org.apache.ojb.broker.query.Criteria;
++import org.apache.ojb.broker.query.QueryByCriteria;
++import org.kuali.kfs.fp.dataaccess.impl.DisbursementVoucherDaoOjb;
++import org.kuali.kfs.fp.document.DisbursementVoucherConstants;
++
++public class UaDisbursementVoucherDaoOjb extends DisbursementVoucherDaoOjb {
++
++    /**
++     * @see org.kuali.kfs.fp.dataaccess.DisbursementVoucherDao#getDocumentsByHeaderStatus(java.lang.String)
++     */
++    @SuppressWarnings("unchecked")
++    @Override
++    public Collection getDocumentsByHeaderStatus(String statusCode) {
++        Criteria criteria = new Criteria();
++        criteria.addEqualTo("documentHeader.financialDocumentStatusCode", statusCode);
++
++        return getPersistenceBrokerTemplate().getCollectionByQuery(new QueryByCriteria(getDisbursementVoucherDocumentClass(), criteria));
++    }
++
++}
+Index: work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml
+===================================================================
+--- work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml	(revision 11156)
++++ work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml	(revision 11157)
+@@ -13,6 +13,7 @@
+ 		<property name="documentClass" value="edu.arizona.kfs.fp.document.UaDisbursementVoucherDocument" />
+ 		<property name="baseDocumentClass" value="org.kuali.kfs.fp.document.DisbursementVoucherDocument" />
+ 
++		<property name="promptBeforeValidationClass" value="edu.arizona.kfs.fp.document.validation.impl.UaDisbursementVoucherDocumentPreRules"/>   
+ 	    <property name="documentPresentationControllerClass" value="edu.arizona.kfs.fp.document.authorization.DocuwareDisbursementVoucherDocumentPresentationController"/>    
+     </bean>
+ 	<!--
+Index: work/src/edu/arizona/kfs/fp/document/validation/impl/UaDisbursementVoucherDocumentPreRules.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/document/validation/impl/UaDisbursementVoucherDocumentPreRules.java	(revision 0)
++++ work/src/edu/arizona/kfs/fp/document/validation/impl/UaDisbursementVoucherDocumentPreRules.java	(revision 11157)
+@@ -0,0 +1,106 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.fp.document.validation.impl;
++
++import java.text.MessageFormat;
++
++import org.apache.commons.lang.StringUtils;
++import org.kuali.kfs.fp.businessobject.DisbursementVoucherWireTransfer;
++import org.kuali.kfs.fp.document.DisbursementVoucherConstants;
++import org.kuali.kfs.fp.document.DisbursementVoucherDocument;
++import org.kuali.kfs.fp.document.validation.impl.DisbursementVoucherDocumentPreRules;
++import org.kuali.kfs.sys.KFSConstants;
++import org.kuali.kfs.sys.KFSKeyConstants;
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.rice.kns.service.KualiConfigurationService;
++
++public class UaDisbursementVoucherDocumentPreRules extends DisbursementVoucherDocumentPreRules {
++
++    /**
++     * Returns true if the state of all the tabs is valid, false otherwise.
++     * 
++     * @param dvDocument submitted disbursemtn voucher document
++     * @return true if the state of all the tabs is valid, false otherwise.
++     */
++    @Override
++    protected boolean checkForeignDraftTabState(DisbursementVoucherDocument dvDocument) {
++        boolean tabStatesOK = true;
++
++        DisbursementVoucherWireTransfer dvForeignDraft = dvDocument.getDvWireTransfer();
++
++        // if payment method is CHECK and wire tab contains data, ask user to clear tab
++        if ( !StringUtils.equals(DisbursementVoucherConstants.PAYMENT_METHOD_DRAFT, dvDocument.getDisbVchrPaymentMethodCode())
++                && hasForeignDraftValues(dvForeignDraft)) {
++            String questionText = SpringContext.getBean(KualiConfigurationService.class).getPropertyString(KFSKeyConstants.QUESTION_CLEAR_UNNEEDED_TAB);
++
++            Object[] args = { "payment method", dvDocument.getDisbVchrPaymentMethodCode(), "Foreign Draft", DisbursementVoucherConstants.PAYMENT_METHOD_DRAFT };
++            questionText = MessageFormat.format(questionText, args);
++
++            boolean clearTab = super.askOrAnalyzeYesNoQuestion(KFSConstants.DisbursementVoucherDocumentConstants.CLEAR_FOREIGN_DRAFT_TAB_QUESTION_ID, questionText);
++            if (clearTab) {
++                // NOTE: Can't replace with new instance because Wire Transfer uses same object
++                clearForeignDraftValues(dvForeignDraft);
++            }
++            else {
++                // return to document if the user doesn't want to clear the Wire Transfer tab
++                super.event.setActionForwardName(KFSConstants.MAPPING_BASIC);
++                tabStatesOK = false;
++            }
++        }
++
++        return tabStatesOK;
++    }
++    
++    /**
++     * This method returns true if the state of all the tabs is valid, false otherwise.
++     * 
++     * @param dvDocument submitted disbursement voucher document
++     * @return Returns true if the state of all the tabs is valid, false otherwise.
++     */
++    @Override
++    protected boolean checkWireTransferTabState(DisbursementVoucherDocument dvDocument) {
++        boolean tabStatesOK = true;
++
++        DisbursementVoucherWireTransfer dvWireTransfer = dvDocument.getDvWireTransfer();
++
++        // if payment method is not W (Wire Transfer) and wire tab contains data, ask user to clear tab
++        
++        // NOTE: This is lousy - but there is no distinction in the payment method table 
++        // between wire transfers and foreign drafts.  So, we still need the hard-coded
++        // values of those payment methods here for business rules.
++        if (!StringUtils.equals(DisbursementVoucherConstants.PAYMENT_METHOD_WIRE, dvDocument.getDisbVchrPaymentMethodCode()) 
++                && hasWireTransferValues(dvWireTransfer)) { 
++            String questionText = SpringContext.getBean(KualiConfigurationService.class).getPropertyString(KFSKeyConstants.QUESTION_CLEAR_UNNEEDED_TAB);
++
++            Object[] args = { "payment method", dvDocument.getDisbVchrPaymentMethodCode(), "Wire Transfer", DisbursementVoucherConstants.PAYMENT_METHOD_WIRE };
++            questionText = MessageFormat.format(questionText, args);
++
++            boolean clearTab = super.askOrAnalyzeYesNoQuestion(KFSConstants.DisbursementVoucherDocumentConstants.CLEAR_WIRE_TRANSFER_TAB_QUESTION_ID, questionText);
++            if (clearTab) {
++                // NOTE: Can't replace with new instance because Foreign Draft uses same object
++                clearWireTransferValues(dvWireTransfer);
++            }
++            else {
++                // return to document if the user doesn't want to clear the Wire Transfer tab
++                super.event.setActionForwardName(KFSConstants.MAPPING_BASIC);
++                tabStatesOK = false;
++            }
++        }
++
++        return tabStatesOK;
++    }
++
++}

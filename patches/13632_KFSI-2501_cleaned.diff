@@ -1,0 +1,35 @@
+Index: work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java
+===================================================================
+--- work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java	(revision 13631)
++++ work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java	(revision 13632)
+@@ -72,15 +72,19 @@
+                     KFSConstants.PermissionTemplate.EDIT_BANK_CODE.name, 
+                     GlobalVariables.getUserSession().getPrincipalId()  ) ) {
+                 synchronizeBankCodeWithPaymentMethod();        
++            } else {
++                refreshReferenceObject( "bank" );
+             }
+-            refreshReferenceObject( "bank" );
+         }        
+     }
+ 
+     protected void synchronizeBankCodeWithPaymentMethod() {
+         Bank bank = getPaymentMethodGeneralLedgerPendingEntryService().getBankForPaymentMethod( getDisbVchrPaymentMethodCode() );
+         if ( bank != null ) {
+-            setDisbVchrBankCode(bank.getBankCode());
++            if ( !StringUtils.equals(bank.getBankCode(), getDisbVchrBankCode()) ) {
++                setDisbVchrBankCode(bank.getBankCode());
++                refreshReferenceObject( "bank" );
++            }
+         } else {
+             // no bank code, no bank needed
+             setDisbVchrBankCode(null);
+@@ -169,6 +173,8 @@
+                     && vendor.getExtension() instanceof VendorDetailExtension ) {
+                 if ( StringUtils.isNotBlank(((VendorDetailExtension)vendor.getExtension()).getDefaultB2BPaymentMethodCode())) {
+                     disbVchrPaymentMethodCode = ((VendorDetailExtension)vendor.getExtension()).getDefaultB2BPaymentMethodCode();
++                    // Ensure the bank code now matches the new payment method code
++                    synchronizeBankCodeWithPaymentMethod();
+                 }
+             }
+         }

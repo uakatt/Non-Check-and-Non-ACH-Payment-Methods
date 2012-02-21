@@ -1,0 +1,17 @@
+Index: financial-system/kfs-cfg-dbs/trunk/install.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/install.xml	(revision 7605)
++++ financial-system/kfs-cfg-dbs/trunk/install.xml	(revision 7606)
+@@ -25,5 +25,11 @@
+   <include file="latest/dat/KRIM.xml" />
+   <include file="latest/dat/KRNS_PARM_T.xml" />
+   <include file="latest/dat/FP_OFFSET_DEFN_T.xml" />
+-  <!--<include file="latest/dat/FP_PMT_MTHD_T.xml" />-->
++  <!--
++  <include file="latest/dat/FP_PMT_MTHD_T.xml" />
++  <include file="latest/dat/FP_PMT_MTHD_CHART_T.xml" />
++  <include file="latest/dat/KREW.xml" />
++  <include file="latest/cst/FP_PMT_MTHD_T.xml" />
++  <include file="latest/cst/FP_PMT_MTHD_CHART_T.xml" />
++  -->
+ </databaseChangeLog>

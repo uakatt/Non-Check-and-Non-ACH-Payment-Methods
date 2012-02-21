@@ -1,0 +1,87 @@
+Index: financial-system/kfs-cfg-dbs/trunk/update/KITT-1383.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/update/KITT-1383.xml	(revision 0)
++++ financial-system/kfs-cfg-dbs/trunk/update/KITT-1383.xml	(revision 12008)
+@@ -0,0 +1,81 @@
++<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
++	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">	
++	<changeSet author="$Author$" id="$Revision$-kitt-1143">
++		<createTable tableName="FP_BDGT_ADJ_DTL_EXT_T">
++			<column name="FDOC_NBR" type="VARCHAR2(14)">
++				<constraints nullable="false" primaryKey="true"
++					primaryKeyName="FP_BDGT_ADJ_DTL_EXT_TP1" />
++			</column>
++			<column name="FDOC_LINE_NBR" type="NUMBER(7,0)" defaultValueNumeric="0">
++				<constraints nullable="false" primaryKey="true"
++					primaryKeyName="FP_BDGT_ADJ_DTL_EXT_TP1" />
++			</column>
++			<column name="FDOC_LN_TYP_CD" type="VARCHAR2(1)">
++				<constraints nullable="false" primaryKey="true"
++					primaryKeyName="FP_BDGT_ADJ_DTL_EXT_TP1" />
++			</column>
++			<column name="OBJ_ID" type="VARCHAR2(36)">
++				<constraints nullable="false" unique="true"
++					uniqueConstraintName="FP_BDGT_ADJ_DTL_EXT_TC0" />
++			</column>
++			<column name="VER_NBR" type="NUMBER(8,0)" defaultValueNumeric="1">
++				<constraints nullable="false" />
++			</column>
++			<column name="BUDGET_LINE_NBR" type="VARCHAR2(7)" />
++			<column name="BUDGET_ORG_CD" type="VARCHAR2(4)" />
++			<column name="BUDGET_POSITION_NBR" type="VARCHAR2(8)" />
++			<column name="BUDGET_FTE_AMT" type="NUMBER(4)" />
++		</createTable>
++		<rollback>
++			<dropTable tableName="FP_BDGT_ADJ_DTL_EXT_T" cascadeConstraints="true" />
++		</rollback>
++		<modifySql dbms="mysql">
++			<replace replace="VARCHAR2" with="VARCHAR" />
++			<replace replace="NUMBER" with="NUMERIC" />
++			<replace replace="SYS_GUID" with="UUID" />
++		</modifySql>
++	</changeSet>
++	<changeSet author="$Author$" id="$Revision$-KITT-592-AP_PMT_RQST_T">	
++	    <sql><![CDATA[
++	    	ALTER TABLE AP_PMT_RQST_T MODIFY (PMT_MTHD_CD CHAR(1) DEFAULT 'A');
++		]]>
++    	</sql>
++	    <addForeignKeyConstraint baseColumnNames="pmt_mthd_cd"
++	                             baseTableName="AP_PMT_RQST_T"
++	                             constraintName="AP_PMT_RQST_TR3"
++	                             referencedColumnNames="pmt_mthd_cd"
++	                             referencedTableName="fp_pmt_mthd_t"/>
++		<rollback>
++			<sql><![CDATA[
++				ALTER TABLE AP_PMT_RQST_T MODIFY (PMT_MTHD_CD CHAR(1) DEFAULT 'P');
++			]]>
++			</sql>
++		</rollback>
++    </changeSet>
++	<changeSet author="$Author$" id="$Revision$-KITT-592-AP_CRDT_MEMO_T">
++		<sql><![CDATA[
++	    	ALTER TABLE AP_CRDT_MEMO_T MODIFY (PMT_MTHD_CD CHAR(1) DEFAULT 'A');
++		]]>
++    	</sql>
++	    <addForeignKeyConstraint baseColumnNames="pmt_mthd_cd"
++	                             baseTableName="AP_CRDT_MEMO_T"
++	                             constraintName="AP_CRDT_MEMO_TR2"
++	                             referencedColumnNames="pmt_mthd_cd"
++	                             referencedTableName="fp_pmt_mthd_t"/>
++		<rollback>
++			<sql><![CDATA[
++				ALTER TABLE AP_CRDT_MEMO_T MODIFY (PMT_MTHD_CD CHAR(1) DEFAULT 'A');
++			]]>
++			</sql>
++		</rollback>
++    </changeSet>
++	<changeSet author="$Author$" id="KITT-592-PUR_VNDR_DTL_EXT_T">
++	    <addForeignKeyConstraint baseColumnNames="DFLT_B2B_PMT_MTHD_CD"
++	                             baseTableName="PUR_VNDR_DTL_EXT_T"
++	                             constraintName="PUR_VNDR_DTL_EXT_TR1"
++	                             referencedColumnNames="pmt_mthd_cd"
++	                             referencedTableName="fp_pmt_mthd_t"/>
++    </changeSet>
++</databaseChangeLog>   
++      
+\ No newline at end of file

@@ -1,0 +1,15 @@
+Index: financial-system/kfs-cfg-dbs/trunk/update/KITT-592-drop-old.xml
+===================================================================
+--- financial-system/kfs-cfg-dbs/trunk/update/KITT-592-drop-old.xml	(revision 0)
++++ financial-system/kfs-cfg-dbs/trunk/update/KITT-592-drop-old.xml	(revision 10221)
+@@ -0,0 +1,9 @@
++<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
++	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
++	<!--  starting over... getting rid of this table -->
++	<changeSet author="jhkeller" id="KITT-592-20100530-1">
++		<dropTable tableName="FP_PMT_MTHD_T" cascadeConstraints="true" />
++	</changeSet>
++</databaseChangeLog>   
++      
+\ No newline at end of file
