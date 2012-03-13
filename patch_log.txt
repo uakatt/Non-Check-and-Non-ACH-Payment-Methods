@@ -9,3 +9,743 @@ Changed paths:
 
 KITT-592 : new payment method table and supporting additional attributes and data
 ------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7216 | jhkeller | 2010-01-19 20:51:09 -0700 (Tue, 19 Jan 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml
+   M /financial-system/kfs-cfg-dbs/trunk/update.xml
+
+KITT-592 : new payment method table and supporting additional attributes and data
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7217 | jhkeller | 2010-01-19 21:07:05 -0700 (Tue, 19 Jan 2010) | 2 lines
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/arizona-ApplicationResources.properties
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/PaymentMethod.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/PaymentMethodChart.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethodChart.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/options
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinder.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinderNonInterdepartmental.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/validation/impl/PaymentMethodRule.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/workflow/DisbursementVoucherNonCheck.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/workflow/PaymentMethodMaintenanceDocument.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/dwr-fp.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/ojb-fp.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/UaPaymentMethodGeneralLedgerPendingEntryService.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/spring-fp.xml
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/fp/dvMessages.tag
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/portal/channel/maintenance/financialProcessing.tag
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/sys/bankControl.tag
+
+KITT-592 : Added new payment method table and BO classes
+Also changes to DV document (add'l work still needed)
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7218 | jhkeller | 2010-01-19 22:03:46 -0700 (Tue, 19 Jan 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/fp/document/service/DisbursementVoucherTaxServiceTest.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/fp/document/service/DisbursementVoucherTravelServiceTest.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/module/cab/fixture/PaymentRequestDocumentFixture.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/module/purap/document/validation/impl/PaymentRequestDocumentRuleTest.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/module/purap/util/TestPaymentRequestPayDateNotPastValidation.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/web/struts/DisbursementVoucherForm.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/fp/dataaccess/impl/DisbursementVoucherDaoOjb.java
+
+KITT-592 : removed use of document class constructors to allow for subclassing of the documents
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7219 | jhkeller | 2010-01-19 22:45:18 -0700 (Tue, 19 Jan 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/web/struts/DisbursementVoucherForm.java
+
+KITT-592 : fixed call to get document type
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7220 | jhkeller | 2010-01-19 22:59:47 -0700 (Tue, 19 Jan 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java
+
+KITT-592 : slight correction to the logic for generating the bank offset entries
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7221 | jhkeller | 2010-01-19 23:02:06 -0700 (Tue, 19 Jan 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/cab/batch/service/impl/BatchExtractServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/cab/businessobject/PurchasingAccountsPayableDocument.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/dataaccess/impl/ElectronicInvoicingDaoOjb.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/document/dataaccess/impl/CreditMemoDaoOjb.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/document/dataaccess/impl/PaymentRequestDaoOjb.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/service/impl/PurapGeneralLedgerServiceImpl.java
+
+KITT-592 : removed use of document class constructors to allow for subclassing of the documents
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7355 | jhkeller | 2010-01-24 12:25:49 -0700 (Sun, 24 Jan 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/arizona-ApplicationResources.properties
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/batch/service/impl/UaDisbursementVoucherExtractServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/validation/impl/PaymentMethodRule.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/UaPaymentMethodGeneralLedgerPendingEntryService.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/spring-fp.xml
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/fp/batch/service/impl/DisbursementVoucherExtractServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/fp/document/validation/impl/DisbursementVoucherBankCodeValidation.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/document/service/impl/CreditMemoServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/service/impl/PurapGeneralLedgerServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/sys/document/validation/impl/BankCodeValidation.java
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/fp/dvMessages.tag
+
+KITT-592 : Updates to the DV changes and baseline changes to allow for subclassing.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7356 | jhkeller | 2010-01-24 12:28:40 -0700 (Sun, 24 Jan 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaVendorCreditMemoDocument.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/datadictionary/PaymentRequestDocument.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/datadictionary/VendorCreditMemoDocument.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/workflow/CreditMemoNonCheck.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/workflow/PaymentRequestNonCheck.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/ojb-purap.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/spring-purap.xml
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/paymentRequestInvoiceInfo.tag
+
+KITT-592 : PREQ and CM document changes - new functionality will be broken until data changes are in place
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7358 | jhkeller | 2010-01-24 12:29:58 -0700 (Sun, 24 Jan 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_OFFSET_DEFN_T.xml
+
+KITT-592: Added new offset definitions for the non-check versions of the payment request and credit memo.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7498 | jhkeller | 2010-01-30 14:42:00 -0700 (Sat, 30 Jan 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/arizona-ApplicationResources.properties
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/UaPaymentMethodGeneralLedgerPendingEntryService.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerServiceTest.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/configuration
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/configuration/PurapValidatorOverrides.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/VendorCreditMemoPaymentMethodCodeValidation.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/spring-purap.xml
+
+KITT-592 : work on credit memo validation
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7516 | jhkeller | 2010-01-30 17:37:21 -0700 (Sat, 30 Jan 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/VendorCreditMemoPaymentMethodCodeValidation.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/sys/document/validation/impl/BankCodeValidation.java
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag
+
+KITT-592: Finished business rules and GL entry generation for CM document.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7517 | jhkeller | 2010-01-30 18:00:48 -0700 (Sat, 30 Jan 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/arizona-ApplicationResources.properties
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/validation/impl/PaymentMethodRule.java
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/portal/channel/maintenance/financialProcessing.tag
+
+KITT-592: Added sanity-check business rules to the payment method document.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7518 | jhkeller | 2010-01-31 16:52:17 -0700 (Sun, 31 Jan 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/trunk/build/project/xsd/purap/uaElectronicInvoice.xsd
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/module/purap/fixture/ElectronicInvoiceHelperServiceFixture.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/module/purap/service/ElectronicInvoiceHelperServiceTest.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/batch
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/batch/electronicInvoiceDigesterRules.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/businessobject
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/businessobject/UaElectronicInvoiceDetailRequestHeader.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/service
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/service/impl
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/service/impl/UaElectronicInvoiceHelperServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/spring-purap.xml
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/service/impl/ElectronicInvoiceHelperServiceImpl.java
+
+KITT-592: E-Invoice updates to handle payment medium code
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7605 | jhkeller | 2010-02-04 23:05:45 -0700 (Thu, 04 Feb 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs-cfg-dbs/trunk/latest/cst
+   A /financial-system/kfs-cfg-dbs/trunk/latest/cst/FP_PMT_MTHD_CHART_T.xml
+   A /financial-system/kfs-cfg-dbs/trunk/latest/cst/FP_PMT_MTHD_T.xml
+   A /financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_PMT_MTHD_CHART_T.xml
+   M /financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_PMT_MTHD_T.xml
+   A /financial-system/kfs-cfg-dbs/trunk/latest/dat/KREW.xml
+   M /financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_CHART_T.xml
+   M /financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml
+
+KITT-592: Cleanup of Liquibase files for application into DEV
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7606 | jhkeller | 2010-02-04 23:11:18 -0700 (Thu, 04 Feb 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/install.xml
+
+KITT-592: Cleanup of Liquibase files for application into DEV
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7646 | jhkeller | 2010-02-06 13:28:37 -0700 (Sat, 06 Feb 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/data.xml
+   M /financial-system/kfs-cfg-dbs/trunk/install.xml
+
+KITT-592: Re-added scripts for this issue to the Liquibase scripts
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7683 | jhkeller | 2010-02-10 08:14:44 -0700 (Wed, 10 Feb 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/latest/cst/FP_PMT_MTHD_CHART_T.xml
+   M /financial-system/kfs-cfg-dbs/trunk/latest/cst/FP_PMT_MTHD_T.xml
+   M /financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_CHART_T.xml
+   M /financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml
+
+KITT-592 : Adding missing IDs
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7952 | jhkeller | 2010-02-18 21:26:59 -0700 (Thu, 18 Feb 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs-cfg-dbs/trunk/update/KITT-592-2.xml
+   M /financial-system/kfs-cfg-dbs/trunk/update.xml
+
+KITT-592 : re-adding items which were skipped and never migrated to TST
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r7977 | jhkeller | 2010-02-21 08:50:52 -0700 (Sun, 21 Feb 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs-cfg-dbs/trunk/update/KITT-592-3.xml
+   M /financial-system/kfs-cfg-dbs/trunk/update.xml
+
+KITT-592 : re-adding items (again) which were skipped and never migrated to TST
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r8054 | jhkeller | 2010-02-24 22:09:55 -0700 (Wed, 24 Feb 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk
+   M /financial-system/kfs-cfg-dbs/trunk/data.xml
+   M /financial-system/kfs-cfg-dbs/trunk/install.xml
+   D /financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_OFFSET_DEFN_T.xml
+   A /financial-system/kfs-cfg-dbs/trunk/latest/dat/GL_OFFSET_DEFN_T.xml (from /financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_OFFSET_DEFN_T.xml:8053)
+   A /financial-system/kfs-cfg-dbs/trunk/update/KITT-592-4.xml
+   M /financial-system/kfs-cfg-dbs/trunk/update.xml
+
+KITT-592 : re-adding items which were skipped and never migrated to TST
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r8055 | jhkeller | 2010-02-24 22:13:28 -0700 (Wed, 24 Feb 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/latest/dat/GL_OFFSET_DEFN_T.xml
+
+KITT-592 : adding always run to see if that gets the data loaded
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r8056 | jhkeller | 2010-02-24 22:50:42 -0700 (Wed, 24 Feb 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/latest/dat/GL_OFFSET_DEFN_T.xml
+
+KITT-592 : changed format of file
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r8095 | jhkeller | 2010-02-25 20:26:03 -0700 (Thu, 25 Feb 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/latest/dat/GL_OFFSET_DEFN_T.xml
+   A /financial-system/kfs-cfg-dbs/trunk/update/KITT-592-5.xml
+   M /financial-system/kfs-cfg-dbs/trunk/update.xml
+
+KITT-592 : updated files to insert data with static insert statements
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r8373 | jhkeller | 2010-03-08 21:18:43 -0700 (Mon, 08 Mar 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/latest/dat/GL_OFFSET_DEFN_T.xml
+
+KITT-592 : switched OBJ_ID to use SYS_GUID
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10217 | jhkeller | 2010-05-29 15:29:51 -0700 (Sat, 29 May 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/build/project/xsd/purap/uaElectronicInvoice.xsd
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/test/unit/src/org/kuali/kfs/fp/document/service/DisbursementVoucherTaxServiceTest.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/test/unit/src/org/kuali/kfs/fp/document/service/DisbursementVoucherTravelServiceTest.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/test/unit/src/org/kuali/kfs/module/cab/fixture/PaymentRequestDocumentFixture.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/test/unit/src/org/kuali/kfs/module/purap/document/validation/impl/PaymentRequestDocumentRuleTest.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/test/unit/src/org/kuali/kfs/module/purap/fixture/ElectronicInvoiceHelperServiceFixture.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/test/unit/src/org/kuali/kfs/module/purap/service/ElectronicInvoiceHelperServiceTest.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/test/unit/src/org/kuali/kfs/module/purap/util/TestPaymentRequestPayDateNotPastValidation.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/arizona-ApplicationResources.properties
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/batch/service/impl/UaDisbursementVoucherExtractServiceImpl.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/PaymentMethod.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/PaymentMethodChart.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethodChart.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinder.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinderNonInterdepartmental.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/document/validation/impl/PaymentMethodRule.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/document/web/struts/DisbursementVoucherForm.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/document/workflow/DisbursementVoucherNonCheck.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/document/workflow/PaymentMethodMaintenanceDocument.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/dwr-fp.xml
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/ojb-fp.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/service
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/service/UaPaymentMethodGeneralLedgerPendingEntryService.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/service/impl
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/spring-fp.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/batch/electronicInvoiceDigesterRules.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/businessobject/UaElectronicInvoiceDetailRequestHeader.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/UaVendorCreditMemoDocument.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/datadictionary/PaymentRequestDocument.xml
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/datadictionary/VendorCreditMemoDocument.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/validation
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/validation/configuration
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/validation/configuration/PurapValidatorOverrides.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/validation/impl
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/validation/impl/VendorCreditMemoPaymentMethodCodeValidation.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/workflow/CreditMemoNonCheck.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/workflow/PaymentRequestNonCheck.xml
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/ojb-purap.xml
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/service/impl/UaElectronicInvoiceHelperServiceImpl.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/spring-purap.xml
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/org/kuali/kfs/fp/batch/service/impl/DisbursementVoucherExtractServiceImpl.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/org/kuali/kfs/fp/dataaccess/impl/DisbursementVoucherDaoOjb.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/org/kuali/kfs/fp/document/validation/impl/DisbursementVoucherBankCodeValidation.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/org/kuali/kfs/module/cab/batch/service/impl/BatchExtractServiceImpl.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/org/kuali/kfs/module/cab/businessobject/PurchasingAccountsPayableDocument.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/org/kuali/kfs/module/purap/dataaccess/impl/ElectronicInvoicingDaoOjb.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/org/kuali/kfs/module/purap/document/dataaccess/impl/CreditMemoDaoOjb.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/org/kuali/kfs/module/purap/document/dataaccess/impl/PaymentRequestDaoOjb.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/org/kuali/kfs/module/purap/document/service/impl/CreditMemoServiceImpl.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/org/kuali/kfs/module/purap/service/impl/ElectronicInvoiceHelperServiceImpl.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/org/kuali/kfs/module/purap/service/impl/PurapGeneralLedgerServiceImpl.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/org/kuali/kfs/sys/document/validation/impl/BankCodeValidation.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/web-root/WEB-INF/tags/fp/dvMessages.tag
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/web-root/WEB-INF/tags/module/purap/paymentRequestInvoiceInfo.tag
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/web-root/WEB-INF/tags/portal/channel/maintenance/financialProcessing.tag
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/web-root/WEB-INF/tags/sys/bankControl.tag
+
+KITT-592 : Re-applied changes for this JIRA to a local development branch
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10221 | jhkeller | 2010-05-30 13:42:02 -0700 (Sun, 30 May 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs-cfg-dbs/trunk/update/KITT-592-drop-old.xml
+
+KITT-592 : dropping left over table from original DB migration attempt
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10222 | jhkeller | 2010-05-30 16:25:44 -0700 (Sun, 30 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml
+   D /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinderNonInterdepartmental.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java (from /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinderNonInterdepartmental.java:10217)
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml
+   D /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/batch/electronicInvoiceDigesterRules.xml
+   D /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/businessobject/UaElectronicInvoiceDetailRequestHeader.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/service/impl/UaElectronicInvoiceHelperServiceImpl.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/businessobject/VendorDetailExtension.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetailExtension.xml
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/document/datadictionary/VendorMaintenanceDocument.xml
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/ojb-vnd.xml
+
+KITT-592 : Updated code for new requirements
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10223 | jhkeller | 2010-05-30 16:44:35 -0700 (Sun, 30 May 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml
+
+KITT-592 : New script for table updates for the payment method changes
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10227 | jhkeller | 2010-05-31 14:47:31 -0700 (Mon, 31 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml
+
+KITT-592 : Added scripts for needed offset definitions.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10228 | jhkeller | 2010-05-31 15:00:27 -0700 (Mon, 31 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/update/KITT-592.xml
+
+KITT-592 : Added scripts for needed offset definitions.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10229 | jhkeller | 2010-05-31 15:17:11 -0700 (Mon, 31 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/PaymentMethod.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java
+   A /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForVendorValuesFinder.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/ojb-fp.xml
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/spring-purap.xml
+
+KITT-592 : value finders, new properties on BO, cleanup from merge
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10230 | jhkeller | 2010-05-31 16:30:53 -0700 (Mon, 31 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinder.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForVendorValuesFinder.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetail.xml
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetailExtension.xml
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/vnd/document/datadictionary/VendorMaintenanceDocument.xml
+
+KITT-592 : added the new attribute to the vendor object in the DD, fixed up the values finders
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10298 | jhkeller | 2010-06-02 22:47:55 -0700 (Wed, 02 Jun 2010) | 1 line
+Changed paths:
+   D /financial-system/kfs/branches/mod-jhkeller/pa2000-01/build/project/xsd/purap/uaElectronicInvoice.xsd
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/test/integration/src/org/kuali/kfs/fp/document/DisbursementVoucherDocumentTest.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/UaVendorCreditMemoDocument.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java
+   M /financial-system/kfs/branches/mod-jhkeller/pa2000-01/work/src/edu/arizona/kfs/module/purap/service/impl/UaElectronicInvoiceHelperServiceImpl.java
+
+KITT-592 : cleanup work on the payment method changes
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10347 | jhkeller | 2010-06-06 15:35:33 -0700 (Sun, 06 Jun 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/arizona-ApplicationResources.properties
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/PaymentMethod.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/PaymentMethodChart.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethod.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/datadictionary/PaymentMethodChart.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/options
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodValuesFinder.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForDVValuesFinder.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/businessobject/options/PaymentMethodsForVendorValuesFinder.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/validation/impl/PaymentMethodRule.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/workflow/PaymentMethodMaintenanceDocument.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/ojb-fp.xml
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/portal/channel/maintenance/financialProcessing.tag
+
+KITT-592 : Migrating payment method change portions of mod to allow for data entry required in TST and CFG environments which will be needed to preserve current functionality
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10958 | jhkeller | 2010-07-06 19:56:45 -0700 (Tue, 06 Jul 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/batch/service/impl/UaDisbursementVoucherExtractServiceImpl.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/web/struts/DisbursementVoucherForm.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/workflow/DisbursementVoucherNonCheck.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/dwr-fp.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/ojb-fp.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/UaPaymentMethodGeneralLedgerPendingEntryService.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/spring-fp.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaVendorCreditMemoDocument.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/datadictionary/PaymentRequestDocument.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/datadictionary/VendorCreditMemoDocument.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/configuration/PurapValidatorOverrides.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/UaAccountsPayableBankCodeValidation.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/validation/impl/VendorCreditMemoPaymentMethodCodeValidation.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/workflow/CreditMemoNonCheck.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/workflow/PaymentRequestNonCheck.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/ojb-purap.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/service/impl/UaElectronicInvoiceHelperServiceImpl.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/service/impl/UaPurchaseOrderServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/spring-purap.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/vnd/businessobject/VendorDetailExtension.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetail.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetailExtension.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/vnd/document/datadictionary/VendorMaintenanceDocument.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/vnd/ojb-vnd.xml
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/fp/batch/service/impl/DisbursementVoucherExtractServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/fp/dataaccess/impl/DisbursementVoucherDaoOjb.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/fp/document/validation/impl/DisbursementVoucherBankCodeValidation.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/cab/batch/service/impl/BatchExtractServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/cab/businessobject/PurchasingAccountsPayableDocument.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/businessobject/CreditMemoView.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/businessobject/PaymentRequestView.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/dataaccess/impl/ElectronicInvoicingDaoOjb.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/document/dataaccess/impl/CreditMemoDaoOjb.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/document/dataaccess/impl/PaymentRequestDaoOjb.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/document/service/impl/CreditMemoServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/document/service/impl/PaymentRequestServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/service/impl/ElectronicInvoiceHelperServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/service/impl/PurapGeneralLedgerServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/sys/document/validation/impl/BankCodeValidation.java
+
+KITT-592 : payment method changes for payable documents - new fee and clearing account GL entries
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10959 | jhkeller | 2010-07-06 19:57:21 -0700 (Tue, 06 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/fp/dvMessages.tag
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/creditMemoInfo.tag
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/paymentRequestInvoiceInfo.tag
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/sys/bankControl.tag
+
+KITT-592 : payment method changes for payable documents - new fee and clearing account GL entries
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10960 | jhkeller | 2010-07-06 20:12:22 -0700 (Tue, 06 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/test/integration/src/org/kuali/kfs/fp/document/DisbursementVoucherDocumentTest.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/fp/document/service/DisbursementVoucherTaxServiceTest.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/fp/document/service/DisbursementVoucherTravelServiceTest.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/module/cab/fixture/PaymentRequestDocumentFixture.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/module/purap/document/validation/impl/PaymentRequestDocumentRuleTest.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/module/purap/fixture/ElectronicInvoiceHelperServiceFixture.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/module/purap/service/ElectronicInvoiceHelperServiceTest.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/module/purap/util/TestPaymentRequestPayDateNotPastValidation.java
+   M /financial-system/kfs/trunk/test/unit/src/org/kuali/kfs/sys/dataaccess/impl/UnitTestSqlDaoOjb.java
+
+KITT-592 : payment method changes for payable documents - new fee and clearing account GL entries
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11049 | jhkeller | 2010-07-10 16:44:01 -0700 (Sat, 10 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/ojb-fp.xml
+
+KITT-1286 - fixed problem with bank code not saving
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11056 | jhkeller | 2010-07-11 12:24:12 -0700 (Sun, 11 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/datadictionary/PaymentMethodMaintenanceDocument.xml
+
+KITT-592 : Added active indicator to the payment method maintenance document
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11063 | ahollamo | 2010-07-12 16:25:28 -0700 (Mon, 12 Jul 2010) | 4 lines
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java
+
+KFSI-1892
+KITT-1316
+Adding annotation
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11157 | jhkeller | 2010-07-14 21:39:17 -0700 (Wed, 14 Jul 2010) | 4 lines
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/batch/service/impl/UaDisbursementVoucherExtractServiceImpl.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/dataaccess
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/dataaccess/impl
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/dataaccess/impl/UaDisbursementVoucherDaoOjb.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/validation/impl/UaDisbursementVoucherDocumentPreRules.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/spring-fp.xml
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/fp/batch/service/impl/DisbursementVoucherExtractServiceImpl.java
+
+KITT-592
+KFSI-1931
+
+Found remaining places where the logic was looking for the baseline Check/ACH payment method code.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11328 | hlo | 2010-07-20 15:02:51 -0700 (Tue, 20 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/latest/tab/PUR_VNDR_DTL_EXT_T.xml
+
+KITT-1374, KITT-1092, KITT-592 Adding DFLT_B2B_PMT_MTHD_CD and EXPORT_CONTROLS_IND.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11387 | przybyls | 2010-07-22 14:47:20 -0700 (Thu, 22 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/data.xml
+   D /financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_PMT_MTHD_CHART_T.xml
+   D /financial-system/kfs-cfg-dbs/trunk/latest/dat/FP_PMT_MTHD_T.xml
+   M /financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml
+
+KITT-592 adding correct table ddl for FP_PMT_MTHD_T
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11388 | przybyls | 2010-07-22 14:57:15 -0700 (Thu, 22 Jul 2010) | 1 line
+Changed paths:
+   D /financial-system/kfs-cfg-dbs/branches/3.0-576/latest/tab/FP_PMT_MTHD_T.xml
+
+KITT-592 using update create table ddl
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11389 | przybyls | 2010-07-22 14:57:43 -0700 (Thu, 22 Jul 2010) | 1 line
+Changed paths:
+   D /financial-system/kfs-cfg-dbs/branches/3.0-576/latest/dat/FP_PMT_MTHD_T.xml
+
+KITT-592 using update create table ddl
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11390 | przybyls | 2010-07-22 14:58:07 -0700 (Thu, 22 Jul 2010) | 1 line
+Changed paths:
+   D /financial-system/kfs-cfg-dbs/branches/3.0-576/latest/dat/FP_PMT_MTHD_CHART_T.xml
+
+KITT-592 using update create table ddl
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11391 | przybyls | 2010-07-22 14:59:26 -0700 (Thu, 22 Jul 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs-cfg-dbs/branches/3.0-576/latest/tab/FP_PMT_MTHD_T.xml (from /financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml:11390)
+
+KITT-592 using update create table ddl
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11392 | przybyls | 2010-07-22 15:00:07 -0700 (Thu, 22 Jul 2010) | 1 line
+Changed paths:
+   D /financial-system/kfs-cfg-dbs/branches/3.0-576/data.xml
+
+KITT-592 using update create table ddl
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11393 | przybyls | 2010-07-22 15:00:13 -0700 (Thu, 22 Jul 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs-cfg-dbs/branches/3.0-576/data.xml (from /financial-system/kfs-cfg-dbs/trunk/data.xml:11392)
+
+KITT-592 using update create table ddl
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11394 | przybyls | 2010-07-22 16:29:36 -0700 (Thu, 22 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml
+
+KITT-592 - Removing changeset typo
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11395 | przybyls | 2010-07-22 16:30:03 -0700 (Thu, 22 Jul 2010) | 1 line
+Changed paths:
+   D /financial-system/kfs-cfg-dbs/branches/3.0-576/latest/tab/FP_PMT_MTHD_T.xml
+
+KITT-592 Fixing changeset typo
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11396 | przybyls | 2010-07-22 16:30:28 -0700 (Thu, 22 Jul 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs-cfg-dbs/branches/3.0-576/latest/tab/FP_PMT_MTHD_T.xml (from /financial-system/kfs-cfg-dbs/trunk/latest/tab/FP_PMT_MTHD_T.xml:11395)
+
+KITT-592 Fixing changeset typo
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11751 | jhkeller | 2010-08-03 20:03:10 -0700 (Tue, 03 Aug 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetailExtension.xml
+
+KITT-592 : adjusted label for default payment method code per request
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11803 | jhkeller | 2010-08-04 19:57:05 -0700 (Wed, 04 Aug 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/ojb-fp.xml
+
+KITT-592 : Fixed OJB mappings for reference objects on PaymentMethodChart object
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11824 | jhkeller | 2010-08-05 23:06:41 -0700 (Thu, 05 Aug 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java
+
+KITT-592 : Updated DV to default payment method from vendor tables
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11848 | jhkeller | 2010-08-06 23:04:03 -0700 (Fri, 06 Aug 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaPaymentRequestServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/document/service/impl/PaymentRequestServiceImpl.java
+
+KITT-592 : Updated PREQ to default payment method from vendor tables
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11849 | jhkeller | 2010-08-06 23:39:49 -0700 (Fri, 06 Aug 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java
+
+KITT-592 : Updated CM to default payment method from PREQ or vendor table
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r12008 | hlo | 2010-08-12 16:19:43 -0700 (Thu, 12 Aug 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs-cfg-dbs/trunk/update/KITT-1383.xml
+
+KITT-1383 Adds missing FP_BDGT_ADJ_DTL_EXT_T table, 3 foreign key constraints, and sets default values from KITT-1143 and KITT-592.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r12909 | jhkeller | 2010-09-06 12:00:11 -0700 (Mon, 06 Sep 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/UaPaymentMethodGeneralLedgerPendingEntryService.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/service/impl/UaPaymentMethodGeneralLedgerPendingEntryServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/module/purap/service/impl/PurapGeneralLedgerServiceImpl.java
+   M /financial-system/kfs/trunk/work/web-root/WEB-INF/tags/module/purap/paymentRequestInvoiceInfo.tag
+
+KITT-592 : Updated logic around the payment request to adjust ledger entries properly when PREQ is modified.  Also, locked down the payment method and bank code fields as needed to preserve correctness of the GL entries.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r13632 | jhkeller | 2010-09-27 19:53:28 -0700 (Mon, 27 Sep 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/UaDisbursementVoucherDocument.java
+
+KFSI-2501 : updated DV so that it defaults the bank code from the payment method defaulted from the vendor
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r13633 | jhkeller | 2010-09-27 20:01:58 -0700 (Mon, 27 Sep 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaPaymentRequestDocument.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/UaVendorCreditMemoDocument.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/service/impl/UaCreditMemoServiceImpl.java
+
+KFSI-2501 : updated PREQ and CM so that they default the bank code from the payment method upon creation
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r15309 | jwingate@CATNET.ARIZONA.EDU | 2010-12-21 12:50:28 -0700 (Tue, 21 Dec 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/fp/document/datadictionary/DisbursementVoucherDocument.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/datadictionary/PaymentRequestDocument.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/module/purap/document/datadictionary/VendorCreditMemoDocument.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/vnd/businessobject/datadictionary/VendorDetail.xml
+
+KFSI-2592/KITT-1970 Add Payment Method to Document Search/Lookup (DV/PREQ/CM and Vendor Detail) 
+------------------------------------------------------------------------
