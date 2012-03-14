@@ -29,7 +29,11 @@ this README contains several informative sections:
 Disclaimer
 ==========
 
-> This enhancement required numerous database changes that were developed over many months. In the end, the remaining developers at UA are not entirely certain what database changes were necessary specifically for this enhancement. Many changes were backed out, column names were changed, and some changes appear to insert UA-specific data. In the end, the liqubiase scripts included in this patch are likely unhelpful. So the developers at UA that built this patch package decided to do their best in writing one caconical SQL file that includes all of the changes needed for this enhancement. This single SQL file has not been tested or verified, so please verify the database changes upon implementation. Please provide any feedback to the UA team (or as an issue to this GitHub project) so that we may improve this SQL file if needed. Also, the SQL file has been converted from a Liquibase script, so there are references to DATABASECGANGELOCK and DATABASECHANGELOG tables that can be ignored if not using Liquibase.
+> This enhancement required numerous database changes that were developed over many months. In the end, the remaining developers at UA are not entirely certain what database changes were necessary specifically for this enhancement. Many changes were backed out, column names were changed, and some changes appear to insert UA-specific data. In the end, the liqubiase scripts included in this patch are likely unhelpful.
+> 
+> So the developers at UA that built this patch package decided to do their best in writing one caconical SQL file (`extra_files/KITT-3049.sql`) that includes all of the changes needed for this enhancement. This single SQL file has not been tested or verified, so please verify the database changes upon implementation. Please provide any feedback to the UA team (or as an issue to this GitHub project) so that we may improve this SQL file if needed.
+> 
+> Also, the SQL file has been converted from a Liquibase script, so there are references to `DATABASECHANGELOCK` and `DATABASECHANGELOG` tables that can be ignored if not using Liquibase.
 
 <h2><a name="jiras">Jiras</a></h2>
 
